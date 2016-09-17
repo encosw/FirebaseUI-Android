@@ -70,14 +70,6 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
     private RequiredFieldValidator mNameValidator;
     private ImageView mTogglePasswordImage;
 
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams,
-            String email) {
-        return ActivityHelper.createBaseIntent(context, RegisterEmailActivity.class, flowParams)
-                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -251,5 +243,13 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                 registerUser(email, name, password);
             }
         }
+    }
+
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams,
+            String email) {
+        return ActivityHelper.createBaseIntent(context, RegisterEmailActivity.class, flowParams)
+                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 }

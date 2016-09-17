@@ -30,46 +30,21 @@ import java.util.List;
  * a serializable manner, in order to pass data between activities.
  */
 public class FlowParameters implements Parcelable {
-
-    public static final Creator<FlowParameters> CREATOR = new Creator<FlowParameters>() {
-        @Override
-        public FlowParameters createFromParcel(Parcel in) {
-            String appName = in.readString();
-            List<IDPProviderParcel> providerInfo =
-                    in.createTypedArrayList(IDPProviderParcel.CREATOR);
-            int themeId = in.readInt();
-            int logoId = in.readInt();
-            String termsOfServiceUrl = in.readString();
-            int smartLockEnabledInt = in.readInt();
-            boolean smartLockEnabled = smartLockEnabledInt != 0;
-            int shouldLinkUserInt = in.readInt();
-            boolean shouldLinkUser = shouldLinkUserInt != 0;
-
-            return new FlowParameters(
-                    appName,
-                    providerInfo,
-                    themeId,
-                    logoId,
-                    termsOfServiceUrl,
-                    smartLockEnabled,
-                    shouldLinkUser);
-        }
-
-        @Override
-        public FlowParameters[] newArray(int size) {
-            return new FlowParameters[size];
-        }
-    };
     @NonNull
     public final String appName;
+
     @NonNull
     public final List<IDPProviderParcel> providerInfo;
+
     @StyleRes
     public final int themeId;
+
     @DrawableRes
     public final int logoId;
+
     @Nullable
     public final String termsOfServiceUrl;
+
     public final boolean smartLockEnabled;
     public final boolean shouldLinkUser;
 
@@ -105,4 +80,34 @@ public class FlowParameters implements Parcelable {
     public int describeContents() {
         return 0;
     }
+
+    public static final Creator<FlowParameters> CREATOR = new Creator<FlowParameters>() {
+        @Override
+        public FlowParameters createFromParcel(Parcel in) {
+            String appName = in.readString();
+            List<IDPProviderParcel> providerInfo =
+                    in.createTypedArrayList(IDPProviderParcel.CREATOR);
+            int themeId = in.readInt();
+            int logoId = in.readInt();
+            String termsOfServiceUrl = in.readString();
+            int smartLockEnabledInt = in.readInt();
+            boolean smartLockEnabled = smartLockEnabledInt != 0;
+            int shouldLinkUserInt = in.readInt();
+            boolean shouldLinkUser = shouldLinkUserInt != 0;
+
+            return new FlowParameters(
+                    appName,
+                    providerInfo,
+                    themeId,
+                    logoId,
+                    termsOfServiceUrl,
+                    smartLockEnabled,
+                    shouldLinkUser);
+        }
+
+        @Override
+        public FlowParameters[] newArray(int size) {
+            return new FlowParameters[size];
+        }
+    };
 }

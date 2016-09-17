@@ -101,12 +101,6 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.smartlock_enabled)
     CheckBox mEnableSmartLock;
 
-    public static Intent createIntent(Context context) {
-        Intent in = new Intent();
-        in.setClass(context, AuthUiActivity.class);
-        return in;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -290,5 +284,11 @@ public class AuthUiActivity extends AppCompatActivity {
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
+    }
+
+    public static Intent createIntent(Context context) {
+        Intent in = new Intent();
+        in.setClass(context, AuthUiActivity.class);
+        return in;
     }
 }

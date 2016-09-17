@@ -259,41 +259,6 @@ public class AuthUI {
     }
 
     /**
-     * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
-     * {@code FirebaseApp.getInstance()}.
-     * @throws IllegalStateException if the default app is not initialized.
-     */
-    public static AuthUI getInstance() {
-        return getInstance(FirebaseApp.getInstance());
-    }
-
-    /**
-     * Retrieves the {@link AuthUI} instance associated  the the specified app.
-     */
-    public static AuthUI getInstance(FirebaseApp app) {
-        AuthUI authUi = null;
-        synchronized (INSTANCES) {
-            authUi = INSTANCES.get(app);
-            if (authUi == null) {
-                authUi = new AuthUI(app);
-                INSTANCES.put(app, authUi);
-            }
-        }
-        return authUi;
-    }
-
-    /**
-     * Default theme used by {@link SignInIntentBuilder#setTheme(int)} if no theme
-     * customization is required.
-     */
-    @StyleRes
-    public static int getDefaultTheme() {
-        // TODO(iainmgin): figure out why this works as a static method but not as a static
-        //                 final variable.
-        return R.style.FirebaseUI;
-    }
-
-    /**
      * Signs the current user out, if one is signed in.
      *
      * @param activity The activity requesting the user be signed out.
@@ -348,6 +313,41 @@ public class AuthUI {
 
     public void notifyOnMergeFailedListeners(String prevUid) {
         mOnMergeFailedListener.onMergeFailed(prevUid);
+    }
+
+    /**
+     * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
+     * {@code FirebaseApp.getInstance()}.
+     * @throws IllegalStateException if the default app is not initialized.
+     */
+    public static AuthUI getInstance() {
+        return getInstance(FirebaseApp.getInstance());
+    }
+
+    /**
+     * Retrieves the {@link AuthUI} instance associated  the the specified app.
+     */
+    public static AuthUI getInstance(FirebaseApp app) {
+        AuthUI authUi = null;
+        synchronized (INSTANCES) {
+            authUi = INSTANCES.get(app);
+            if (authUi == null) {
+                authUi = new AuthUI(app);
+                INSTANCES.put(app, authUi);
+            }
+        }
+        return authUi;
+    }
+
+    /**
+     * Default theme used by {@link SignInIntentBuilder#setTheme(int)} if no theme
+     * customization is required.
+     */
+    @StyleRes
+    public static int getDefaultTheme() {
+        // TODO(iainmgin): figure out why this works as a static method but not as a static
+        //                 final variable.
+        return R.style.FirebaseUI;
     }
 
     /**

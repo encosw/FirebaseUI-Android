@@ -55,18 +55,6 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
     private IDPResponse mPrevIdpResponse;
     private AuthCredential mPrevCredential;
 
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams,
-            String providerId,
-            IDPResponse idpResponse,
-            String email) {
-        return ActivityHelper.createBaseIntent(context, WelcomeBackIDPPrompt.class, flowParams)
-                .putExtra(ExtraConstants.EXTRA_PROVIDER, providerId)
-                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, idpResponse)
-                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -234,5 +222,17 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                         }
                     });
         }
+    }
+
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams,
+            String providerId,
+            IDPResponse idpResponse,
+            String email) {
+        return ActivityHelper.createBaseIntent(context, WelcomeBackIDPPrompt.class, flowParams)
+                .putExtra(ExtraConstants.EXTRA_PROVIDER, providerId)
+                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, idpResponse)
+                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 }

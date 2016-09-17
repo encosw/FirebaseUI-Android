@@ -65,12 +65,6 @@ public class AuthMethodPickerActivity
     private static final String TAG = "AuthMethodPicker";
     private ArrayList<IDPProvider> mIdpProviders;
 
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams) {
-        return ActivityHelper.createBaseIntent(context, AuthMethodPickerActivity.class, flowParams);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,5 +205,11 @@ public class AuthMethodPickerActivity
                 }
             }
         }
+    }
+
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams) {
+        return ActivityHelper.createBaseIntent(context, AuthMethodPickerActivity.class, flowParams);
     }
 }
