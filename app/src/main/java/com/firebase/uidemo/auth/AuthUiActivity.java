@@ -169,8 +169,7 @@ public class AuthUiActivity extends AppCompatActivity {
                                                                     chatSnapshot.getRef()
                                                                             .child("name")
                                                                             .setValue("User " + currentUid
-                                                                                    .substring(0,
-                                                                                               6));
+                                                                                    .substring(0, 6));
                                                                 }
                                                             }
                                                         }
