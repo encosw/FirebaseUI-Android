@@ -57,7 +57,8 @@ public class TestHelper {
                 AuthUI.getDefaultTheme(),
                 AuthUI.NO_LOGO,
                 null,
-                true);
+                true,
+                false);
     }
 
     public static FirebaseUser makeMockFirebaseUser() {

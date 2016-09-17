@@ -188,41 +188,13 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
     }
 
     public boolean isSignedIn() {
-        return (mAuth.getCurrentUser() != null);
+        return mAuth.getCurrentUser() != null;
     }
 
     public void updateUI() {
         // Sending only allowed when signed in
         mSendButton.setEnabled(isSignedIn());
         mMessageEdit.setEnabled(isSignedIn());
-    }
-
-    public static class Chat {
-
-        String name;
-        String text;
-        String uid;
-
-        public Chat() {
-        }
-
-        public Chat(String name, String uid, String message) {
-            this.name = name;
-            this.text = message;
-            this.uid = uid;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getUid() {
-            return uid;
-        }
-
-        public String getText() {
-            return text;
-        }
     }
 
     public static class ChatHolder extends RecyclerView.ViewHolder {
@@ -233,7 +205,7 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
             mView = itemView;
         }
 
-        public void setIsSender(Boolean isSender) {
+        public void setIsSender(boolean isSender) {
             FrameLayout left_arrow = (FrameLayout) mView.findViewById(R.id.left_arrow);
             FrameLayout right_arrow = (FrameLayout) mView.findViewById(R.id.right_arrow);
             RelativeLayout messageContainer = (RelativeLayout) mView.findViewById(R.id.message_container);

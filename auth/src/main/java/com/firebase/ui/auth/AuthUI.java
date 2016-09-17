@@ -31,6 +31,7 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.util.CredentialsApiHelper;
 import com.firebase.ui.auth.util.GoogleApiClientTaskHelper;
+import com.firebase.ui.auth.util.OnMergeFailedListener;
 import com.firebase.ui.auth.util.Preconditions;
 import com.firebase.ui.auth.util.ProviderHelper;
 import com.google.android.gms.auth.api.Auth;
@@ -250,10 +251,46 @@ public class AuthUI {
 
     private final FirebaseApp mApp;
     private final FirebaseAuth mAuth;
+    private OnMergeFailedListener mOnMergeFailedListener;
 
     private AuthUI(FirebaseApp app) {
         mApp = app;
         mAuth = FirebaseAuth.getInstance(mApp);
+    }
+
+    /**
+     * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
+     * {@code FirebaseApp.getInstance()}.
+     * @throws IllegalStateException if the default app is not initialized.
+     */
+    public static AuthUI getInstance() {
+        return getInstance(FirebaseApp.getInstance());
+    }
+
+    /**
+     * Retrieves the {@link AuthUI} instance associated  the the specified app.
+     */
+    public static AuthUI getInstance(FirebaseApp app) {
+        AuthUI authUi = null;
+        synchronized (INSTANCES) {
+            authUi = INSTANCES.get(app);
+            if (authUi == null) {
+                authUi = new AuthUI(app);
+                INSTANCES.put(app, authUi);
+            }
+        }
+        return authUi;
+    }
+
+    /**
+     * Default theme used by {@link SignInIntentBuilder#setTheme(int)} if no theme
+     * customization is required.
+     */
+    @StyleRes
+    public static int getDefaultTheme() {
+        // TODO(iainmgin): figure out why this works as a static method but not as a static
+        //                 final variable.
+        return R.style.FirebaseUI;
     }
 
     /**
@@ -309,38 +346,8 @@ public class AuthUI {
         return new SignInIntentBuilder();
     }
 
-    /**
-     * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
-     * {@code FirebaseApp.getInstance()}.
-     * @throws IllegalStateException if the default app is not initialized.
-     */
-    public static AuthUI getInstance() {
-        return getInstance(FirebaseApp.getInstance());
-    }
-
-    /**
-     * Retrieves the {@link AuthUI} instance associated  the the specified app.
-     */
-    public static AuthUI getInstance(FirebaseApp app) {
-        AuthUI authUi = null;
-        synchronized (INSTANCES) {
-            authUi = INSTANCES.get(app);
-            if (authUi == null) {
-                authUi = new AuthUI(app);
-                INSTANCES.put(app, authUi);
-            }
-        }
-        return authUi;
-    }
-
-    /**
-     * Default theme used by {@link SignInIntentBuilder#setTheme(int)} if no theme
-     * customization is required.
-     */
-    public static @StyleRes int getDefaultTheme() {
-        // TODO(iainmgin): figure out why this works as a static method but not as a static
-        //                 final variable.
-        return R.style.FirebaseUI;
+    public void notifyOnMergeFailedListeners(String prevUid) {
+        mOnMergeFailedListener.onMergeFailed(prevUid);
     }
 
     /**
@@ -352,6 +359,7 @@ public class AuthUI {
         private List<String> mProviders = Collections.singletonList(EMAIL_PROVIDER);
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
+        private boolean mShouldLinkUser;
 
         private SignInIntentBuilder() {}
 
@@ -417,6 +425,15 @@ public class AuthUI {
             return this;
         }
 
+        /**
+         * Links the current user to a new one
+         */
+        public SignInIntentBuilder linkWithCurrentUser(OnMergeFailedListener onMergeFailedListener) {
+            mOnMergeFailedListener = onMergeFailedListener;
+            mShouldLinkUser = true;
+            return this;
+        }
+
         public Intent build() {
             Context context = mApp.getApplicationContext();
             return build(context);
@@ -434,7 +451,8 @@ public class AuthUI {
                             mTheme,
                             mLogo,
                             mTosUrl,
-                            mIsSmartLockEnabled));
+                            mIsSmartLockEnabled,
+                            mShouldLinkUser));
         }
     }
 }

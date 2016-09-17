@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
@@ -54,6 +55,17 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
     private IDPResponse mPrevIdpResponse;
     private AuthCredential mPrevCredential;
 
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams,
+            String providerId,
+            IDPResponse idpResponse,
+            String email) {
+        return ActivityHelper.createBaseIntent(context, WelcomeBackIDPPrompt.class, flowParams)
+                .putExtra(ExtraConstants.EXTRA_PROVIDER, providerId)
+                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, idpResponse)
+                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +75,7 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
         setContentView(R.layout.welcome_back_idp_prompt_layout);
 
         mIdpProvider = null;
-        for (IDPProviderParcel providerParcel: mActivityHelper.getFlowParams().providerInfo) {
+        for (IDPProviderParcel providerParcel : mActivityHelper.getFlowParams().providerInfo) {
             if (mProviderId.equals(providerParcel.getProviderType())) {
                 switch (mProviderId) {
                     case GoogleAuthProvider.PROVIDER_ID:
@@ -144,12 +156,16 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
         return getIntent().getStringExtra(ExtraConstants.EXTRA_EMAIL);
     }
 
+    private void onFinished() {
+        mActivityHelper.dismissDialog();
+        finish(Activity.RESULT_OK, new Intent());
+    }
+
     private void next(IDPResponse newIdpResponse) {
         if (newIdpResponse == null) {
             return; // do nothing
         }
-        AuthCredential newCredential;
-        newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
+        AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
             finish(Activity.RESULT_FIRST_USER, new Intent());
@@ -172,10 +188,14 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                                 .signInWithCredential(mPrevCredential)
                                 .addOnFailureListener(new TaskFailureLogger(
                                         TAG, "Error signing in with previous credential"))
-                                .addOnCompleteListener(new FinishListener());
+                                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        onFinished();
+                                    }
+                                });
                     } else {
-                        mActivityHelper.dismissDialog();
-                        finish(Activity.RESULT_OK, new Intent());
+                        onFinished();
                     }
                 }
             }).addOnFailureListener(
@@ -186,27 +206,33 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
             authResultTask
                     .addOnFailureListener(
                             new TaskFailureLogger(TAG, "Error linking with credential"))
-                    .addOnCompleteListener(new FinishListener());
-        }
-    }
-
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams,
-            String providerId,
-            IDPResponse idpResponse,
-            String email) {
-        return ActivityHelper.createBaseIntent(context, WelcomeBackIDPPrompt.class, flowParams)
-                .putExtra(ExtraConstants.EXTRA_PROVIDER, providerId)
-                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, idpResponse)
-                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
-    }
-
-    private class FinishListener implements OnCompleteListener {
-        @Override
-        public void onComplete(@NonNull Task task) {
-            mActivityHelper.dismissDialog();
-            finish(Activity.RESULT_OK, new Intent());
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            FirebaseAuth auth = FirebaseAuth.getInstance();
+                            FirebaseUser user = auth.getCurrentUser();
+                            if (!task.isSuccessful() && user != null && mPrevCredential != null) {
+                                user.delete();
+                                final String prevUid = user.getUid();
+                                auth.signInWithCredential(mPrevCredential)
+                                        .addOnFailureListener(
+                                                new TaskFailureLogger(
+                                                        TAG, "Error linking with credential"))
+                                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                                if (task.isSuccessful()) {
+                                                    AuthUI.getInstance()
+                                                            .notifyOnMergeFailedListeners(prevUid);
+                                                }
+                                                onFinished();
+                                            }
+                                        });
+                            } else {
+                                onFinished();
+                            }
+                        }
+                    });
         }
     }
 }

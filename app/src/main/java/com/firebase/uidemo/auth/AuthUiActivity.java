@@ -23,14 +23,22 @@ import android.support.annotation.StringRes;
 import android.support.annotation.StyleRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.RadioButton;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.util.OnMergeFailedListener;
 import com.firebase.uidemo.R;
+import com.firebase.uidemo.database.Chat;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -93,18 +101,27 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.smartlock_enabled)
     CheckBox mEnableSmartLock;
 
+    public static Intent createIntent(Context context) {
+        Intent in = new Intent();
+        in.setClass(context, AuthUiActivity.class);
+        return in;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
-            startActivity(SignedInActivity.createIntent(this));
-            finish();
-        }
-
         setContentView(R.layout.auth_ui_layout);
         ButterKnife.bind(this);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            if (!user.isAnonymous()) {
+                startActivity(SignedInActivity.createIntent(this));
+                finish();
+            }
+        }
+
 
         if (!isGoogleConfigured()) {
             mUseGoogleProvider.setChecked(false);
@@ -132,6 +149,48 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
+                        .linkWithCurrentUser(new OnMergeFailedListener() {
+                            @Override
+                            public void onMergeFailed(final String prevUid) {
+                                FirebaseDatabase.getInstance()
+                                        .getReference()
+                                        .child("chats")
+                                        .addListenerForSingleValueEvent(
+                                                new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot snapshot) {
+                                                        if (snapshot.getValue() != null) {
+                                                            for (DataSnapshot chatSnapshot : snapshot
+                                                                    .getChildren()) {
+                                                                Chat chat = chatSnapshot.getValue(
+                                                                        Chat.class);
+                                                                if (chat.getUid().equals(prevUid)) {
+                                                                    String currentUid = FirebaseAuth
+                                                                            .getInstance()
+                                                                            .getCurrentUser()
+                                                                            .getUid();
+                                                                    chatSnapshot.getRef()
+                                                                            .child("uid")
+                                                                            .setValue(currentUid);
+                                                                    chatSnapshot.getRef()
+                                                                            .child("name")
+                                                                            .setValue("User " + currentUid
+                                                                                    .substring(0,
+                                                                                               6));
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(DatabaseError error) {
+                                                        Log.e(TAG,
+                                                              "onCancelled: ",
+                                                              error.toException());
+                                                    }
+                                                });
+                            }
+                        })
                         .build(),
                 RC_SIGN_IN);
     }
@@ -231,11 +290,5 @@ public class AuthUiActivity extends AppCompatActivity {
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
         Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
-    }
-
-    public static Intent createIntent(Context context) {
-        Intent in = new Intent();
-        in.setClass(context, AuthUiActivity.class);
-        return in;
     }
 }

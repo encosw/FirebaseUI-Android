@@ -30,6 +30,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
@@ -45,6 +46,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
@@ -67,6 +69,14 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
     private PasswordFieldValidator mPasswordFieldValidator;
     private RequiredFieldValidator mNameValidator;
     private ImageView mTogglePasswordImage;
+
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams,
+            String email) {
+        return ActivityHelper.createBaseIntent(context, RegisterEmailActivity.class, flowParams)
+                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,11 +145,30 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         });
     }
 
-    private void registerUser(String email, final String name, final String password) {
+    private void registerUser(String email, String name, String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // create the user
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
-                .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
+            final String prevUid = user.getUid();
+            addListeners(user.linkWithCredential(EmailAuthProvider.getCredential(email, password))
+                                 .addOnSuccessListener(
+                                         new OnSuccessListener<AuthResult>() {
+                                             @Override
+                                             public void onSuccess(AuthResult result) {
+                                                 AuthUI.getInstance()
+                                                         .notifyOnMergeFailedListeners(prevUid);
+                                             }
+                                         }), name, password);
+        } else {
+            addListeners(firebaseAuth.createUserWithEmailAndPassword(email, password),
+                         name,
+                         password);
+        }
+    }
+
+    private void addListeners(Task<AuthResult> task, final String name, final String password) {
+        task.addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
@@ -222,13 +251,5 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                 registerUser(email, name, password);
             }
         }
-    }
-
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams,
-            String email) {
-        return ActivityHelper.createBaseIntent(context, RegisterEmailActivity.class, flowParams)
-                .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 }

@@ -31,53 +31,6 @@ import java.util.List;
  */
 public class FlowParameters implements Parcelable {
 
-    @NonNull
-    public final String appName;
-
-    @NonNull
-    public final List<IDPProviderParcel> providerInfo;
-
-    @StyleRes
-    public final int themeId;
-
-    @DrawableRes
-    public final int logoId;
-
-    @Nullable
-    public final String termsOfServiceUrl;
-
-    public final boolean smartLockEnabled;
-
-    public FlowParameters(
-            @NonNull String appName,
-            @NonNull List<IDPProviderParcel> providerInfo,
-            @StyleRes int themeId,
-            @DrawableRes int logoId,
-            @Nullable String termsOfServiceUrl,
-            boolean smartLockEnabled) {
-        this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
-        this.providerInfo = Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null");
-        this.themeId = themeId;
-        this.logoId = logoId;
-        this.termsOfServiceUrl = termsOfServiceUrl;
-        this.smartLockEnabled = smartLockEnabled;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(appName);
-        dest.writeTypedList(providerInfo);
-        dest.writeInt(themeId);
-        dest.writeInt(logoId);
-        dest.writeString(termsOfServiceUrl);
-        dest.writeInt(smartLockEnabled ? 1 : 0);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
     public static final Creator<FlowParameters> CREATOR = new Creator<FlowParameters>() {
         @Override
         public FlowParameters createFromParcel(Parcel in) {
@@ -88,10 +41,18 @@ public class FlowParameters implements Parcelable {
             int logoId = in.readInt();
             String termsOfServiceUrl = in.readString();
             int smartLockEnabledInt = in.readInt();
-            boolean smartLockEnabled = (smartLockEnabledInt != 0);
+            boolean smartLockEnabled = smartLockEnabledInt != 0;
+            int shouldLinkUserInt = in.readInt();
+            boolean shouldLinkUser = shouldLinkUserInt != 0;
 
             return new FlowParameters(
-                    appName, providerInfo, themeId, logoId, termsOfServiceUrl, smartLockEnabled);
+                    appName,
+                    providerInfo,
+                    themeId,
+                    logoId,
+                    termsOfServiceUrl,
+                    smartLockEnabled,
+                    shouldLinkUser);
         }
 
         @Override
@@ -99,4 +60,49 @@ public class FlowParameters implements Parcelable {
             return new FlowParameters[size];
         }
     };
+    @NonNull
+    public final String appName;
+    @NonNull
+    public final List<IDPProviderParcel> providerInfo;
+    @StyleRes
+    public final int themeId;
+    @DrawableRes
+    public final int logoId;
+    @Nullable
+    public final String termsOfServiceUrl;
+    public final boolean smartLockEnabled;
+    public final boolean shouldLinkUser;
+
+    public FlowParameters(
+            @NonNull String appName,
+            @NonNull List<IDPProviderParcel> providerInfo,
+            @StyleRes int themeId,
+            @DrawableRes int logoId,
+            @Nullable String termsOfServiceUrl,
+            boolean smartLockEnabled,
+            boolean shouldLinkUser) {
+        this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
+        this.providerInfo = Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null");
+        this.themeId = themeId;
+        this.logoId = logoId;
+        this.termsOfServiceUrl = termsOfServiceUrl;
+        this.smartLockEnabled = smartLockEnabled;
+        this.shouldLinkUser = shouldLinkUser;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(appName);
+        dest.writeTypedList(providerInfo);
+        dest.writeInt(themeId);
+        dest.writeInt(logoId);
+        dest.writeString(termsOfServiceUrl);
+        dest.writeInt(smartLockEnabled ? 1 : 0);
+        dest.writeInt(shouldLinkUser ? 1 : 0);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 }
