@@ -426,7 +426,7 @@ public class AuthUI {
         }
 
         /**
-         * Links the current user to a new one
+         * Links the current user to a new one.
          */
         public SignInIntentBuilder linkWithCurrentUser(OnMergeFailedListener onMergeFailedListener) {
             mOnMergeFailedListener = onMergeFailedListener;
