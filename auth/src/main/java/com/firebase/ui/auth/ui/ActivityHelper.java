@@ -96,6 +96,16 @@ public class ActivityHelper {
         return getFirebaseAuth().getCurrentUser();
     }
 
+    public Intent getMergeFailedIntent() {
+        FirebaseUser user = getCurrentUser();
+        if (mFlowParams.shouldLinkUser && user != null) {
+            if (user.isAnonymous()) user.delete();
+            return new Intent().putExtra(ExtraConstants.EXTRA_MERGE_FAILED, user.getUid());
+        } else {
+            return new Intent();
+        }
+    }
+
     public static Intent createBaseIntent(
             @NonNull Context context,
             @NonNull Class<? extends Activity> target,
@@ -104,6 +114,6 @@ public class ActivityHelper {
                 checkNotNull(context, "context cannot be null"),
                 checkNotNull(target, "target activity cannot be null"))
                 .putExtra(ExtraConstants.EXTRA_FLOW_PARAMS,
-                        checkNotNull(flowParams, "flowParams cannot be null"));
+                          checkNotNull(flowParams, "flowParams cannot be null"));
     }
 }

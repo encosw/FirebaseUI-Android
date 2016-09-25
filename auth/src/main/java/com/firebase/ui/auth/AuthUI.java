@@ -31,7 +31,6 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.util.CredentialsApiHelper;
 import com.firebase.ui.auth.util.GoogleApiClientTaskHelper;
-import com.firebase.ui.auth.util.OnMergeFailedListener;
 import com.firebase.ui.auth.util.Preconditions;
 import com.firebase.ui.auth.util.ProviderHelper;
 import com.google.android.gms.auth.api.Auth;
@@ -251,7 +250,6 @@ public class AuthUI {
 
     private final FirebaseApp mApp;
     private final FirebaseAuth mAuth;
-    private OnMergeFailedListener mOnMergeFailedListener;
 
     private AuthUI(FirebaseApp app) {
         mApp = app;
@@ -311,10 +309,6 @@ public class AuthUI {
         return new SignInIntentBuilder();
     }
 
-    public void notifyOnMergeFailedListeners(String prevUid) {
-        mOnMergeFailedListener.onMergeFailed(prevUid);
-    }
-
     /**
      * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
      * {@code FirebaseApp.getInstance()}.
@@ -328,7 +322,7 @@ public class AuthUI {
      * Retrieves the {@link AuthUI} instance associated  the the specified app.
      */
     public static AuthUI getInstance(FirebaseApp app) {
-        AuthUI authUi = null;
+        AuthUI authUi;
         synchronized (INSTANCES) {
             authUi = INSTANCES.get(app);
             if (authUi == null) {
@@ -359,7 +353,7 @@ public class AuthUI {
         private List<String> mProviders = Collections.singletonList(EMAIL_PROVIDER);
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
-        private boolean mShouldLinkUser;
+        private boolean mShouldLinkUser = false;
 
         private SignInIntentBuilder() {}
 
@@ -418,7 +412,7 @@ public class AuthUI {
         /**
          * Enables or disables the use of Smart Lock for Passwords in the sign in flow.
          * 
-         * <p>SmartLock is enabled by default
+         * <p>SmartLock is enabled by default.
          */
         public SignInIntentBuilder setIsSmartLockEnabled(boolean enabled) {
             mIsSmartLockEnabled = enabled;
@@ -426,11 +420,12 @@ public class AuthUI {
         }
 
         /**
-         * Links the current user to a new one.
+         * Links the current user to one created in the sign in flow.
+         *
+         * <p>Linking is disabled by default.
          */
-        public SignInIntentBuilder linkWithCurrentUser(OnMergeFailedListener onMergeFailedListener) {
-            mOnMergeFailedListener = onMergeFailedListener;
-            mShouldLinkUser = true;
+        public SignInIntentBuilder linkWithCurrentUser(boolean shouldLinkUser) {
+            mShouldLinkUser = shouldLinkUser;
             return this;
         }
 

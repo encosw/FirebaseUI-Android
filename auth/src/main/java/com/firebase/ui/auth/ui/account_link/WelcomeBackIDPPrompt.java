@@ -24,7 +24,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
@@ -43,6 +42,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
@@ -153,7 +153,7 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
         if (newIdpResponse == null) {
             return; // do nothing
         }
-        AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
+        final AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
             finish(Activity.RESULT_FIRST_USER, new Intent());
@@ -198,11 +198,9 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             FirebaseAuth auth = FirebaseAuth.getInstance();
-                            FirebaseUser user = auth.getCurrentUser();
-                            if (!task.isSuccessful() && user != null && mPrevCredential != null) {
-                                user.delete();
-                                final String prevUid = user.getUid();
-                                auth.signInWithCredential(mPrevCredential)
+                            if (!task.isSuccessful() && task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                setIntent(new Intent().putExtras(mActivityHelper.getMergeFailedIntent()));
+                                auth.signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
                                                         TAG, "Error linking with credential"))
@@ -210,10 +208,11 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                                             @Override
                                             public void onComplete(@NonNull Task<AuthResult> task) {
                                                 if (task.isSuccessful()) {
-                                                    AuthUI.getInstance()
-                                                            .notifyOnMergeFailedListeners(prevUid);
+                                                    mActivityHelper.dismissDialog();
+                                                    finish(Activity.RESULT_OK, getIntent());
+                                                } else {
+                                                    onFinished();
                                                 }
-                                                onFinished();
                                             }
                                         });
                             } else {

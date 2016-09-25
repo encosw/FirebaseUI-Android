@@ -15,6 +15,7 @@
 package com.firebase.ui.auth.ui.idp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -57,7 +58,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
     }
 
     @Override
-    public void onComplete(@NonNull Task <AuthResult> task) {
+    public void onComplete(@NonNull Task<AuthResult> task) {
         if (!task.isSuccessful()) {
             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                 final String email = mResponse.getEmail();
@@ -77,15 +78,19 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
             } else {
                 mActivityHelper.dismissDialog();
                 Log.e(TAG, "Unexpected exception when signing in with credential",
-                        task.getException());
+                      task.getException());
             }
         } else {
             mActivityHelper.dismissDialog();
 
             FirebaseUser firebaseUser = task.getResult().getUser();
-            SmartlockUtil.saveCredentialOrFinish(mActivity, mSaveCredentialsResultCode,
-                    mActivityHelper.getFlowParams(), firebaseUser,
-                    null /* password */, mResponse.getProviderType());
+            SmartlockUtil.saveCredentialOrFinish(mActivity,
+                                                 mSaveCredentialsResultCode,
+                                                 new Intent(),
+                                                 mActivityHelper.getFlowParams(),
+                                                 firebaseUser,
+                                                 null /* password */,
+                                                 mResponse.getProviderType());
         }
     }
 
@@ -109,7 +114,6 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                                 mActivityHelper.getFlowParams(),
                                 mResponse
                         ), mAccountLinkResultCode);
-    
             } else {
                 // Start IDP welcome back flow
                 mActivity.startActivityForResult(

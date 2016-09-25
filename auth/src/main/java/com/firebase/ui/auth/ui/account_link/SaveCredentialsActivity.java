@@ -213,7 +213,6 @@ public class SaveCredentialsActivity extends AppCompatBase
             FirebaseUser user,
             @Nullable String password,
             @Nullable String provider) {
-
         String photoUrl = user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : null;
         return ActivityHelper.createBaseIntent(context, SaveCredentialsActivity.class, flowParams)
                 .putExtra(ExtraConstants.EXTRA_NAME, user.getDisplayName())

@@ -30,7 +30,7 @@ import android.widget.CheckBox;
 import android.widget.RadioButton;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.util.OnMergeFailedListener;
+import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.uidemo.R;
 import com.firebase.uidemo.database.Chat;
 import com.google.firebase.auth.FirebaseAuth;
@@ -116,7 +116,6 @@ public class AuthUiActivity extends AppCompatActivity {
             }
         }
 
-
         if (!isGoogleConfigured()) {
             mUseGoogleProvider.setChecked(false);
             mUseGoogleProvider.setEnabled(false);
@@ -143,47 +142,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
-                        .linkWithCurrentUser(new OnMergeFailedListener() {
-                            @Override
-                            public void onMergeFailed(final String prevUid) {
-                                FirebaseDatabase.getInstance()
-                                        .getReference()
-                                        .child("chats")
-                                        .addListenerForSingleValueEvent(
-                                                new ValueEventListener() {
-                                                    @Override
-                                                    public void onDataChange(DataSnapshot snapshot) {
-                                                        if (snapshot.getValue() != null) {
-                                                            for (DataSnapshot chatSnapshot : snapshot
-                                                                    .getChildren()) {
-                                                                Chat chat = chatSnapshot.getValue(
-                                                                        Chat.class);
-                                                                if (chat.getUid().equals(prevUid)) {
-                                                                    String currentUid = FirebaseAuth
-                                                                            .getInstance()
-                                                                            .getCurrentUser()
-                                                                            .getUid();
-                                                                    chatSnapshot.getRef()
-                                                                            .child("uid")
-                                                                            .setValue(currentUid);
-                                                                    chatSnapshot.getRef()
-                                                                            .child("name")
-                                                                            .setValue("User " + currentUid
-                                                                                    .substring(0, 6));
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    @Override
-                                                    public void onCancelled(DatabaseError error) {
-                                                        Log.e(TAG,
-                                                              "onCancelled: ",
-                                                              error.toException());
-                                                    }
-                                                });
-                            }
-                        })
+                        .linkWithCurrentUser(true)
                         .build(),
                 RC_SIGN_IN);
     }
@@ -202,6 +161,42 @@ public class AuthUiActivity extends AppCompatActivity {
     @MainThread
     private void handleSignInResponse(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
+            final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_MERGE_FAILED);
+            if (prevUid != null) {
+                FirebaseDatabase.getInstance()
+                        .getReference()
+                        .child("chats")
+                        .addListenerForSingleValueEvent(
+                                new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot snapshot) {
+                                        if (snapshot.getValue() != null) {
+                                            for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                                Chat chat = chatSnapshot.getValue(Chat.class);
+                                                if (chat.getUid().equals(prevUid)) {
+                                                    String currentUid = FirebaseAuth
+                                                            .getInstance()
+                                                            .getCurrentUser()
+                                                            .getUid();
+                                                    chatSnapshot.getRef()
+                                                            .child("uid")
+                                                            .setValue(currentUid);
+                                                    chatSnapshot.getRef()
+                                                            .child("name")
+                                                            .setValue("User " + currentUid
+                                                                    .substring(0, 6));
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError error) {
+                                        Log.e(TAG, "onCancelled: ", error.toException());
+                                    }
+                                });
+            }
+
             startActivity(SignedInActivity.createIntent(this));
             finish();
             return;

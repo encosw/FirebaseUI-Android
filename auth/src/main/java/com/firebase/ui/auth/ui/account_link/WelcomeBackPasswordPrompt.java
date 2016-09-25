@@ -49,7 +49,6 @@ import com.google.firebase.auth.FirebaseAuth;
  * the password before initiating a link.
  */
 public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnClickListener {
-
     private static final int RC_CREDENTIAL_SAVE = 3;
     private static final String TAG = "WelcomeBackPassword";
     private static final StyleSpan BOLD = new StyleSpan(Typeface.BOLD);
@@ -114,6 +113,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
     private void next(String email, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
+        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
 
         // Sign in with known email and the password provided
         firebaseAuth.signInWithEmailAndPassword(email, password)
@@ -132,7 +132,8 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                         // Sign in with the credential
                         firebaseAuth.signInWithCredential(authCredential)
                                 .addOnFailureListener(
-                                        new TaskFailureLogger(TAG, "Error signing in with credential"))
+                                        new TaskFailureLogger(TAG,
+                                                              "Error signing in with credential"))
                                 .addOnSuccessListener(
                                         new OnSuccessListener<AuthResult>() {
                                             @Override
@@ -141,6 +142,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                                                 SmartlockUtil.saveCredentialOrFinish(
                                                         WelcomeBackPasswordPrompt.this,
                                                         RC_CREDENTIAL_SAVE,
+                                                        getIntent(),
                                                         mActivityHelper.getFlowParams(),
                                                         authResult.getUser(),
                                                         password,

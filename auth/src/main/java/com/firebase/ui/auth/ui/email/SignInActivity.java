@@ -89,7 +89,6 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
         }
         signInButton.setOnClickListener(this);
         recoveryButton.setOnClickListener(this);
-
     }
 
     @Override
@@ -98,6 +97,8 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
     }
 
     private void signIn(String email, final String password) {
+        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
+
         mActivityHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
@@ -111,6 +112,7 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
                         SmartlockUtil.saveCredentialOrFinish(
                                 SignInActivity.this,
                                 RC_CREDENTIAL_SAVE,
+                                getIntent(),
                                 mActivityHelper.getFlowParams(),
                                 authResult.getUser(),
                                 password,
@@ -143,19 +145,15 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
         if (view.getId() == R.id.button_done) {
             boolean emailValid = mEmailValidator.validate(mEmailEditText.getText());
             boolean passwordValid = mPasswordValidator.validate(mPasswordEditText.getText());
-            if (!emailValid || !passwordValid) {
-                return;
-            } else {
+            if (emailValid && passwordValid) {
                 mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
                 signIn(mEmailEditText.getText().toString(), mPasswordEditText.getText().toString());
-                return;
             }
         } else if (view.getId() == R.id.trouble_signing_in) {
             startActivity(RecoverPasswordActivity.createIntent(
                     this,
                     mActivityHelper.getFlowParams(),
                     mEmailEditText.getText().toString()));
-            return;
         }
     }
 

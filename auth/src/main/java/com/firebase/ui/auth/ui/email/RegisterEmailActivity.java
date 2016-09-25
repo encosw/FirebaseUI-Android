@@ -30,7 +30,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
@@ -137,37 +136,25 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         });
     }
 
-    private void registerUser(String email, String name, String password) {
+    private void registerUser(String email, final String name, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // create the user
         FirebaseUser user = firebaseAuth.getCurrentUser();
+        Task<AuthResult> task;
+        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
         if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
-            final String prevUid = user.getUid();
-            addListeners(user.linkWithCredential(EmailAuthProvider.getCredential(email, password))
-                                 .addOnSuccessListener(
-                                         new OnSuccessListener<AuthResult>() {
-                                             @Override
-                                             public void onSuccess(AuthResult result) {
-                                                 AuthUI.getInstance()
-                                                         .notifyOnMergeFailedListeners(prevUid);
-                                             }
-                                         }), name, password);
+            task = user.linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {
-            addListeners(firebaseAuth.createUserWithEmailAndPassword(email, password),
-                         name,
-                         password);
+            task = firebaseAuth.createUserWithEmailAndPassword(email, password);
         }
-    }
 
-    private void addListeners(Task<AuthResult> task, final String name, final String password) {
         task.addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         final FirebaseUser firebaseUser = authResult.getUser();
                         UserProfileChangeRequest changeNameRequest =
-                                new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(name).build();
+                                new UserProfileChangeRequest.Builder().setDisplayName(name).build();
 
                         // Set display name
                         firebaseUser.updateProfile(changeNameRequest)
@@ -184,6 +171,7 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                                         SmartlockUtil.saveCredentialOrFinish(
                                                 RegisterEmailActivity.this,
                                                 RC_SAVE_CREDENTIAL,
+                                                getIntent(),
                                                 mActivityHelper.getFlowParams(),
                                                 firebaseUser,
                                                 password,

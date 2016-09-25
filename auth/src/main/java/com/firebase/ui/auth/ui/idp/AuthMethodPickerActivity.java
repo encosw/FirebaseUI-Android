@@ -35,7 +35,9 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.email.EmailHintContainerActivity;
 import com.firebase.ui.auth.util.EmailFlowUtil;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -138,12 +140,12 @@ public class AuthMethodPickerActivity
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_EMAIL_FLOW) {
             if (resultCode == RESULT_OK) {
-                finish(RESULT_OK, new Intent());
+                finish(RESULT_OK, data);
             }
         } else if (requestCode == RC_SAVE_CREDENTIAL) {
-            finish(RESULT_OK, new Intent());
+            finish(RESULT_OK, data);
         } else if (requestCode == RC_ACCOUNT_LINK) {
-            finish(resultCode, new Intent());
+            finish(resultCode, data);
         } else {
             for (IDPProvider provider : mIdpProviders) {
                 provider.onActivityResult(requestCode, resultCode, data);
@@ -157,26 +159,20 @@ public class AuthMethodPickerActivity
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
-        TaskFailureLogger logger = new TaskFailureLogger(
-                TAG, "Firebase sign in with credential unsuccessful");
-        CredentialSignInHandler handler = new CredentialSignInHandler(
-                AuthMethodPickerActivity.this,
-                mActivityHelper,
-                RC_ACCOUNT_LINK,
-                RC_SAVE_CREDENTIAL,
-                response);
-
+        Task<AuthResult> task;
         if (user != null && mActivityHelper.getFlowParams().shouldLinkUser) {
-            user
-                    .linkWithCredential(credential)
-                    .addOnFailureListener(logger)
-                    .addOnCompleteListener(handler);
+            task = user.linkWithCredential(credential);
         } else {
-            firebaseAuth
-                    .signInWithCredential(credential)
-                    .addOnFailureListener(logger)
-                    .addOnCompleteListener(handler);
+            task = firebaseAuth.signInWithCredential(credential);
         }
+        task.addOnFailureListener(
+                new TaskFailureLogger(TAG, "Firebase sign in with credential unsuccessful"))
+                .addOnCompleteListener(new CredentialSignInHandler(
+                        AuthMethodPickerActivity.this,
+                        mActivityHelper,
+                        RC_ACCOUNT_LINK,
+                        RC_SAVE_CREDENTIAL,
+                        response));
     }
 
     @Override

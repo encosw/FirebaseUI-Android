@@ -219,14 +219,13 @@ public class ChooseAccountActivity extends ActivityBase {
             case RC_IDP_SIGNIN:
             case RC_AUTH_METHOD_PICKER:
             case RC_EMAIL_FLOW:
-                finish(resultCode, new Intent());
+                finish(resultCode, data);
                 break;
             case RC_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
-                    finish(resultCode, new Intent());
+                    finish(resultCode, data);
                 }
                 break;
-
         }
     }
 

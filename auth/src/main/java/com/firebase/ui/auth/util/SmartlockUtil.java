@@ -12,7 +12,6 @@ import com.google.firebase.auth.FirebaseUser;
  * Helper class to deal with Smartlock Flows.
  */
 public class SmartlockUtil {
-
     /**
      * If SmartLock is enabled and Google Play Services is available, start the save credential
      * Activity. Otherwise, finish the calling Activity with RESULT_OK.
@@ -25,31 +24,31 @@ public class SmartlockUtil {
      */
     public static void saveCredentialOrFinish(Activity activity,
                                               int requestCode,
+                                              Intent data,
                                               FlowParameters parameters,
                                               FirebaseUser firebaseUser,
                                               @Nullable String password,
                                               @Nullable String provider) {
-
         // If SmartLock is disabled, finish the Activity
         if (!parameters.smartLockEnabled) {
-            finishActivity(activity);
+            finishActivity(activity, data);
             return;
         }
 
         // If Play Services is not available, finish the Activity
         if(!PlayServicesHelper.getInstance(activity).isPlayServicesAvailable()) {
-            finishActivity(activity);
+            finishActivity(activity, data);
             return;
         }
 
         // Launch save activity
         Intent saveCredentialIntent = SaveCredentialsActivity.createIntent(activity, parameters,
-                firebaseUser, password, provider);
+                firebaseUser, password, provider).putExtras(data);
         activity.startActivityForResult(saveCredentialIntent, requestCode);
     }
 
-    private static void finishActivity(Activity activity) {
-        activity.setResult(Activity.RESULT_OK, new Intent());
+    private static void finishActivity(Activity activity, Intent data) {
+        activity.setResult(Activity.RESULT_OK, data);
         activity.finish();
     }
 
