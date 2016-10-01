@@ -29,7 +29,7 @@ public class SmartlockUtil {
                                               FirebaseUser firebaseUser,
                                               @Nullable String password,
                                               @Nullable String provider) {
-        if (data != null) {
+        if (data == null) {
             data = new Intent();
         }
 
