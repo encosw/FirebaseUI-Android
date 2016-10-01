@@ -15,7 +15,6 @@
 package com.firebase.ui.auth.ui.idp;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -86,7 +85,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
             FirebaseUser firebaseUser = task.getResult().getUser();
             SmartlockUtil.saveCredentialOrFinish(mActivity,
                                                  mSaveCredentialsResultCode,
-                                                 new Intent(),
+                                                 null /* intent */,
                                                  mActivityHelper.getFlowParams(),
                                                  firebaseUser,
                                                  null /* password */,

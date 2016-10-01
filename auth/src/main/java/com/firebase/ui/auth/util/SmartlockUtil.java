@@ -24,11 +24,15 @@ public class SmartlockUtil {
      */
     public static void saveCredentialOrFinish(Activity activity,
                                               int requestCode,
-                                              Intent data,
+                                              @Nullable Intent data,
                                               FlowParameters parameters,
                                               FirebaseUser firebaseUser,
                                               @Nullable String password,
                                               @Nullable String provider) {
+        if (data != null) {
+            data = new Intent();
+        }
+
         // If SmartLock is disabled, finish the Activity
         if (!parameters.smartLockEnabled) {
             finishActivity(activity, data);
