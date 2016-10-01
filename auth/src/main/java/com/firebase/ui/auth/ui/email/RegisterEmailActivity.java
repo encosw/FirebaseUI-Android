@@ -141,7 +141,7 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         // create the user
         FirebaseUser user = firebaseAuth.getCurrentUser();
         Task<AuthResult> task;
-        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
+        setIntent(new Intent().putExtras(mActivityHelper.getMergeFailedIntent()));
         if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
             task = user.linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {

@@ -47,11 +47,13 @@ public class SmartlockUtil {
         }
 
         // Launch save activity
-        Intent saveCredentialIntent = data.putExtras(SaveCredentialsActivity.createIntent(activity,
-                                                                                          parameters,
-                                                                                          firebaseUser,
-                                                                                          password,
-                                                                                          provider));
+        Intent saveCredentialIntent = SaveCredentialsActivity
+                .createIntent(activity,
+                              parameters,
+                              firebaseUser,
+                              password,
+                              provider)
+                .putExtras(data);
         activity.startActivityForResult(saveCredentialIntent, requestCode);
     }
 
