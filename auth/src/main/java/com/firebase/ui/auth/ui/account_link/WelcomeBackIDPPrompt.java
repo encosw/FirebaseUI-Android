@@ -37,6 +37,7 @@ import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -194,12 +195,12 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
             authResultTask
                     .addOnFailureListener(
                             new TaskFailureLogger(TAG, "Error linking with credential"))
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    .addOnFailureListener(new OnFailureListener() {
                         @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            FirebaseAuth auth = FirebaseAuth.getInstance();
-                            if (!task.isSuccessful() && task.getException() instanceof FirebaseAuthUserCollisionException) {
-                                setIntent(new Intent().putExtras(mActivityHelper.getMergeFailedIntent()));
+                        public void onFailure(@NonNull Exception e) {
+                            if (e instanceof FirebaseAuthUserCollisionException) {
+                                FirebaseAuth auth = FirebaseAuth.getInstance();
+                                setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
                                 auth.signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
@@ -215,9 +216,13 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                                                 }
                                             }
                                         });
-                            } else {
-                                onFinished();
                             }
+                        }
+                    })
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            onFinished();
                         }
                     });
         }

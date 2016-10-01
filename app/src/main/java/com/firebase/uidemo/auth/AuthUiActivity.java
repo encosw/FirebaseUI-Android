@@ -32,7 +32,7 @@ import android.widget.RadioButton;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.uidemo.R;
-import com.firebase.uidemo.database.Chat;
+import com.firebase.uidemo.database.ChatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -142,7 +142,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
-                        .linkWithCurrentUser(true)
+                        .setShouldLinkUser(true)
                         .build(),
                 RC_SIGN_IN);
     }
@@ -172,7 +172,7 @@ public class AuthUiActivity extends AppCompatActivity {
                                     public void onDataChange(DataSnapshot snapshot) {
                                         if (snapshot.getValue() != null) {
                                             for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
-                                                Chat chat = chatSnapshot.getValue(Chat.class);
+                                                ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
                                                 if (chat.getUid().equals(prevUid)) {
                                                     String currentUid = FirebaseAuth
                                                             .getInstance()

@@ -197,6 +197,33 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
         mMessageEdit.setEnabled(isSignedIn());
     }
 
+    public static class Chat {
+        private String name;
+        private String text;
+        private String uid;
+
+        public Chat() {
+        }
+
+        public Chat(String name, String uid, String message) {
+            this.name = name;
+            text = message;
+            this.uid = uid;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public String getText() {
+            return text;
+        }
+    }
+
     public static class ChatHolder extends RecyclerView.ViewHolder {
         View mView;
 

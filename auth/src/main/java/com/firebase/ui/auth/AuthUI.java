@@ -424,7 +424,7 @@ public class AuthUI {
          *
          * <p>Linking is disabled by default.
          */
-        public SignInIntentBuilder linkWithCurrentUser(boolean shouldLinkUser) {
+        public SignInIntentBuilder setShouldLinkUser(boolean shouldLinkUser) {
             mShouldLinkUser = shouldLinkUser;
             return this;
         }
