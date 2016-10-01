@@ -18,6 +18,7 @@ public class SmartlockUtil {
      *
      * @param activity     the calling Activity.
      * @param requestCode  request code to use when starting the save operation.
+     * @param data         An Intent to be merged. Must be a {@code new Intent().putExtras(...)}.
      * @param parameters   calling Activity flow parameters.
      * @param firebaseUser Firebase user to save in Credential.
      * @param password     (optional) password for email credential.
