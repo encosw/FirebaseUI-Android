@@ -15,12 +15,13 @@ public class SmartlockUtil {
     /**
      * If SmartLock is enabled and Google Play Services is available, start the save credential
      * Activity. Otherwise, finish the calling Activity with RESULT_OK.
-     * @param activity the calling Activity.
-     * @param requestCode request code to use when starting the save operation.
-     * @param parameters calling Activity flow parameters.
+     *
+     * @param activity     the calling Activity.
+     * @param requestCode  request code to use when starting the save operation.
+     * @param parameters   calling Activity flow parameters.
      * @param firebaseUser Firebase user to save in Credential.
-     * @param password (optional) password for email credential.
-     * @param provider (optional) provider string for provider credential.
+     * @param password     (optional) password for email credential.
+     * @param provider     (optional) provider string for provider credential.
      */
     public static void saveCredentialOrFinish(Activity activity,
                                               int requestCode,
@@ -40,14 +41,17 @@ public class SmartlockUtil {
         }
 
         // If Play Services is not available, finish the Activity
-        if(!PlayServicesHelper.getInstance(activity).isPlayServicesAvailable()) {
+        if (!PlayServicesHelper.getInstance(activity).isPlayServicesAvailable()) {
             finishActivity(activity, data);
             return;
         }
 
         // Launch save activity
-        Intent saveCredentialIntent = SaveCredentialsActivity.createIntent(activity, parameters,
-                firebaseUser, password, provider).putExtras(data);
+        Intent saveCredentialIntent = data.putExtras(SaveCredentialsActivity.createIntent(activity,
+                                                                                          parameters,
+                                                                                          firebaseUser,
+                                                                                          password,
+                                                                                          provider));
         activity.startActivityForResult(saveCredentialIntent, requestCode);
     }
 
