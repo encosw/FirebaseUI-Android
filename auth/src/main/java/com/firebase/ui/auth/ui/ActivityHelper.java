@@ -99,7 +99,6 @@ public class ActivityHelper {
     public Intent getMergeFailedIntent() {
         FirebaseUser user = getCurrentUser();
         if (mFlowParams.shouldLinkUser && user != null) {
-            if (user.isAnonymous()) user.delete();
             return new Intent().putExtra(ExtraConstants.EXTRA_MERGE_FAILED, user.getUid());
         } else {
             return new Intent();
