@@ -60,21 +60,20 @@ public class SignInActivityTest {
         PlayServicesHelper.sApiAvailability = TestHelper.makeMockGoogleApiAvailability();
     }
 
-    private SignInActivity createActivity() {
+    private SignInActivity createActivity(String email) {
         Intent startIntent = SignInActivity.createIntent(
                 RuntimeEnvironment.application,
                 TestHelper.getFlowParameters(
                         RuntimeEnvironment.application,
                         Collections.<String>emptyList()),
-                null);
+                email);
         return Robolectric.buildActivity(SignInActivity.class).withIntent(startIntent)
                 .create().visible().get();
-
     }
 
     @Test
     public void testSignInButton_validatesFields() {
-        SignInActivity signInActivity = createActivity();
+        SignInActivity signInActivity = createActivity(null);
         Button signIn = (Button) signInActivity.findViewById(R.id.button_done);
         signIn.performClick();
         TextInputLayout emailLayout =
@@ -98,7 +97,7 @@ public class SignInActivityTest {
     @Test
     @Config(shadows = {ActivityHelperShadow.class, FirebaseAuthWrapperImplShadow.class})
     public void testSignInButton_signsInAndSavesCredentials() {
-        SignInActivity signInActivity = createActivity();
+        SignInActivity signInActivity = createActivity(TestConstants.EMAIL);
         EditText emailField = (EditText) signInActivity.findViewById(R.id.email);
         EditText passwordField = (EditText) signInActivity.findViewById(R.id.password);
         emailField.setText(TestConstants.EMAIL);

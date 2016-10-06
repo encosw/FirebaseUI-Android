@@ -113,7 +113,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
     private void next(String email, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        setIntent(new Intent().putExtras(mActivityHelper.getMergeFailedIntent()));
+        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
 
         // Sign in with known email and the password provided
         firebaseAuth.signInWithEmailAndPassword(email, password)

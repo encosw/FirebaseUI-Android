@@ -97,7 +97,7 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
     }
 
     private void signIn(String email, final String password) {
-        setIntent(new Intent().putExtras(mActivityHelper.getMergeFailedIntent()));
+        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
 
         mActivityHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
