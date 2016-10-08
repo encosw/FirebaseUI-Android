@@ -32,6 +32,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 public class IDPSignInContainerActivity extends IDPBaseActivity implements IDPProvider.IDPCallback {
@@ -74,7 +75,13 @@ public class IDPSignInContainerActivity extends IDPBaseActivity implements IDPPr
         data.putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
         AuthCredential credential = createCredential(response);
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        Task<AuthResult> authResultTask = firebaseAuth.signInWithCredential(credential);
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        Task<AuthResult> authResultTask;
+        if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
+            authResultTask = user.linkWithCredential(credential);
+        } else {
+            authResultTask = firebaseAuth.signInWithCredential(credential);
+        }
         authResultTask
                 .addOnFailureListener(
                         new TaskFailureLogger(TAG, "Failure authenticating with credential"))
@@ -95,9 +102,9 @@ public class IDPSignInContainerActivity extends IDPBaseActivity implements IDPPr
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_WELCOME_BACK_IDP) {
-            finish(resultCode, new Intent());
+            finish(resultCode, data);
         } else if (requestCode == RC_SAVE_CREDENTIALS) {
-            finish(RESULT_OK, new Intent());
+            finish(RESULT_OK, data);
         } else {
             mIDPProvider.onActivityResult(requestCode, resultCode, data);
         }

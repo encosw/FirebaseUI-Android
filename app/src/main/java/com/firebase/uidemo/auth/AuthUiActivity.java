@@ -101,6 +101,9 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.smartlock_enabled)
     CheckBox mEnableSmartLock;
 
+    @BindView(R.id.should_link_enabled)
+    CheckBox mShouldLinkUser;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,10 +142,12 @@ public class AuthUiActivity extends AppCompatActivity {
                 AuthUI.getInstance().createSignInIntentBuilder()
                         .setTheme(getSelectedTheme())
                         .setLogo(getSelectedLogo())
-                        .setProviders(getSelectedProviders())
+                        .setProviders(AuthUI.EMAIL_PROVIDER,
+                                      AuthUI.GOOGLE_PROVIDER,
+                                      AuthUI.FACEBOOK_PROVIDER)
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
-                        .setShouldLinkUser(true)
+                        .setShouldLinkUser(mShouldLinkUser.isChecked())
                         .build(),
                 RC_SIGN_IN);
     }
@@ -163,6 +168,7 @@ public class AuthUiActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_MERGE_FAILED);
             if (prevUid != null) {
+                Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
                 FirebaseDatabase.getInstance()
                         .getReference()
                         .child("chats")
