@@ -200,9 +200,20 @@ public class WelcomeBackIDPPrompt extends AppCompatBase
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             if (e instanceof FirebaseAuthUserCollisionException) {
-                                FirebaseAuth auth = FirebaseAuth.getInstance();
+                                // Since we still want the user to be able to sign in even though the account already exists,
+                                // we are going to save the uid of the current user,
+                                // log them out, and then sign in with the new credential.
+
+                                // Unfortunately, this means the developer will have to manually merge the old uid with the new user's uid.
+                                // A manual merge is necessary to support anonymous user conversion to permanent
+                                // when the user we are trying to sign into already exists.
+
+                                // Real world example: currently signed in anonymously and Google account already exists.
+                                // Tries to sign in with Google account, this code gets called.
                                 setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
-                                auth.signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
+                                FirebaseAuth
+                                        .getInstance()
+                                        .signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
                                                         TAG, "Error linking with credential"))
