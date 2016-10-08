@@ -141,7 +141,6 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         // create the user
         FirebaseUser user = firebaseAuth.getCurrentUser();
         Task<AuthResult> task;
-        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
         if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
             task = user.linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {
@@ -171,7 +170,7 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                                         SmartlockUtil.saveCredentialOrFinish(
                                                 RegisterEmailActivity.this,
                                                 RC_SAVE_CREDENTIAL,
-                                                getIntent(),
+                                                null,
                                                 mActivityHelper.getFlowParams(),
                                                 firebaseUser,
                                                 password,
