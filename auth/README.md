@@ -349,3 +349,44 @@ Facebook Login.  If you would like to override these scopes, a string array reso
     <item>user_birthday</item>
 </string-array>
 ```
+
+
+# tmp
+if (resultCode == RESULT_OK) {
+    final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_MERGE_FAILED);
+    if (prevUid != null) {
+        Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
+        FirebaseDatabase.getInstance()
+                .getReference()
+                .child("chats")
+                .addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot snapshot) {
+                                if (snapshot.getValue() != null) {
+                                    for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                        ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
+                                        if (chat.getUid().equals(prevUid)) {
+                                            String currentUid = FirebaseAuth
+                                                    .getInstance()
+                                                    .getCurrentUser()
+                                                    .getUid();
+                                            chatSnapshot.getRef()
+                                                    .child("uid")
+                                                    .setValue(currentUid);
+                                            chatSnapshot.getRef()
+                                                    .child("name")
+                                                    .setValue("User " + currentUid
+                                                            .substring(0, 6));
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError error) {
+                                Log.e(TAG, "onCancelled: ", error.toException());
+                            }
+                        });
+    }
+}
