@@ -197,14 +197,27 @@ startActivityForResult(
     RC_SIGN_IN);
 ```
 
+If anonymous user account conversion to permanent is required:
+
+```java
+startActivityForResult(
+    AuthUI.getInstance()
+        .createSignInIntentBuilder()
+        .setShouldLinkAccounts(true) // Any two accounts can be linked together using this method.
+        .build(),
+    RC_SIGN_IN);
+```
+
+There is a caveat associated with using the `setShouldLinkAccounts` method, see
+[Handling account link failures](#handling-account-link-failures)
+
 #### Handling the sign-in response
 
 The authentication flow provides only two response codes:
 `Activity.RESULT_OK` if a user is signed in, and `Activity.RESULT_CANCELLED` if
 sign in failed. No further information on failure is provided as it is not
-typically useful; the only recourse for most apps if sign in fails is to ask
-the user to sign in again later, or proceed with an anonymous account if
-supported.
+typically useful; the only recourse for most apps if sign-in fails is to ask
+the user to sign in again later, or proceed with an anonymous account.
 
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -226,6 +239,67 @@ Alternatively, you can register a listener for authentication state changes;
 see the
 [Firebase Auth documentation](https://firebase.google.com/docs/auth/android/manage-users#get_the_currently_signed-in_user)
 for more information.
+
+##### Handling account link failures
+
+Only applies to developers using `setShouldLinkAccounts`.
+
+Imagine the following scenario: A user already has an existing account and uid in your app.
+They switch devices, you don't have Smart Lock enabled, and they add some data to Firebase using an anonymous account.
+In the unlikely event that the above scenario occurs,
+you must manually handle merging of the two accounts because this user now has two
+user ids associated with him/her: the anonymous account uid and the existing account uid.
+At the moment, Firebase cannot handle such user collisions automatically
+and thus, you must handle this edge case to ensure data a user created while using an
+anonymous account is transferred to the user's existing account.
+
+Here is how you would handle such an edge case in `onActivityResult`
+if you have data structured similarly to the [sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
+
+```java
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == RC_SIGN_IN) {
+        if (resultCode == RESULT_OK) {
+            // user is signed in but we must check to see whether or not account linking failed
+            final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_ACCOUNT_LINK_FAILED);
+            if (prevUid != null) {
+                Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
+                FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("chats")
+                    .addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                           @Override
+                           public void onDataChange(DataSnapshot snapshot) {
+                               // change all references of prevUid to the current uid
+                               if (snapshot.getValue() != null) {
+                                   String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                   for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                       ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
+                                       if (chat.getUid().equals(prevUid)) {
+                                           chatSnapshot.getRef().child("uid").setValue(currentUid);
+                                           chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
+                                       }
+                                   }
+                               }
+                           }
+                        
+                           @Override
+                           public void onCancelled(DatabaseError error) {
+                               Log.e(TAG, "onCancelled: ", error.toException());
+                           }
+                        });
+            }
+            startActivity(new Intent(this, WelcomeBackActivity.class));
+            finish();
+        } else {
+            // user is not signed in. Maybe just wait for the user to press
+            // "sign in" again, or show a message
+        }
+    }
+ }
+```
 
 ### Sign out
 
@@ -387,44 +461,3 @@ Facebook Login.  If you would like to override these scopes, a string array reso
     <item>user_birthday</item>
 </string-array>
 ```
-
-
-# tmp
-if (resultCode == RESULT_OK) {
-    final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_MERGE_FAILED);
-    if (prevUid != null) {
-        Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
-        FirebaseDatabase.getInstance()
-                .getReference()
-                .child("chats")
-                .addListenerForSingleValueEvent(
-                        new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot snapshot) {
-                                if (snapshot.getValue() != null) {
-                                    for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
-                                        ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
-                                        if (chat.getUid().equals(prevUid)) {
-                                            String currentUid = FirebaseAuth
-                                                    .getInstance()
-                                                    .getCurrentUser()
-                                                    .getUid();
-                                            chatSnapshot.getRef()
-                                                    .child("uid")
-                                                    .setValue(currentUid);
-                                            chatSnapshot.getRef()
-                                                    .child("name")
-                                                    .setValue("User " + currentUid
-                                                            .substring(0, 6));
-                                        }
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError error) {
-                                Log.e(TAG, "onCancelled: ", error.toException());
-                            }
-                        });
-    }
-}

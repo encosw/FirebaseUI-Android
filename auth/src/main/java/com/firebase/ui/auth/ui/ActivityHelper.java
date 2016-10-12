@@ -98,8 +98,8 @@ public class ActivityHelper {
 
     public Intent getMergeFailedIntent() {
         FirebaseUser user = getCurrentUser();
-        if (mFlowParams.shouldLinkUser && user != null) {
-            return new Intent().putExtra(ExtraConstants.EXTRA_MERGE_FAILED, user.getUid());
+        if (mFlowParams.shouldLinkAccounts && user != null) {
+            return new Intent().putExtra(ExtraConstants.EXTRA_ACCOUNT_LINK_FAILED, user.getUid());
         } else {
             return new Intent();
         }

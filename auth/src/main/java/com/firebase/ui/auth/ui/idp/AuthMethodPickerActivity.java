@@ -169,7 +169,7 @@ public class AuthMethodPickerActivity
         FirebaseUser user = firebaseAuth.getCurrentUser();
 
         Task<AuthResult> task;
-        if (user != null && mActivityHelper.getFlowParams().shouldLinkUser) {
+        if (user != null && mActivityHelper.getFlowParams().shouldLinkAccounts) {
             task = user.linkWithCredential(credential);
         } else {
             task = firebaseAuth.signInWithCredential(credential);

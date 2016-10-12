@@ -26,6 +26,5 @@ public class ExtraConstants {
     public static final String EXTRA_PASSWORD = "extra_password";
     public static final String EXTRA_PROFILE_PICTURE_URI = "extra_profile_picture_uri";
     public static final String EXTRA_PROVIDER = "extra_provider";
-    public static final String EXTRA_SUCCESS = "success_extra";
-    public static final String EXTRA_MERGE_FAILED = "merge_failed_extra";
+    public static final String EXTRA_ACCOUNT_LINK_FAILED = "merge_failed_extra";
 }

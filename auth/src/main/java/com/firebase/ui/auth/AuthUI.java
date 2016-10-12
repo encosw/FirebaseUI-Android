@@ -413,7 +413,7 @@ public class AuthUI {
         private List<String> mProviders = Collections.singletonList(EMAIL_PROVIDER);
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
-        private boolean mShouldLinkUser = false;
+        private boolean mShouldLinkAccounts = false;
 
         private SignInIntentBuilder() {}
 
@@ -480,12 +480,12 @@ public class AuthUI {
         }
 
         /**
-         * Links the current user to one created in the sign in flow.
+         * Links the current user to an account created in the sign-in flow.
          *
          * <p>Linking is disabled by default.
          */
-        public SignInIntentBuilder setShouldLinkUser(boolean shouldLinkUser) {
-            mShouldLinkUser = shouldLinkUser;
+        public SignInIntentBuilder setShouldLinkAccounts(boolean shouldLinkAccounts) {
+            mShouldLinkAccounts = shouldLinkAccounts;
             return this;
         }
 
@@ -507,7 +507,7 @@ public class AuthUI {
                             mLogo,
                             mTosUrl,
                             mIsSmartLockEnabled,
-                            mShouldLinkUser));
+                            mShouldLinkAccounts));
         }
     }
 }

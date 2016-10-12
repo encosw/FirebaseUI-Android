@@ -77,7 +77,7 @@ public class IDPSignInContainerActivity extends IDPBaseActivity implements IDPPr
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         FirebaseUser user = firebaseAuth.getCurrentUser();
         Task<AuthResult> authResultTask;
-        if (mActivityHelper.getFlowParams().shouldLinkUser && user != null) {
+        if (mActivityHelper.getFlowParams().shouldLinkAccounts && user != null) {
             authResultTask = user.linkWithCredential(credential);
         } else {
             authResultTask = firebaseAuth.signInWithCredential(credential);

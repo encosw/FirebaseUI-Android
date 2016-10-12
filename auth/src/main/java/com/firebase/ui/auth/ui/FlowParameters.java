@@ -46,7 +46,7 @@ public class FlowParameters implements Parcelable {
     public final String termsOfServiceUrl;
 
     public final boolean smartLockEnabled;
-    public final boolean shouldLinkUser;
+    public final boolean shouldLinkAccounts;
 
     public FlowParameters(
             @NonNull String appName,
@@ -55,14 +55,14 @@ public class FlowParameters implements Parcelable {
             @DrawableRes int logoId,
             @Nullable String termsOfServiceUrl,
             boolean smartLockEnabled,
-            boolean shouldLinkUser) {
+            boolean shouldLinkAccounts) {
         this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
         this.providerInfo = Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null");
         this.themeId = themeId;
         this.logoId = logoId;
         this.termsOfServiceUrl = termsOfServiceUrl;
         this.smartLockEnabled = smartLockEnabled;
-        this.shouldLinkUser = shouldLinkUser;
+        this.shouldLinkAccounts = shouldLinkAccounts;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class FlowParameters implements Parcelable {
         dest.writeInt(logoId);
         dest.writeString(termsOfServiceUrl);
         dest.writeInt(smartLockEnabled ? 1 : 0);
-        dest.writeInt(shouldLinkUser ? 1 : 0);
+        dest.writeInt(shouldLinkAccounts ? 1 : 0);
     }
 
     @Override
@@ -92,8 +92,8 @@ public class FlowParameters implements Parcelable {
             String termsOfServiceUrl = in.readString();
             int smartLockEnabledInt = in.readInt();
             boolean smartLockEnabled = smartLockEnabledInt != 0;
-            int shouldLinkUserInt = in.readInt();
-            boolean shouldLinkUser = shouldLinkUserInt != 0;
+            int shouldLinkAccountsInt = in.readInt();
+            boolean shouldLinkAccounts = shouldLinkAccountsInt != 0;
 
             return new FlowParameters(
                     appName,
@@ -102,7 +102,7 @@ public class FlowParameters implements Parcelable {
                     logoId,
                     termsOfServiceUrl,
                     smartLockEnabled,
-                    shouldLinkUser);
+                    shouldLinkAccounts);
         }
 
         @Override

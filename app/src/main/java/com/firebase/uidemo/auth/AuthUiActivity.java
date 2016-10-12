@@ -101,7 +101,7 @@ public class AuthUiActivity extends AppCompatActivity {
     CheckBox mEnableSmartLock;
 
     @BindView(R.id.should_link_enabled)
-    CheckBox mShouldLinkUser;
+    CheckBox mShouldLinkAccounts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,7 +153,7 @@ public class AuthUiActivity extends AppCompatActivity {
                                       AuthUI.FACEBOOK_PROVIDER)
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
-                        .setShouldLinkUser(mShouldLinkUser.isChecked())
+                        .setShouldLinkAccounts(mShouldLinkAccounts.isChecked())
                         .build(),
                 RC_SIGN_IN);
     }
