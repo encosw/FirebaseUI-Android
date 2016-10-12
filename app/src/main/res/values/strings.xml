@@ -47,7 +47,7 @@
     <string name="configuration_required">Configuration is required - see README.md</string>
     <string name="other_options_header">Other Options:</string>
     <string name="enable_smartlock">Enable SmartLock for Passwords</string>
-    <string name="enable_link_user">Link the current with one created in the sign in flow</string>
+    <string name="enable_link_accounts">Link the current user with an account created in the sign-in flow</string>
     <string name="rational_image_perm">This sample will read an image from local storage to upload to Firebase Storage.</string>
 
     <string name="anonymous_auth_failed_toast">Authentication failed, uploads and downloads will not work.</string>
