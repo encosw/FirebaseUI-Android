@@ -19,31 +19,30 @@ We can represent a chat message with this Java class:
 
 ```java
 public static class Chat {
-
-        String name;
-        String text;
-        String uid;
-
-        public Chat() {
-        }
-
-        public Chat(String name, String uid, String message) {
-            this.name = name;
-            this.text = message;
-            this.uid = uid;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getUid() {
-            return uid;
-        }
-
-        public String getText() {
-            return text;
-        }
+    private String name;
+    private String uid;
+    private String message;
+    
+    public Chat() {
+    }
+    
+    public Chat(String name, String uid, String message) {
+        this.name = name;
+        this.uid = uid;
+        this.message = message;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getUid() {
+        return uid;
+    }
+    
+    public String getMessage() {
+        return message;
+    }
 }
 ```
 A few things to note here:
