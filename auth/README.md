@@ -270,25 +270,25 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                     .child("chats")
                     .addListenerForSingleValueEvent(
                         new ValueEventListener() {
-                           @Override
-                           public void onDataChange(DataSnapshot snapshot) {
-                               // change all references of prevUid to the current uid
-                               if (snapshot.getValue() != null) {
-                                   String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                                   for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
-                                       ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
-                                       if (chat.getUid().equals(prevUid)) {
-                                           chatSnapshot.getRef().child("uid").setValue(currentUid);
-                                           chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
-                                       }
-                                   }
-                               }
-                           }
-                        
-                           @Override
-                           public void onCancelled(DatabaseError error) {
-                               Log.e(TAG, "onCancelled: ", error.toException());
-                           }
+                            @Override
+                            public void onDataChange(DataSnapshot snapshot) {
+                                // change all references of prevUid to the current uid
+                                if (snapshot.getValue() != null) {
+                                    String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                    for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                        ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
+                                        if (chat.getUid().equals(prevUid)) {
+                                            chatSnapshot.getRef().child("uid").setValue(currentUid);
+                                            chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            @Override
+                            public void onCancelled(DatabaseError error) {
+                                Log.e(TAG, "onCancelled: ", error.toException());
+                            }
                         });
             }
             startActivity(new Intent(this, WelcomeBackActivity.class));
