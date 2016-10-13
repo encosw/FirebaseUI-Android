@@ -197,7 +197,11 @@ startActivityForResult(
     RC_SIGN_IN);
 ```
 
-If anonymous user account conversion to permanent is required:
+The default FirebaseUI sign-in flow shows UI to either create a new account or sign into an existing account.
+If you are using 
+[anonymous authentication](https://firebase.google.com/docs/auth/android/anonymous-auth)
+in your application before calling FirebaseUI,
+you may want to link the anonymous account to the permanent account the user selects in the UI flow.
 
 ```java
 startActivityForResult(
