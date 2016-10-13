@@ -22,24 +22,24 @@ public static class Chat {
     private String name;
     private String uid;
     private String message;
-    
+
     public Chat() {
     }
-    
+
     public Chat(String name, String uid, String message) {
         this.name = name;
         this.uid = uid;
         this.message = message;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getUid() {
         return uid;
     }
-    
+
     public String getMessage() {
         return message;
     }
