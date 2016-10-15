@@ -85,13 +85,13 @@ public class ChooseAccountActivity extends ActivityBase {
         mPlayServicesHelper = PlayServicesHelper.getInstance(this);
         boolean madeAvailable = mPlayServicesHelper
                 .makePlayServicesAvailable(this, RC_PLAY_SERVICES,
-                        new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialogInterface) {
-                                Log.w(TAG, "playServices:dialog.onCancel()");
-                                finish(RESULT_CANCELED, new Intent());
-                            }
-                        });
+                                           new DialogInterface.OnCancelListener() {
+                                               @Override
+                                               public void onCancel(DialogInterface dialogInterface) {
+                                                   Log.w(TAG, "playServices:dialog.onCancel()");
+                                                   finish(RESULT_CANCELED, new Intent());
+                                               }
+                                           });
 
         if (!madeAvailable) {
             Log.w(TAG, "playServices: could not make available.");
@@ -155,12 +155,12 @@ public class ChooseAccountActivity extends ActivityBase {
             // Attempt auto-sign in using SmartLock
             if (credentialsApi.isAutoSignInAvailable()) {
                 credentialsApi.googleSilentSignIn();
-                if (!TextUtils.isEmpty(password)) {
-                    // Sign in with the email/password retrieved from SmartLock
-                    signInWithEmailAndPassword(activityHelper, email, password);
-                } else {
+                if (TextUtils.isEmpty(password)) {
                     // log in with id/provider
                     redirectToIdpSignIn(email, accountType);
+                } else {
+                    // Sign in with the email/password retrieved from SmartLock
+                    signInWithEmailAndPassword(activityHelper, email, password);
                 }
             } else if (credentialsApi.isSignInResolutionNeeded()) {
                 // resolve credential
@@ -198,7 +198,6 @@ public class ChooseAccountActivity extends ActivityBase {
             final String email,
             final String password,
             final String accountType) {
-
         if (email != null
                 && mCredentialsApi.isCredentialsAvailable()
                 && !mCredentialsApi.isSignInResolutionNeeded()) {
@@ -259,6 +258,12 @@ public class ChooseAccountActivity extends ActivityBase {
      * auth method picker flow.
      */
     private void signInWithEmailAndPassword(ActivityHelper helper, String email, String password) {
+        if (helper.getFlowParams().shouldLinkAccounts && helper.getCurrentUser() != null) {
+            // Because we are being called from Smart Lock,
+            // we can assume that the account already exists and a user collision exception will be thrown.
+            setIntent(getIntent().putExtras(helper.getMergeFailedIntent()));
+        }
+
         helper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(new TaskFailureLogger(
@@ -266,7 +271,7 @@ public class ChooseAccountActivity extends ActivityBase {
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        finish(RESULT_OK, new Intent());
+                        finish(RESULT_OK, getIntent());
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
