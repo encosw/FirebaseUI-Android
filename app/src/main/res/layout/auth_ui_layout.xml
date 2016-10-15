@@ -83,18 +83,21 @@
             android:id="@+id/facebook_provider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/facebook_label" />
 
         <CheckBox
             android:id="@+id/google_provider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/google_label" />
 
         <CheckBox
             android:id="@+id/twitter_provider"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/twitter_label" />
 
         <TextView
@@ -176,7 +179,6 @@
             android:id="@+id/should_link_enabled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/enable_link_accounts" />
 
     </LinearLayout>

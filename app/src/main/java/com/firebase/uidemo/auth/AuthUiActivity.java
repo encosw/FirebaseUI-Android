@@ -43,7 +43,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class AuthUiActivity extends AppCompatActivity {
-    private static final String TAG = "AuthUIActivity";
     private static final String UNCHANGED_CONFIG_VALUE = "CHANGE-ME";
     private static final String GOOGLE_TOS_URL = "https://www.google.com/policies/terms/";
     private static final String FIREBASE_TOS_URL = "https://www.firebase.com/terms/terms-of-service.html";
@@ -133,7 +132,6 @@ public class AuthUiActivity extends AppCompatActivity {
         if (!isGoogleConfigured() || !isFacebookConfigured() || !isTwitterConfigured()) {
             showSnackbar(R.string.configuration_required);
         }
-
     }
 
     @OnClick(R.id.sign_in)
@@ -142,9 +140,7 @@ public class AuthUiActivity extends AppCompatActivity {
                 AuthUI.getInstance().createSignInIntentBuilder()
                         .setTheme(getSelectedTheme())
                         .setLogo(getSelectedLogo())
-                        .setProviders(AuthUI.EMAIL_PROVIDER,
-                                      AuthUI.GOOGLE_PROVIDER,
-                                      AuthUI.FACEBOOK_PROVIDER)
+                        .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
                         .setShouldLinkAccounts(mShouldLinkAccounts.isChecked())
