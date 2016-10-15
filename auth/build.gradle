@@ -36,7 +36,7 @@ dependencies {
     testCompile 'org.robolectric:robolectric:3.1.2'
     // See https://github.com/robolectric/robolectric/issues/1932#issuecomment-219796474
     testCompile 'org.khronos:opengl-api:gl1.1-android-2.1_r1'
-    
+
     compile 'com.facebook.android:facebook-android-sdk:4.14.1'
     compile("com.twitter.sdk.android:twitter:2.0.0@aar") {
         transitive = true;
@@ -64,4 +64,4 @@ javadoc.exclude([
         'com/firebase/ui/auth/ui/ExtraConstants',
         'com/firebase/ui/auth/ui/email/field_validators/**',
         'com/firebase/ui/auth/util/**',
-        ])
+])

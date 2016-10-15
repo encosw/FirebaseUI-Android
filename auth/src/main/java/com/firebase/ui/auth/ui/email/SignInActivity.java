@@ -137,7 +137,7 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_CREDENTIAL_SAVE) {
-            finish(RESULT_OK, new Intent());
+            finish(RESULT_OK, data);
         }
     }
 
