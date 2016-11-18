@@ -10,11 +10,12 @@
     <string name="desc_image">Demonstrates displaying an image from Firebase Storage using Glide.</string>
 
     <!-- strings for Auth UI demo activities -->
-    <eat-comment />
+    <eat-comment/>
     <string name="launch_title">FirebaseUI Auth Demo</string>
     <string name="sign_in">Start</string>
     <string name="green_theme">Green Theme</string>
     <string name="purple_theme">Purple Theme</string>
+    <string name="dark_theme">Dark Theme</string>
     <string name="use_theme_header">Use theme:</string>
     <string name="logo_header">Logo:</string>
     <string name="firebase_logo_label">Firebase Auth</string>
@@ -32,7 +33,6 @@
     <string name="firebase_tos_label">Firebase TOS</string>
     <string name="tos_header">Terms of Service URL:</string>
     <string name="unknown_response">Unexpected onActivityResult response code</string>
-    <string name="ok_label">OK</string>
     <string name="unknown_sign_in_response">Unknown response from AuthUI sign-in</string>
     <string name="sign_in_cancelled">Sign in cancelled</string>
     <string name="no_internet_connection">No internet connection</string>
@@ -49,7 +49,13 @@
     <string name="enable_smartlock">Enable SmartLock for Passwords</string>
     <string name="enable_link_accounts">Link the current user with an account created in the sign-in flow</string>
     <string name="rational_image_perm">This sample will read an image from local storage to upload to Firebase Storage.</string>
-
     <string name="anonymous_auth_failed_toast">Authentication failed, uploads and downloads will not work.</string>
     <string name="anonymous_auth_failed_msg">Anonymous authentication failed. Make sure your device is online and that Anonymous Auth is configured in your Firebase project(https://console.firebase.google.com/project/_/authentication/providers)</string>
+    <string name="extra_google_scopes">Example extra Google scopes</string>
+    <string name="games">Games</string>
+    <string name="extra_facebook_scopes">Example extra Facebook scopes</string>
+    <string name="friends">Friends</string>
+    <string name="photos">Photos</string>
+    <string name="idp_token">IDP Token</string>
+    <string name="idp_secret">IDP Secret</string>
 </resources>

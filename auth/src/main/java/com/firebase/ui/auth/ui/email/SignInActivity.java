@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.util.TypedValue;
 import android.view.View;
@@ -34,7 +35,7 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.email.field_validators.EmailFieldValidator;
 import com.firebase.ui.auth.ui.email.field_validators.RequiredFieldValidator;
-import com.firebase.ui.auth.util.SmartlockUtil;
+import com.firebase.ui.auth.util.SmartLock;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -44,17 +45,20 @@ import com.google.firebase.auth.AuthResult;
  */
 public class SignInActivity extends AppCompatBase implements View.OnClickListener {
     private static final String TAG = "SignInActivity";
-    private static final int RC_CREDENTIAL_SAVE = 101;
 
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
     private EmailFieldValidator mEmailValidator;
     private RequiredFieldValidator mPasswordValidator;
+    @Nullable
+    private SmartLock mSmartLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in_layout);
+
+        mSmartLock = mActivityHelper.getSmartLockInstance(this, TAG);
 
         String email = getIntent().getStringExtra(ExtraConstants.EXTRA_EMAIL);
 
@@ -77,12 +81,10 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
 
         togglePasswordImage.setOnClickListener(new PasswordToggler(mPasswordEditText));
 
-        mEmailValidator = new EmailFieldValidator((TextInputLayout) findViewById(R.id
-                .email_layout));
-        mPasswordValidator = new RequiredFieldValidator((TextInputLayout) findViewById(R.id
-                .password_layout));
+        mEmailValidator = new EmailFieldValidator((TextInputLayout) findViewById(R.id.email_layout));
+        mPasswordValidator = new RequiredFieldValidator((TextInputLayout) findViewById(R.id.password_layout));
         Button signInButton = (Button) findViewById(R.id.button_done);
-        TextView recoveryButton =  (TextView) findViewById(R.id.trouble_signing_in);
+        TextView recoveryButton = (TextView) findViewById(R.id.trouble_signing_in);
 
         if (email != null) {
             mEmailEditText.setText(email);
@@ -91,14 +93,8 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
         recoveryButton.setOnClickListener(this);
     }
 
-    @Override
-    public void onBackPressed () {
-        super.onBackPressed();
-    }
-
-    private void signIn(String email, final String password) {
+    private void signIn(final String email, final String password) {
         setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
-
         mActivityHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
@@ -106,17 +102,12 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        mActivityHelper.dismissDialog();
-
                         // Save credential in SmartLock (if enabled)
-                        SmartlockUtil.saveCredentialOrFinish(
+                        mActivityHelper.saveCredentialsOrFinish(
+                                mSmartLock,
                                 SignInActivity.this,
-                                RC_CREDENTIAL_SAVE,
-                                getIntent(),
-                                mActivityHelper.getFlowParams(),
                                 authResult.getUser(),
-                                password,
-                                null /* provider */);
+                                password);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -131,14 +122,6 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
                         mActivityHelper.dismissDialog();
                     }
                 });
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_CREDENTIAL_SAVE) {
-            finish(RESULT_OK, data);
-        }
     }
 
     @Override

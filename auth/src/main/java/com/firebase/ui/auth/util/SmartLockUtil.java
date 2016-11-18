@@ -1,14 +1,9 @@
 package com.firebase.ui.auth.util;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.firebase.ui.auth.ui.FlowParameters;
-import com.firebase.ui.auth.ui.account_link.SaveCredentialsActivity;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.IdentityProviders;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -25,54 +20,8 @@ import java.util.List;
 /**
  * Helper class to deal with Smartlock Flows.
  */
-public class SmartlockUtil {
+public class SmartLockUtil {
     private static final String TAG = "SmartLockUtil";
-
-    /**
-     * If SmartLock is enabled and Google Play Services is available, start the save credential
-     * Activity. Otherwise, finish the calling Activity with RESULT_OK.
-     *
-     * @param activity     the calling Activity.
-     * @param requestCode  request code to use when starting the save operation.
-     * @param data         An Intent to be merged. Must be a {@code new Intent().putExtras(...)}.
-     * @param parameters   calling Activity flow parameters.
-     * @param firebaseUser Firebase user to save in Credential.
-     * @param password     (optional) password for email credential.
-     * @param provider     (optional) provider string for provider credential.
-     */
-    public static void saveCredentialOrFinish(Activity activity,
-                                              int requestCode,
-                                              @Nullable Intent data,
-                                              FlowParameters parameters,
-                                              FirebaseUser firebaseUser,
-                                              @Nullable String password,
-                                              @Nullable String provider) {
-        if (data == null) {
-            data = new Intent();
-        }
-
-        // If SmartLock is disabled, finish the Activity
-        if (!parameters.smartLockEnabled) {
-            finishActivity(activity, data);
-            return;
-        }
-
-        // If Play Services is not available, finish the Activity
-        if (!PlayServicesHelper.getInstance(activity).isPlayServicesAvailable()) {
-            finishActivity(activity, data);
-            return;
-        }
-
-        // Launch save activity
-        Intent saveCredentialIntent = SaveCredentialsActivity
-                .createIntent(activity,
-                              parameters,
-                              firebaseUser,
-                              password,
-                              provider)
-                .putExtras(data);
-        activity.startActivityForResult(saveCredentialIntent, requestCode);
-    }
 
     /**
      * Translate a Firebase Auth provider ID (such as {@link GoogleAuthProvider#PROVIDER_ID}) to
@@ -126,10 +75,5 @@ public class SmartlockUtil {
         }
 
         return credentials;
-    }
-
-    private static void finishActivity(Activity activity, Intent data) {
-        activity.setResult(Activity.RESULT_OK, data);
-        activity.finish();
     }
 }

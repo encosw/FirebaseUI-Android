@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -28,8 +29,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.provider.IDPResponse;
 import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.AuthCredentialHelper;
@@ -38,7 +39,7 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.email.PasswordToggler;
 import com.firebase.ui.auth.ui.email.RecoverPasswordActivity;
-import com.firebase.ui.auth.util.SmartlockUtil;
+import com.firebase.ui.auth.util.SmartLock;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthCredential;
@@ -50,20 +51,21 @@ import com.google.firebase.auth.FirebaseAuth;
  * the password before initiating a link.
  */
 public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnClickListener {
-    private static final int RC_CREDENTIAL_SAVE = 3;
     private static final String TAG = "WelcomeBackPassword";
     private static final StyleSpan BOLD = new StyleSpan(Typeface.BOLD);
 
     private String mEmail;
     private TextInputLayout mPasswordLayout;
     private EditText mPasswordField;
-    private IDPResponse mIdpResponse;
+    private IdpResponse mIdpResponse;
+    @Nullable
+    private SmartLock mSmartLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.welcome_back_password_prompt_layout);
-
+        mSmartLock = SmartLock.getInstance(WelcomeBackPasswordPrompt.this, TAG);
         mPasswordLayout = (TextInputLayout) findViewById(R.id.password_layout);
         mPasswordField = (EditText) findViewById(R.id.password);
 
@@ -85,8 +87,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
         // Click listeners
         findViewById(R.id.button_done).setOnClickListener(this);
-        findViewById(R.id.toggle_visibility).setOnClickListener(
-                new PasswordToggler(mPasswordField));
+        findViewById(R.id.toggle_visibility).setOnClickListener(new PasswordToggler(mPasswordField));
         findViewById(R.id.trouble_signing_in).setOnClickListener(this);
     }
 
@@ -106,15 +107,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_CREDENTIAL_SAVE) {
-            finish(RESULT_OK, new Intent());
-        }
-    }
-
-    private void next(String email, final String password) {
+    private void next(final String email, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
 
@@ -143,21 +136,16 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                         // Sign in with the credential
                         firebaseAuth.signInWithCredential(authCredential)
                                 .addOnFailureListener(
-                                        new TaskFailureLogger(TAG,
-                                                              "Error signing in with credential"))
+                                        new TaskFailureLogger(TAG, "Error signing in with credential"))
                                 .addOnSuccessListener(
                                         new OnSuccessListener<AuthResult>() {
                                             @Override
                                             public void onSuccess(AuthResult authResult) {
-                                                mActivityHelper.dismissDialog();
-                                                SmartlockUtil.saveCredentialOrFinish(
+                                                mActivityHelper.saveCredentialsOrFinish(
+                                                        mSmartLock,
                                                         WelcomeBackPasswordPrompt.this,
-                                                        RC_CREDENTIAL_SAVE,
-                                                        getIntent(),
-                                                        mActivityHelper.getFlowParams(),
                                                         authResult.getUser(),
-                                                        password,
-                                                        null /* provider */);
+                                                        password);
                                             }
                                         });
                     }
@@ -165,6 +153,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        mActivityHelper.dismissDialog();
                         String error = e.getLocalizedMessage();
                         mPasswordLayout.setError(error);
                     }
@@ -174,7 +163,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
     public static Intent createIntent(
             Context context,
             FlowParameters flowParams,
-            IDPResponse response) {
+            IdpResponse response) {
         return ActivityHelper.createBaseIntent(context, WelcomeBackPasswordPrompt.class, flowParams)
                 .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
     }

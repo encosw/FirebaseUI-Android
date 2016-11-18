@@ -3,8 +3,8 @@ package com.firebase.ui.auth.ui.provider;
 import android.os.Bundle;
 
 import com.firebase.ui.auth.BuildConfig;
-import com.firebase.ui.auth.provider.IDPProvider;
-import com.firebase.ui.auth.provider.IDPResponse;
+import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
+import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.provider.TwitterProvider;
 import com.firebase.ui.auth.test_helpers.CustomRobolectricGradleTestRunner;
 import com.firebase.ui.auth.test_helpers.FacebookProviderShadow;
@@ -33,14 +33,12 @@ import static junit.framework.Assert.assertTrue;
                 FacebookProviderShadow.class
         }, sdk = 21)
 public class TwitterProviderTest {
-    private static final String FAKE_KEY = "fakeKey";
-    private static final String FAKE_SECRET = "fakeSecret";
     private static final String FAKE_AUTH_TOKEN = "fakeAuthToken";
     private static final String FAKE_AUTH_SECRET = "fakeAuthSecret";
     private static final long FAKE_USER_ID = 555;
     private static final String FAKE_USER_NAME = "testAccountName";
 
-    private static class AssertResultCallback implements IDPProvider.IDPCallback {
+    private static class AssertResultCallback implements IdpCallback {
         private CountDownLatch mCountDownLatch;
         private boolean mAssertSuccess;
 
@@ -54,7 +52,7 @@ public class TwitterProviderTest {
         }
 
         @Override
-        public void onSuccess(IDPResponse idpResponse) {
+        public void onSuccess(IdpResponse idpResponse) {
             assertTrue(mAssertSuccess);
             mCountDownLatch.countDown();
         }
@@ -68,9 +66,7 @@ public class TwitterProviderTest {
 
     @Test
     public void testSuccessCallsCallback() {
-        TwitterProvider twitterProvider = new TwitterProvider(
-                RuntimeEnvironment.application,
-                TwitterProvider.createTwitterParcel(FAKE_KEY, FAKE_SECRET));
+        TwitterProvider twitterProvider = new TwitterProvider(RuntimeEnvironment.application);
 
         AssertResultCallback assertResultCallback = new AssertResultCallback(true);
         twitterProvider.setAuthenticationCallback(assertResultCallback);
@@ -93,9 +89,7 @@ public class TwitterProviderTest {
 
     @Test
     public void testFailureCallsCallback() {
-        TwitterProvider twitterProvider = new TwitterProvider(
-                RuntimeEnvironment.application,
-                TwitterProvider.createTwitterParcel(FAKE_KEY, FAKE_SECRET));
+        TwitterProvider twitterProvider = new TwitterProvider(RuntimeEnvironment.application);
 
         AssertResultCallback assertResultCallback = new AssertResultCallback(false);
         twitterProvider.setAuthenticationCallback(assertResultCallback);

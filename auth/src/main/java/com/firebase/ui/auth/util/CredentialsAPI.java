@@ -179,7 +179,10 @@ public class CredentialsAPI implements
                 .setPasswordLoginSupported(true);
 
         if (!onlyPasswords) {
-            crBuilder.setAccountTypes(IdentityProviders.GOOGLE);
+            crBuilder.setAccountTypes(
+                    IdentityProviders.GOOGLE,
+                    IdentityProviders.TWITTER,
+                    IdentityProviders.FACEBOOK);
         }
 
         showProgress();
@@ -230,7 +233,7 @@ public class CredentialsAPI implements
 
     public void onStop() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();;
+            mGoogleApiClient.disconnect();
         }
 
         hideProgress();

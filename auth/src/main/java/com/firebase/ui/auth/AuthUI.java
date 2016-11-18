@@ -17,6 +17,8 @@ package com.firebase.ui.auth;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,15 +27,13 @@ import android.support.annotation.VisibleForTesting;
 
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
-import com.firebase.ui.auth.provider.IDPProviderParcel;
 import com.firebase.ui.auth.ui.ChooseAccountActivity;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.util.CredentialsApiHelper;
 import com.firebase.ui.auth.util.GoogleApiClientTaskHelper;
 import com.firebase.ui.auth.util.Preconditions;
-import com.firebase.ui.auth.util.ProviderHelper;
-import com.firebase.ui.auth.util.SmartlockUtil;
+import com.firebase.ui.auth.util.SmartLockUtil;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -43,14 +43,19 @@ import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.TwitterAuthProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -105,7 +110,13 @@ import java.util.Set;
  * startActivityForResult(
  *     AuthUI.getInstance()
  *         .createSignInIntentBuilder()
- *         .setProviders(AuthUI.EMAIL_PROVIDER, AuthUI.GOOGLE_PROVIDER, AuthUI.FACEBOOK_PROVIDER)
+ *         .setProviders(
+ *              Arrays.asList(
+ *                  new IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+ *                  new IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
+ *                  new IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build()
+ *              )
+ *         )
  *         .build(),
  *     RC_SIGN_IN);
  * }
@@ -222,22 +233,22 @@ public class AuthUI {
      * Provider identifier for email and password credentials, for use with
      * {@link SignInIntentBuilder#setProviders}.
      */
-    public static final String EMAIL_PROVIDER = "email";
+    public static final String EMAIL_PROVIDER = EmailAuthProvider.PROVIDER_ID;
 
     /**
      * Provider identifier for Google, for use with {@link SignInIntentBuilder#setProviders}.
      */
-    public static final String GOOGLE_PROVIDER = "google";
+    public static final String GOOGLE_PROVIDER = GoogleAuthProvider.PROVIDER_ID;
 
     /**
      * Provider identifier for Facebook, for use with {@link SignInIntentBuilder#setProviders}.
      */
-    public static final String FACEBOOK_PROVIDER = "facebook";
+    public static final String FACEBOOK_PROVIDER = FacebookAuthProvider.PROVIDER_ID;
 
     /**
      * Provider identifier for Twitter, for use with {@link SignInIntentBuilder#setProviders}.
      */
-    public static final String TWITTER_PROVIDER = "twitter";
+    public static final String TWITTER_PROVIDER = TwitterAuthProvider.PROVIDER_ID;
 
     /**
      * Default value for logo resource, omits the logo from the
@@ -316,6 +327,7 @@ public class AuthUI {
      * API. Returns a {@code Task} that succeeds if the Firebase Auth user deletion succeeds and
      * fails if the Firebase Auth deletion fails. Credentials deletion failures are handled
      * silently.
+     *
      * @param activity the calling {@link Activity}.
      */
     public Task<Void> delete(@NonNull Activity activity) {
@@ -334,7 +346,7 @@ public class AuthUI {
         CredentialsApiHelper credentialHelper = CredentialsApiHelper.getInstance(gacHelper);
 
         // Get all SmartLock credentials associated with the user
-        List<Credential> credentials = SmartlockUtil.credentialsFromFirebaseUser(firebaseUser);
+        List<Credential> credentials = SmartLockUtil.credentialsFromFirebaseUser(firebaseUser);
 
         // For each Credential in the list, create a task to delete it.
         List<Task<?>> credentialTasks = new ArrayList<>();
@@ -372,6 +384,7 @@ public class AuthUI {
     /**
      * Retrieves the {@link AuthUI} instance associated with the default app, as returned by
      * {@code FirebaseApp.getInstance()}.
+     *
      * @throws IllegalStateException if the default app is not initialized.
      */
     public static AuthUI getInstance() {
@@ -399,9 +412,102 @@ public class AuthUI {
      */
     @StyleRes
     public static int getDefaultTheme() {
-        // TODO(iainmgin): figure out why this works as a static method but not as a static
-        //                 final variable.
         return R.style.FirebaseUI;
+    }
+
+
+    /**
+     * Configuration for an identity provider.
+     *
+     * In the simplest case, you can supply the provider ID and build the config like this:
+     * {@code new IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()}
+     */
+    public static class IdpConfig implements Parcelable {
+        private final String mProviderId;
+        private final List<String> mScopes;
+
+        private IdpConfig(@NonNull String providerId, List<String> scopes) {
+            mScopes = scopes;
+            mProviderId = providerId;
+        }
+
+        public String getProviderId() {
+            return mProviderId;
+        }
+
+        public List<String> getScopes() {
+            return mScopes;
+        }
+
+        protected IdpConfig(Parcel in) {
+            mProviderId = in.readString();
+            mScopes = in.createStringArrayList();
+        }
+
+        public static final Creator<IdpConfig> CREATOR = new Creator<IdpConfig>() {
+            @Override
+            public IdpConfig createFromParcel(Parcel in) {
+                return new IdpConfig(in);
+            }
+
+            @Override
+            public IdpConfig[] newArray(int size) {
+                return new IdpConfig[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(mProviderId);
+            parcel.writeStringList(mScopes);
+        }
+
+        public static class Builder {
+            private String mProviderId;
+            private List<String> mScopes = new ArrayList<>();
+
+
+            /**
+             * Builds the configuration parameters for an identity provider.
+             *
+             * @param providerId An ID of one of the supported identity providers. e.g.
+             *                   {@link AuthUI#GOOGLE_PROVIDER}. See {@link AuthUI#SUPPORTED_PROVIDERS} for the
+             *                   complete list of supported Identity providers
+             */
+            public Builder(@NonNull String providerId) {
+                if (!SUPPORTED_PROVIDERS.contains(providerId)) {
+                    throw new IllegalArgumentException("Unkown provider: " + providerId);
+                }
+                mProviderId = providerId;
+            }
+
+            /**
+             * Specifies the additional permissions that the application will request for this
+             * identity provider.
+             *
+             * For Facebook permissions see:
+             * https://developers.facebook.com/docs/facebook-login/android
+             * https://developers.facebook.com/docs/facebook-login/permissions
+             *
+             * For Google permissions see:
+             * https://developers.google.com/identity/protocols/googlescopes
+             *
+             * Twitter permissions are only configurable through the Twitter developer console.
+             */
+            public Builder setPermissions(List<String> permissions) {
+                mScopes = permissions;
+                return this;
+            }
+
+            public IdpConfig build() {
+                return new IdpConfig(mProviderId, mScopes);
+            }
+        }
     }
 
     /**
@@ -410,12 +516,14 @@ public class AuthUI {
     public final class SignInIntentBuilder {
         private int mLogo = NO_LOGO;
         private int mTheme = getDefaultTheme();
-        private List<String> mProviders = Collections.singletonList(EMAIL_PROVIDER);
+        private LinkedHashSet<IdpConfig> mProviders = new LinkedHashSet<>();
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
         private boolean mShouldLinkAccounts = false;
 
-        private SignInIntentBuilder() {}
+        private SignInIntentBuilder() {
+            mProviders.add(new IdpConfig.Builder(EMAIL_PROVIDER).build());
+        }
 
         /**
          * Specifies the theme to use for the application flow. If no theme is specified,
@@ -448,9 +556,34 @@ public class AuthUI {
         }
 
         /**
+         * Specified the set of supported authentication providers. At least one provider must
+         * be specified. There may only be one instance of each provider.
+         *
+         * <p>If no providers are explicitly specified by calling this method, then the email
+         * provider is the default supported provider.
+         *
+         * @param idpConfigs a list of {@link IdpConfig}s, where each {@link IdpConfig} contains
+         *                   the configuration parameters for the IDP.
+         * @see IdpConfig
+         */
+        public SignInIntentBuilder setProviders(@NonNull List<IdpConfig> idpConfigs) {
+            mProviders.clear();
+            Set<String> configuredProviders = new HashSet<>();
+            for (IdpConfig idpConfig : idpConfigs) {
+                if (configuredProviders.contains(idpConfig.getProviderId())) {
+                    throw new IllegalArgumentException("Each provider can only be set once. "
+                                                               + idpConfig.getProviderId() + " was set twice.");
+                }
+                configuredProviders.add(idpConfig.getProviderId());
+                mProviders.add(idpConfig);
+            }
+            return this;
+        }
+
+        /**
          * Specifies the set of supported authentication providers. At least one provider
          * must be specified, and the set of providers must be a subset of
-         * {@link #SUPPORTED_PROVIDERS}.
+         * {@link #SUPPORTED_PROVIDERS}. There may only be one instance of each provider.
          *
          * <p>If no providers are explicitly specified by calling this method, then
          * {@link #EMAIL_PROVIDER email} is the default supported provider.
@@ -459,19 +592,21 @@ public class AuthUI {
          * @see #FACEBOOK_PROVIDER
          * @see #GOOGLE_PROVIDER
          */
+        @Deprecated
         public SignInIntentBuilder setProviders(@NonNull String... providers) {
-            mProviders = Arrays.asList(providers);
-            for (String provider : mProviders) {
-                if (!SUPPORTED_PROVIDERS.contains(provider)) {
-                    throw new IllegalArgumentException("Unknown provider: " + provider);
+            mProviders.clear(); // clear the default email provider
+            for (String provider : providers) {
+                if (isIdpAlreadyConfigured(provider)) {
+                    throw new IllegalArgumentException("Provider already configured: " + provider);
                 }
+                mProviders.add(new IdpConfig.Builder(provider).build());
             }
             return this;
         }
 
         /**
          * Enables or disables the use of Smart Lock for Passwords in the sign in flow.
-         * 
+         *
          * <p>SmartLock is enabled by default.
          */
         public SignInIntentBuilder setIsSmartLockEnabled(boolean enabled) {
@@ -496,18 +631,25 @@ public class AuthUI {
 
         @VisibleForTesting
         public Intent build(Context context) {
-            List<IDPProviderParcel> providerInfo =
-                    ProviderHelper.getProviderParcels(context, mProviders);
             return ChooseAccountActivity.createIntent(
                     context,
                     new FlowParameters(
                             mApp.getName(),
-                            providerInfo,
+                            new ArrayList<>(mProviders),
                             mTheme,
                             mLogo,
                             mTosUrl,
                             mIsSmartLockEnabled,
                             mShouldLinkAccounts));
+        }
+
+        private boolean isIdpAlreadyConfigured(@NonNull String providerId) {
+            for (IdpConfig config : mProviders) {
+                if (config.getProviderId().equals(providerId)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

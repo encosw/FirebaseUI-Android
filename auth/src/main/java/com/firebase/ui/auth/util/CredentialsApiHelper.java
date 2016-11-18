@@ -19,7 +19,7 @@ import android.app.PendingIntent;
 import android.support.annotation.NonNull;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.provider.IDPProviderParcel;
+import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialRequest;
@@ -50,17 +50,19 @@ public class CredentialsApiHelper {
         mClientHelper = gacHelper;
     }
 
-    public CredentialRequest createCredentialRequest(List<IDPProviderParcel> providers) {
+    public CredentialRequest createCredentialRequest(List<IdpConfig> providers) {
         boolean emailSupported = false;
         ArrayList<String> idps = new ArrayList<>();
-        for (IDPProviderParcel provider : providers) {
-            String providerId = provider.getProviderType();
+        for (IdpConfig provider : providers) {
+            String providerId = provider.getProviderId();
             if (AuthUI.EMAIL_PROVIDER.equals(providerId)) {
                 emailSupported = true;
             } else if (AuthUI.GOOGLE_PROVIDER.equals(providerId)) {
                 idps.add(IdentityProviders.GOOGLE);
             } else if (AuthUI.FACEBOOK_PROVIDER.equals(providerId)) {
                 idps.add(IdentityProviders.FACEBOOK);
+            } else if (AuthUI.TWITTER_PROVIDER.equals(providerId)) {
+                idps.add(IdentityProviders.TWITTER);
             }
         }
 
@@ -76,8 +78,7 @@ public class CredentialsApiHelper {
                     @Override
                     protected void process(
                             final GoogleApiClient client,
-                            final TaskCompletionSource<CredentialRequestResult> source)
-                            throws Exception {
+                            final TaskCompletionSource<CredentialRequestResult> source) {
                         Auth.CredentialsApi.request(client, request)
                                 .setResultCallback(new TaskResultCaptor<>(source));
                     }
@@ -90,10 +91,9 @@ public class CredentialsApiHelper {
                     @Override
                     protected void process(
                             GoogleApiClient client,
-                            TaskCompletionSource<Status> source)
-                            throws Exception {
+                            TaskCompletionSource<Status> source) {
                         Auth.CredentialsApi.save(client, credential)
-                                .setResultCallback(new TaskResultCaptor<Status>(source));
+                                .setResultCallback(new TaskResultCaptor<>(source));
                     }
                 });
     }
@@ -104,8 +104,7 @@ public class CredentialsApiHelper {
                     @Override
                     protected void process(
                             GoogleApiClient client,
-                            TaskCompletionSource<PendingIntent> source)
-                            throws Exception {
+                            TaskCompletionSource<PendingIntent> source) {
                         source.setResult(Auth.CredentialsApi.getHintPickerIntent(client, request));
                     }
                 });
@@ -117,9 +116,9 @@ public class CredentialsApiHelper {
                     @Override
                     protected void process(
                             GoogleApiClient client,
-                            TaskCompletionSource<Status> source) throws Exception {
+                            TaskCompletionSource<Status> source) {
                         Auth.CredentialsApi.delete(client, credential)
-                                .setResultCallback(new TaskResultCaptor<Status>(source));
+                                .setResultCallback(new TaskResultCaptor<>(source));
                     }
                 });
     }
@@ -130,8 +129,7 @@ public class CredentialsApiHelper {
                     @Override
                     protected void process(
                             final GoogleApiClient client,
-                            final TaskCompletionSource<Status> source)
-                            throws Exception {
+                            final TaskCompletionSource<Status> source) {
                         Auth.CredentialsApi.disableAutoSignIn(client)
                                 .setResultCallback(new ResultCallback<Status>() {
                                     @Override
@@ -169,7 +167,7 @@ public class CredentialsApiHelper {
             return source.getTask();
         }
 
-        protected abstract void process(InT in, TaskCompletionSource<OutT> result) throws Exception;
+        protected abstract void process(InT in, TaskCompletionSource<OutT> result);
     }
 
     private static final class TaskResultCaptor<R extends Result> implements ResultCallback<R> {
