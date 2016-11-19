@@ -262,7 +262,7 @@ public class ChooseAccountActivity extends ActivityBase {
         if (helper.getFlowParams().shouldLinkAccounts && helper.getCurrentUser() != null) {
             // Because we are being called from Smart Lock,
             // we can assume that the account already exists and a user collision exception will be thrown.
-            response = new IdpResponse(response, helper.getCurrentUid());
+            response = new IdpResponse(response, helper.getUidForAccountLinking());
         }
         setIntent(getIntent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response));
 

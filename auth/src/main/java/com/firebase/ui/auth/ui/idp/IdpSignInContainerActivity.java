@@ -93,7 +93,7 @@ public class IdpSignInContainerActivity extends AppCompatBase implements IdpCall
         Task<AuthResult> authResultTask;
         if (mActivityHelper.canLinkAccounts()) {
             authResultTask = mActivityHelper.getCurrentUser().linkWithCredential(credential);
-            response = new IdpResponse(response, mActivityHelper.getCurrentUid());
+            response = new IdpResponse(response, mActivityHelper.getUidForAccountLinking());
         } else {
             authResultTask = firebaseAuth.signInWithCredential(credential);
         }

@@ -104,7 +104,7 @@ public class ActivityHelper {
         return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
     }
 
-    public String getCurrentUid() {
+    public String getUidForAccountLinking() {
         if (canLinkAccounts()) {
             return getCurrentUser().getUid();
         } else {

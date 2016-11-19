@@ -107,7 +107,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
     private void next(final String email, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        mIdpResponse = new IdpResponse(mIdpResponse, mActivityHelper.getCurrentUid());
+        mIdpResponse = new IdpResponse(mIdpResponse, mActivityHelper.getUidForAccountLinking());
 
         // Check for null or empty password
         if (TextUtils.isEmpty(password)) {

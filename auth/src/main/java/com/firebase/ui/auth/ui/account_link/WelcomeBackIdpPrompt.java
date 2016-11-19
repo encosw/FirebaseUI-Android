@@ -206,7 +206,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                                 // Real world example: currently signed in anonymously and Google account already exists.
                                 // Tries to sign in with Google account, this code gets called.
                                 IdpResponse response =
-                                        new IdpResponse(newIdpResponse, mActivityHelper.getCurrentUid());
+                                        new IdpResponse(newIdpResponse, mActivityHelper.getUidForAccountLinking());
                                 FirebaseAuth
                                         .getInstance()
                                         .signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)

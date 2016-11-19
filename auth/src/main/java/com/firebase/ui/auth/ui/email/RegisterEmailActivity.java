@@ -146,7 +146,7 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         if (mActivityHelper.canLinkAccounts()) {
             task = mActivityHelper.getCurrentUser()
                     .linkWithCredential(EmailAuthProvider.getCredential(email, password));
-            response = new IdpResponse(response, mActivityHelper.getCurrentUid());
+            response = new IdpResponse(response, mActivityHelper.getUidForAccountLinking());
         } else {
             task = firebaseAuth.createUserWithEmailAndPassword(email, password);
         }

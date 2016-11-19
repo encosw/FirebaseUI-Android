@@ -97,7 +97,7 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
     private void signIn(final String email, final String password) {
         final IdpResponse response = new IdpResponse(
                 new IdpResponse(EmailAuthProvider.PROVIDER_ID, email),
-                mActivityHelper.getCurrentUid());
+                mActivityHelper.getUidForAccountLinking());
         mActivityHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
