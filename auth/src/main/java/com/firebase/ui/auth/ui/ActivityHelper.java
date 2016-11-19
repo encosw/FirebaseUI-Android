@@ -100,12 +100,15 @@ public class ActivityHelper {
         return getFirebaseAuth().getCurrentUser();
     }
 
-    public Intent getMergeFailedIntent() {
-        FirebaseUser user = getCurrentUser();
-        if (mFlowParams.shouldLinkAccounts && user != null) {
-            return new Intent().putExtra(ExtraConstants.EXTRA_ACCOUNT_LINK_FAILED, user.getUid());
+    public boolean canLinkAccounts() {
+        return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
+    }
+
+    public String getCurrentUid() {
+        if (canLinkAccounts()) {
+            return getCurrentUser().getUid();
         } else {
-            return new Intent();
+            return null;
         }
     }
 
@@ -133,14 +136,6 @@ public class ActivityHelper {
     }
 
     public void saveCredentialsOrFinish(
-            @Nullable SmartLock smartLock,
-            AppCompatBase activity,
-            FirebaseUser firebaseUser,
-            @NonNull String password) {
-        saveCredentialsOrFinish(smartLock, activity, firebaseUser, password, null);
-    }
-
-    private void saveCredentialsOrFinish(
             @Nullable SmartLock smartLock,
             AppCompatBase activity,
             FirebaseUser firebaseUser,

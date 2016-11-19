@@ -31,6 +31,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
@@ -141,14 +142,17 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
     private void registerUser(final String email, final String name, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // create the user
-        FirebaseUser user = firebaseAuth.getCurrentUser();
+        IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
         Task<AuthResult> task;
-        if (mActivityHelper.getFlowParams().shouldLinkAccounts && user != null) {
-            task = user.linkWithCredential(EmailAuthProvider.getCredential(email, password));
+        if (mActivityHelper.canLinkAccounts()) {
+            task = mActivityHelper.getCurrentUser()
+                    .linkWithCredential(EmailAuthProvider.getCredential(email, password));
+            response = new IdpResponse(response, mActivityHelper.getCurrentUid());
         } else {
             task = firebaseAuth.createUserWithEmailAndPassword(email, password);
         }
 
+        final IdpResponse finalResponse = response;
         task.addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
@@ -171,7 +175,8 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                                                 mSmartLock,
                                                 RegisterEmailActivity.this,
                                                 firebaseUser,
-                                                password);
+                                                password,
+                                                finalResponse);
                                     }
                                 });
                     }

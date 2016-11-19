@@ -153,7 +153,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
             return; // do nothing
         }
 
-        AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
+        final AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(newIdpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
             finish(Activity.RESULT_FIRST_USER, new Intent());
@@ -190,7 +190,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
             authResultTask
                     .addOnFailureListener(
                             new TaskFailureLogger(TAG, "Error linking with credential"))
-                    .addOnCompleteListener(new FinishListener(newIdpResponse))
+                    .addOnSuccessListener(new FinishListener(newIdpResponse))
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
@@ -205,32 +205,18 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
 
                                 // Real world example: currently signed in anonymously and Google account already exists.
                                 // Tries to sign in with Google account, this code gets called.
-                                setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
+                                IdpResponse response =
+                                        new IdpResponse(newIdpResponse, mActivityHelper.getCurrentUid());
                                 FirebaseAuth
                                         .getInstance()
                                         .signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
                                                         TAG, "Error linking with credential"))
-                                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                                if (task.isSuccessful()) {
-                                                    mActivityHelper.dismissDialog();
-                                                    finish(Activity.RESULT_OK, getIntent());
-                                                } else {
-                                                    onFinished();
-                                                }
-                                            }
-                                        });
+                                        .addOnCompleteListener(new FinishListener(response));
                             }
                         }
-                    }).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                @Override
-                public void onSuccess(AuthResult result) {
-                    onFinished();
-                }
-            });
+                    });
         }
     }
 
@@ -246,7 +232,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                 .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 
-    private class FinishListener implements OnCompleteListener<AuthResult> {
+    private class FinishListener implements OnCompleteListener<AuthResult>,
+            OnSuccessListener<AuthResult> {
         private final IdpResponse mIdpResponse;
 
         FinishListener(IdpResponse idpResponse) {
@@ -254,8 +241,17 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
         }
 
         public void onComplete(@NonNull Task task) {
+            finishAndSaveResponse();
+        }
+
+        @Override
+        public void onSuccess(AuthResult result) {
+            finishAndSaveResponse();
+        }
+
+        private void finishAndSaveResponse() {
             mActivityHelper.dismissDialog();
-            finish(Activity.RESULT_OK,
+            finish(RESULT_OK,
                    new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, mIdpResponse));
         }
     }

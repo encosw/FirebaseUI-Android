@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
@@ -39,6 +40,7 @@ import com.firebase.ui.auth.util.SmartLock;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
 
 /**
  * Activity to sign in with email and password.
@@ -71,7 +73,8 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
         getResources().getValue(R.dimen.slightly_visible_icon, slightlyVisibleIcon, true);
 
         mPasswordEditText = (EditText) findViewById(R.id.password);
-        ((TextInputLayout) findViewById(R.id.password_layout)).setPasswordVisibilityToggleEnabled(false);
+        ((TextInputLayout) findViewById(R.id.password_layout)).setPasswordVisibilityToggleEnabled(
+                false);
         ImageView togglePasswordImage = (ImageView) findViewById(R.id.toggle_visibility);
 
         mPasswordEditText.setOnFocusChangeListener(new ImageFocusTransparencyChanger(
@@ -94,7 +97,9 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
     }
 
     private void signIn(final String email, final String password) {
-        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
+        final IdpResponse response = new IdpResponse(
+                new IdpResponse(EmailAuthProvider.PROVIDER_ID, email),
+                mActivityHelper.getCurrentUid());
         mActivityHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
@@ -107,7 +112,8 @@ public class SignInActivity extends AppCompatBase implements View.OnClickListene
                                 mSmartLock,
                                 SignInActivity.this,
                                 authResult.getUser(),
-                                password);
+                                password,
+                                response);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

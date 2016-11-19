@@ -109,7 +109,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
     private void next(final String email, final String password) {
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        setIntent(getIntent().putExtras(mActivityHelper.getMergeFailedIntent()));
+        mIdpResponse = new IdpResponse(mIdpResponse, mActivityHelper.getCurrentUid());
 
         // Check for null or empty password
         if (TextUtils.isEmpty(password)) {
@@ -145,7 +145,8 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                                                         mSmartLock,
                                                         WelcomeBackPasswordPrompt.this,
                                                         authResult.getUser(),
-                                                        password);
+                                                        password,
+                                                        mIdpResponse);
                                             }
                                         });
                     }

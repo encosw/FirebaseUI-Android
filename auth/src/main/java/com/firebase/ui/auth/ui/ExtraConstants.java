@@ -23,5 +23,4 @@ public class ExtraConstants {
     public static final String EXTRA_FLOW_PARAMS = "extra_flow_params";
     public static final String EXTRA_IDP_RESPONSE = "extra_idp_response";
     public static final String EXTRA_PROVIDER = "extra_provider";
-    public static final String EXTRA_ACCOUNT_LINK_FAILED = "merge_failed_extra";
 }

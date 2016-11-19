@@ -41,10 +41,11 @@ import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.email.EmailHintContainerActivity;
 import com.firebase.ui.auth.util.EmailFlowUtil;
 import com.firebase.ui.auth.util.SmartLock;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
 
@@ -166,11 +167,10 @@ public class AuthMethodPickerActivity extends AppCompatBase
     public void onSuccess(final IdpResponse response) {
         AuthCredential credential = AuthCredentialHelper.getAuthCredential(response);
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        FirebaseUser user = firebaseAuth.getCurrentUser();
 
         Task<AuthResult> task;
-        if (user != null && mActivityHelper.getFlowParams().shouldLinkAccounts) {
-            task = user.linkWithCredential(credential);
+        if (mActivityHelper.canLinkAccounts()) {
+            task = mActivityHelper.getCurrentUser().linkWithCredential(credential);
         } else {
             task = firebaseAuth.signInWithCredential(credential);
         }

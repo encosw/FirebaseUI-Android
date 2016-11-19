@@ -30,31 +30,42 @@ public class IdpResponse implements Parcelable {
     @Nullable private final String mEmail;
     private final String mToken;
     private final String mSecret;
+    private final String mPrevUid;
 
     public IdpResponse(String providerId, @Nullable String email) {
-        this(providerId, email, null, null);
+        this(providerId, email, null, null, null);
     }
 
-    public IdpResponse(
-            String providerId, @Nullable String email, @Nullable String token) {
-        this(providerId, email, token, null);
+    public IdpResponse(String providerId, @Nullable String email, @Nullable String token) {
+        this(providerId, email, token, null, null);
     }
 
     public IdpResponse(
             String providerId,
             @Nullable String email,
             @Nullable String token,
-            @Nullable String secret) {
+            @Nullable String secret,
+            @Nullable String prevUid) {
         mProviderId = providerId;
         mEmail = email;
         mToken = token;
         mSecret = secret;
+        mPrevUid = prevUid;
+    }
+
+    public IdpResponse(IdpResponse response, String prevUid) {
+        this(response.getProviderType(),
+             response.getEmail(),
+             response.getIdpToken(),
+             response.getIdpSecret(),
+             prevUid);
     }
 
     public static final Creator<IdpResponse> CREATOR = new Creator<IdpResponse>() {
         @Override
         public IdpResponse createFromParcel(Parcel in) {
             return new IdpResponse(
+                    in.readString(),
                     in.readString(),
                     in.readString(),
                     in.readString(),
@@ -76,6 +87,14 @@ public class IdpResponse implements Parcelable {
     }
 
     /**
+     * Get the email used to sign in.
+     */
+    @Nullable
+    public String getEmail() {
+        return mEmail;
+    }
+
+    /**
      * Get the token received as a result of logging in with the specified IDP
      */
     @Nullable
@@ -92,11 +111,14 @@ public class IdpResponse implements Parcelable {
     }
 
     /**
-     * Get the email used to sign in.
+     * For setShouldLinkAccounts(true) users only. Get the previous user id if a conflict occurred.
+     * See the <a href="https://github.com/SUPERCILEX/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">README</a>
+     * for a much more detailed explanation.
+     *
+     * @see AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)
      */
-    @Nullable
-    public String getEmail() {
-        return mEmail;
+    public String getPrevUid() {
+        return mPrevUid;
     }
 
     @Override
@@ -110,6 +132,7 @@ public class IdpResponse implements Parcelable {
         dest.writeString(mEmail);
         dest.writeString(mToken);
         dest.writeString(mSecret);
+        dest.writeString(mPrevUid);
     }
 
     /**

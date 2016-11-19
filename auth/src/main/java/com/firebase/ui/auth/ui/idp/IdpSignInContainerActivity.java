@@ -38,7 +38,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
 
@@ -86,15 +85,15 @@ public class IdpSignInContainerActivity extends AppCompatBase implements IdpCall
     }
 
     @Override
-    public void onSuccess(final IdpResponse response) {
+    public void onSuccess(IdpResponse response) {
         Intent data = new Intent();
         data.putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
         AuthCredential credential = AuthCredentialHelper.getAuthCredential(response);
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        FirebaseUser user = firebaseAuth.getCurrentUser();
         Task<AuthResult> authResultTask;
-        if (mActivityHelper.getFlowParams().shouldLinkAccounts && user != null) {
-            authResultTask = user.linkWithCredential(credential);
+        if (mActivityHelper.canLinkAccounts()) {
+            authResultTask = mActivityHelper.getCurrentUser().linkWithCredential(credential);
+            response = new IdpResponse(response, mActivityHelper.getCurrentUid());
         } else {
             authResultTask = firebaseAuth.signInWithCredential(credential);
         }

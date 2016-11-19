@@ -131,12 +131,12 @@ public class AuthUiActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            if (!user.isAnonymous()) {
-                startActivity(SignedInActivity.createIntent(this));
-                finish();
-            }
+        if (user != null && !user.isAnonymous()) {
+            startActivity(SignedInActivity.createIntent(this, null));
+            finish();
         }
+        mEnableSmartLock.setChecked(false);
+        mShouldLinkAccounts.setChecked(true);
 
         if (!isGoogleConfigured()) {
             mUseGoogleProvider.setChecked(false);

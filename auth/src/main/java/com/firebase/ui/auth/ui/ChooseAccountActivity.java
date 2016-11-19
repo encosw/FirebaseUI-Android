@@ -25,6 +25,7 @@ import android.util.Log;
 
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.BuildConfig;
+import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.ui.idp.IdpSignInContainerActivity;
 import com.firebase.ui.auth.util.CredentialsAPI;
@@ -257,11 +258,13 @@ public class ChooseAccountActivity extends ActivityBase {
      * auth method picker flow.
      */
     private void signInWithEmailAndPassword(ActivityHelper helper, String email, String password) {
+        IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
         if (helper.getFlowParams().shouldLinkAccounts && helper.getCurrentUser() != null) {
             // Because we are being called from Smart Lock,
             // we can assume that the account already exists and a user collision exception will be thrown.
-            setIntent(getIntent().putExtras(helper.getMergeFailedIntent()));
+            response = new IdpResponse(response, helper.getCurrentUid());
         }
+        setIntent(getIntent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response));
 
         helper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)

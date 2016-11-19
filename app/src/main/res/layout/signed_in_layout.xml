@@ -95,6 +95,25 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/prev_uid_layout"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/Base.TextAppearance.AppCompat.Subhead"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/prev_uid"/>
+
+            <TextView
+                android:id="@+id/prev_uid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/idp_token_layout"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
