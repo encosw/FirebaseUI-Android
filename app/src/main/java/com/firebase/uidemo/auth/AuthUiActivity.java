@@ -135,8 +135,6 @@ public class AuthUiActivity extends AppCompatActivity {
             startActivity(SignedInActivity.createIntent(this, null));
             finish();
         }
-        mEnableSmartLock.setChecked(false);
-        mShouldLinkAccounts.setChecked(true);
 
         if (!isGoogleConfigured()) {
             mUseGoogleProvider.setChecked(false);
