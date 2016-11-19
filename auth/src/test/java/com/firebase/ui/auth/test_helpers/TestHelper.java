@@ -26,14 +26,15 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.mockito.ArgumentCaptor;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -101,7 +102,8 @@ public class TestHelper {
         assertEquals(email, userArgumentCaptor.getValue().getEmail());
         assertEquals(password, passwordArgumentCaptor.getValue());
         if (providerId == null) {
-            assertNull(idpResponseArgumentCaptor.getValue());
+            assertEquals(EmailAuthProvider.PROVIDER_ID,
+                         idpResponseArgumentCaptor.getValue().getProviderType());
         } else {
             assertEquals(
                     providerId,
