@@ -264,7 +264,7 @@ public class ChooseAccountActivity extends ActivityBase {
             // we can assume that the account already exists and a user collision exception will be thrown.
             response = new IdpResponse(response, helper.getUidForAccountLinking());
         }
-        setIntent(getIntent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response));
+        getIntent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
 
         helper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
