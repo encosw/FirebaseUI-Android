@@ -23,6 +23,7 @@ import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.test_helpers.ActivityHelperShadow;
 import com.firebase.ui.auth.test_helpers.AutoCompleteTask;
+import com.firebase.ui.auth.test_helpers.BaseHelperShadow;
 import com.firebase.ui.auth.test_helpers.CustomRobolectricGradleTestRunner;
 import com.firebase.ui.auth.test_helpers.FakeAuthResult;
 import com.firebase.ui.auth.test_helpers.FirebaseAuthWrapperImplShadow;
@@ -97,11 +98,11 @@ public class SignInActivityTest {
     }
 
     @Test
-    @Config(shadows = {ActivityHelperShadow.class, FirebaseAuthWrapperImplShadow.class})
+    @Config(shadows = {BaseHelperShadow.class, ActivityHelperShadow.class, FirebaseAuthWrapperImplShadow.class})
     public void testSignInButton_signsInAndSavesCredentials() {
         // initialize mocks
         new ActivityHelperShadow();
-        reset(ActivityHelperShadow.smartLock);
+        reset(ActivityHelperShadow.sSaveSmartLock);
 
         SignInActivity signInActivity = createActivity();
         EditText emailField = (EditText) signInActivity.findViewById(R.id.email);
@@ -111,7 +112,7 @@ public class SignInActivityTest {
 
         FirebaseUser mockFirebaseUser = mock(FirebaseUser.class);
 
-        when(ActivityHelperShadow.firebaseAuth.signInWithEmailAndPassword(
+        when(ActivityHelperShadow.sFirebaseAuth.signInWithEmailAndPassword(
                 TestConstants.EMAIL,
                 TestConstants.PASSWORD))
                 .thenReturn(
@@ -125,7 +126,7 @@ public class SignInActivityTest {
         Button signIn = (Button) signInActivity.findViewById(R.id.button_done);
         signIn.performClick();
 
-        verify(ActivityHelperShadow.firebaseAuth).signInWithEmailAndPassword(
+        verify(ActivityHelperShadow.sFirebaseAuth).signInWithEmailAndPassword(
                 TestConstants.EMAIL,
                 TestConstants.PASSWORD);
 

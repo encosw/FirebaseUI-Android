@@ -29,8 +29,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RadioButton;
-
 import android.widget.TextView;
+
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.IdpResponse;
@@ -202,21 +202,6 @@ public class AuthUiActivity extends AppCompatActivity {
         showSnackbar(R.string.unknown_response);
     }
 
-
-    @MainThread
-    private void setGoogleScopesEnabled(boolean enabled) {
-        mGoogleScopesLabel.setEnabled(enabled);
-        mGoogleScopeDriveFile.setEnabled(enabled);
-        mGoogleScopeGames.setEnabled(enabled);
-    }
-
-    @MainThread
-    private void setFacebookScopesEnabled(boolean enabled) {
-        mFacebookScopesLabel.setEnabled(enabled);
-        mFacebookScopeFriends.setEnabled(enabled);
-        mFacebookScopePhotos.setEnabled(enabled);
-    }
-
     @MainThread
     private void handleSignInResponse(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
@@ -236,6 +221,20 @@ public class AuthUiActivity extends AppCompatActivity {
         }
 
         showSnackbar(R.string.unknown_sign_in_response);
+    }
+
+    @MainThread
+    private void setGoogleScopesEnabled(boolean enabled) {
+        mGoogleScopesLabel.setEnabled(enabled);
+        mGoogleScopeDriveFile.setEnabled(enabled);
+        mGoogleScopeGames.setEnabled(enabled);
+    }
+
+    @MainThread
+    private void setFacebookScopesEnabled(boolean enabled) {
+        mFacebookScopesLabel.setEnabled(enabled);
+        mFacebookScopeFriends.setEnabled(enabled);
+        mFacebookScopePhotos.setEnabled(enabled);
     }
 
     @MainThread

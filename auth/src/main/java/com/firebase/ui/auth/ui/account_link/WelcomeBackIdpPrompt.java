@@ -28,14 +28,14 @@ import android.widget.Toast;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
+import com.firebase.ui.auth.provider.AuthCredentialHelper;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
 import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
 import com.firebase.ui.auth.provider.TwitterProvider;
-import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.AppCompatBase;
-import com.firebase.ui.auth.ui.AuthCredentialHelper;
+import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
@@ -178,7 +178,6 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                                         TAG, "Error signing in with previous credential"))
                                 .addOnCompleteListener(new FinishListener(newIdpResponse));
                     } else {
-                        mActivityHelper.dismissDialog();
                         finish(Activity.RESULT_OK, new Intent().putExtra(
                                 ExtraConstants.EXTRA_IDP_RESPONSE, newIdpResponse));
                     }
@@ -226,7 +225,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
             String providerId,
             IdpResponse idpResponse,
             String email) {
-        return ActivityHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
+        return BaseHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
                 .putExtra(ExtraConstants.EXTRA_PROVIDER, providerId)
                 .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, idpResponse)
                 .putExtra(ExtraConstants.EXTRA_EMAIL, email);
@@ -251,7 +250,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
 
         private void finishAndSaveResponse() {
             mActivityHelper.dismissDialog();
-            finish(RESULT_OK,
+            finish(Activity.RESULT_OK,
                    new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, mIdpResponse));
         }
     }

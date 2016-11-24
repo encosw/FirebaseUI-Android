@@ -19,8 +19,6 @@ import android.content.Context;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.IdpResponse;
-import com.firebase.ui.auth.ui.ActivityHelper;
-import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -50,9 +48,9 @@ public class TestHelper {
             return FirebaseApp.initializeApp(
                     context,
                     new FirebaseOptions.Builder()
-                        .setApiKey(API_KEY)
-                        .setApplicationId(APPLICATION_ID)
-                        .build(),
+                            .setApiKey(API_KEY)
+                            .setApplicationId(APPLICATION_ID)
+                            .build(),
                     FIREBASE_APP_NAME);
         } catch (IllegalStateException e) {
             return FirebaseApp.getInstance(FIREBASE_APP_NAME);
@@ -96,8 +94,8 @@ public class TestHelper {
         ArgumentCaptor<IdpResponse> idpResponseArgumentCaptor =
                 ArgumentCaptor.forClass(IdpResponse.class);
         ArgumentCaptor<String> passwordArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(ActivityHelperShadow.smartLock).saveCredentialsOrFinish(
-                any(AppCompatBase.class), any(ActivityHelper.class), userArgumentCaptor.capture(),
+        verify(ActivityHelperShadow.sSaveSmartLock)
+                .saveCredentialsOrFinish(userArgumentCaptor.capture(),
                 passwordArgumentCaptor.capture(), idpResponseArgumentCaptor.capture());
         assertEquals(email, userArgumentCaptor.getValue().getEmail());
         assertEquals(password, passwordArgumentCaptor.getValue());
