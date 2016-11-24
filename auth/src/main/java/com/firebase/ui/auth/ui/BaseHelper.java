@@ -87,6 +87,18 @@ public class BaseHelper {
         return getFirebaseAuth().getCurrentUser();
     }
 
+    public boolean canLinkAccounts() {
+        return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
+    }
+
+    public String getUidForAccountLinking() {
+        if (canLinkAccounts()) {
+            return getCurrentUser().getUid();
+        } else {
+            return null;
+        }
+    }
+
     public static Intent createBaseIntent(
             @NonNull Context context,
             @NonNull Class<? extends Activity> target,
@@ -100,14 +112,6 @@ public class BaseHelper {
 
     public SaveSmartLock getSaveSmartLockInstance(FragmentActivity activity) {
         return SaveSmartLock.getInstance(activity, getFlowParams());
-    }
-
-    public void saveCredentialsOrFinish(
-            @Nullable SaveSmartLock saveSmartLock,
-            Activity activity,
-            FirebaseUser firebaseUser,
-            @NonNull IdpResponse response) {
-        saveCredentialsOrFinish(saveSmartLock, activity, firebaseUser, null, response);
     }
 
     public void saveCredentialsOrFinish(

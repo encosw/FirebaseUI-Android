@@ -66,6 +66,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                     mSmartLock,
                     mActivity,
                     firebaseUser,
+                    null,
                     mResponse);
         } else {
             if (task.getException() instanceof FirebaseAuthUserCollisionException) {

@@ -104,6 +104,7 @@ public class CredentialSignInHandlerTest {
                 smartLock,
                 mockActivity,
                 mockFirebaseUser,
+                null,
                 idpResponse);
     }
 

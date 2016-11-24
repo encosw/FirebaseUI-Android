@@ -41,7 +41,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
 
@@ -87,16 +86,12 @@ public class IdpSignInContainer extends BaseFragment implements IdpCallback {
 
     @Override
     public void onSuccess(IdpResponse response) {
-        Intent data = new Intent();
-        data.putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
         AuthCredential credential = AuthCredentialHelper.getAuthCredential(response);
-        final FirebaseAuth firebaseAuth = mHelper.getFirebaseAuth();
         Task<AuthResult> authResultTask;
-        if (mActivityHelper.canLinkAccounts()) {
-            authResultTask = mActivityHelper.getCurrentUser().linkWithCredential(credential);
-            response = new IdpResponse(response, mActivityHelper.getUidForAccountLinking());
+        if (mHelper.canLinkAccounts()) {
+            authResultTask = mHelper.getCurrentUser().linkWithCredential(credential);
         } else {
-            authResultTask = firebaseAuth.signInWithCredential(credential);
+            authResultTask = mHelper.getFirebaseAuth().signInWithCredential(credential);
         }
         authResultTask
                 .addOnFailureListener(

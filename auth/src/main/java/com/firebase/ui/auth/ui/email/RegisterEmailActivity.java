@@ -48,7 +48,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
@@ -139,19 +138,15 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
     }
 
     private void registerUser(final String email, final String name, final String password) {
-        final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // create the user
-        IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
         Task<AuthResult> task;
         if (mActivityHelper.canLinkAccounts()) {
             task = mActivityHelper.getCurrentUser()
                     .linkWithCredential(EmailAuthProvider.getCredential(email, password));
-            response = new IdpResponse(response, mActivityHelper.getUidForAccountLinking());
         } else {
-            task = firebaseAuth.createUserWithEmailAndPassword(email, password);
+            task = mActivityHelper.getFirebaseAuth()
+                    .createUserWithEmailAndPassword(email, password);
         }
-
-        final IdpResponse finalResponse = response;
         task.addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
@@ -174,7 +169,8 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
                                                 mSaveSmartLock,
                                                 firebaseUser,
                                                 password,
-                                                finalResponse);
+                                                new IdpResponse(EmailAuthProvider.PROVIDER_ID,
+                                                                email));
                                     }
                                 });
                     }
