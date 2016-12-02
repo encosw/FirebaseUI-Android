@@ -23,4 +23,5 @@ public class TestConstants {
     public static final String PHOTO_URL = "http://example.com/profile.png";
     public static final Uri PHOTO_URI = Uri.parse(PHOTO_URL);
     public static final String TOS_URL = "http://www.google.com";
+    public static final String UID = "uid";
 }

@@ -280,14 +280,12 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
      * auth method picker flow.
      */
     private void signInWithEmailAndPassword(String email, String password) {
-        IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
-        if (mHelper.canLinkAccounts()) {
-            // Because we are being called from Smart Lock,
-            // we can assume that the account already exists and a user collision exception will be thrown.
-            response = new IdpResponse(response, mHelper.getUidForAccountLinking());
-        }
+        // Because we are being called from Smart Lock,
+        // we can assume that the account already exists and a user collision exception will be thrown.
+        final IdpResponse response = new IdpResponse(
+                new IdpResponse(EmailAuthProvider.PROVIDER_ID, email),
+                mHelper.getUidForAccountLinking());
 
-        final IdpResponse finalResponse = response;
         mHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(new TaskFailureLogger(
@@ -297,7 +295,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                     public void onSuccess(AuthResult authResult) {
                         finish(RESULT_OK,
                                new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE,
-                                                     finalResponse));
+                                                     response));
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

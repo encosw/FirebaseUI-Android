@@ -123,6 +123,8 @@ public class RegisterEmailActivity extends AppCompatBase implements View.OnClick
         // create the user
         Task<AuthResult> task;
         if (mActivityHelper.canLinkAccounts()) {
+            // We don't the user proceed if there is a FirebaseAuthUserCollisionException
+            // so we can safely assume that getUidForAccountLinking will be null
             task = mActivityHelper.getCurrentUser()
                     .linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {

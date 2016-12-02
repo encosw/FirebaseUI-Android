@@ -153,7 +153,7 @@ public class AuthMethodPickerActivityTest {
         assertNotNull(facebookButton);
         facebookButton.performClick();
 
-        verifySmartLockSave(AuthUI.FACEBOOK_PROVIDER, TestConstants.EMAIL, null);
+        verifySmartLockSave(AuthUI.FACEBOOK_PROVIDER, TestConstants.EMAIL, null, null);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class AuthMethodPickerActivityTest {
         assertNotNull(googleButton);
         googleButton.performClick();
 
-        verifySmartLockSave(AuthUI.GOOGLE_PROVIDER, TestConstants.EMAIL, null);
+        verifySmartLockSave(AuthUI.GOOGLE_PROVIDER, TestConstants.EMAIL, null, null);
     }
 
 

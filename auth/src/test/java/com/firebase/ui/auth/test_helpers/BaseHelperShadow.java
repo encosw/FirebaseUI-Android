@@ -31,4 +31,9 @@ public class BaseHelperShadow {
     public CredentialsApi getCredentialsApi() {
         return sCredentialsApi;
     }
+
+    @Implementation
+    public String getUidForAccountLinking() {
+        return TestConstants.UID;
+    }
 }

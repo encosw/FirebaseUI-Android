@@ -24,7 +24,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
 
 import org.mockito.ArgumentCaptor;
@@ -69,7 +68,7 @@ public class TestHelper {
                 AuthUI.NO_LOGO,
                 null,
                 true,
-                false);
+                true);
     }
 
     public static FirebaseUser makeMockFirebaseUser() {
@@ -88,24 +87,22 @@ public class TestHelper {
         return availability;
     }
 
-    public static void verifySmartLockSave(String providerId, String email, String password) {
-        ArgumentCaptor<FirebaseUser> userArgumentCaptor =
-                ArgumentCaptor.forClass(FirebaseUser.class);
-        ArgumentCaptor<IdpResponse> idpResponseArgumentCaptor =
-                ArgumentCaptor.forClass(IdpResponse.class);
-        ArgumentCaptor<String> passwordArgumentCaptor = ArgumentCaptor.forClass(String.class);
-        verify(ActivityHelperShadow.sSaveSmartLock)
-                .saveCredentialsOrFinish(userArgumentCaptor.capture(),
-                passwordArgumentCaptor.capture(), idpResponseArgumentCaptor.capture());
-        assertEquals(email, userArgumentCaptor.getValue().getEmail());
-        assertEquals(password, passwordArgumentCaptor.getValue());
-        if (providerId == null) {
-            assertEquals(EmailAuthProvider.PROVIDER_ID,
-                         idpResponseArgumentCaptor.getValue().getProviderType());
-        } else {
-            assertEquals(
-                    providerId,
-                    idpResponseArgumentCaptor.getValue().getProviderType());
-        }
+    public static void verifySmartLockSave(String providerId,
+                                           String email,
+                                           String password,
+                                           String accountLinkingUid) {
+        ArgumentCaptor<FirebaseUser> userCaptor = ArgumentCaptor.forClass(FirebaseUser.class);
+        ArgumentCaptor<IdpResponse> idpResponseCaptor = ArgumentCaptor.forClass(IdpResponse.class);
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(ActivityHelperShadow.sSaveSmartLock).saveCredentialsOrFinish(
+                userCaptor.capture(),
+                passwordCaptor.capture(),
+                idpResponseCaptor.capture());
+
+        assertEquals(email, userCaptor.getValue().getEmail());
+        assertEquals(password, passwordCaptor.getValue());
+        assertEquals(providerId, idpResponseCaptor.getValue().getProviderType());
+        assertEquals(accountLinkingUid, idpResponseCaptor.getValue().getPrevUid());
     }
 }
