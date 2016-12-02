@@ -146,7 +146,7 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
             @Override
             public void populateViewHolder(ChatHolder chatView, Chat chat, int position) {
                 chatView.setName(chat.getName());
-                chatView.setText(chat.getMessage());
+                chatView.setText(chat.getText());
 
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 if (currentUser != null && chat.getUid().equals(currentUser.getUid())) {
@@ -188,7 +188,7 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
     }
 
     public boolean isSignedIn() {
-        return mAuth.getCurrentUser() != null;
+        return (mAuth.getCurrentUser() != null);
     }
 
     public void updateUI() {
@@ -198,17 +198,18 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
     }
 
     public static class Chat {
-        private String name;
-        private String uid;
-        private String message;
+
+        String name;
+        String text;
+        String uid;
 
         public Chat() {
         }
 
         public Chat(String name, String uid, String message) {
             this.name = name;
+            this.text = message;
             this.uid = uid;
-            this.message = message;
         }
 
         public String getName() {
@@ -219,8 +220,8 @@ public class ChatActivity extends AppCompatActivity implements FirebaseAuth.Auth
             return uid;
         }
 
-        public String getMessage() {
-            return message;
+        public String getText() {
+            return text;
         }
     }
 

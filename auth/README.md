@@ -266,54 +266,63 @@ for more information.
 Only applies to developers using `setShouldLinkAccounts`.
 
 Imagine the following scenario: A user already has an existing account and uid in your app.
-They switch devices, you don't have Smart Lock enabled, and they add some data to Firebase using an anonymous account.
+They switch devices and you don't have Smart Lock enabled to automatically sign them in.
+Therefore, the user adds some data to Firebase using an anonymous account.
 In the unlikely event that the above scenario occurs,
 you must manually handle merging of the two accounts because this user now has two
-user ids associated with him/her: the anonymous account uid and the existing account uid.
-At the moment, Firebase cannot handle such user collisions automatically
-and thus, you must handle this edge case to ensure data a user created while using an
+user ids associated with him/her: the anonymous account uid and the uid of the existing account.
+At the moment, Firebase cannot handle such user collisions automatically,
+thus, you must handle this edge case to ensure data a user creates while using an
 anonymous account is transferred to the user's existing account.
 
 Here is how you would handle such an edge case in `onActivityResult`
-if you have data structured similarly to the [sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
+if you have data structured similarly to the
+[sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
 
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     if (requestCode == RC_SIGN_IN) {
         if (resultCode == RESULT_OK) {
-            // user is signed in but we must check to see whether or not account linking failed
-            final String prevUid = data.getStringExtra(ExtraConstants.EXTRA_ACCOUNT_LINK_FAILED);
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+            // User is signed in, but we must check to see whether or not account linking failed.
+            String prevUid = response != null ? response.getPrevUid() : null;
             if (prevUid != null) {
+                // Account linking failed: a previous id was found.
                 Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
                 FirebaseDatabase.getInstance()
-                    .getReference()
-                    .child("chats")
-                    .addListenerForSingleValueEvent(
-                        new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot snapshot) {
-                                // change all references of prevUid to the current uid
-                                if (snapshot.getValue() != null) {
-                                    String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                                    for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
-                                        ChatActivity.Chat chat = chatSnapshot.getValue(ChatActivity.Chat.class);
-                                        if (chat.getUid().equals(prevUid)) {
-                                            chatSnapshot.getRef().child("uid").setValue(currentUid);
-                                            chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
+                        .getReference()
+                        .child("chats")
+                        .orderByChild("uid") // This is the child used in equalTo()
+                        .equalTo(prevUid) // Only get uids == prevUid
+                        .addListenerForSingleValueEvent(
+                                new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot snapshot) {
+                                        // change all references of prevUid to the current uid
+                                        if (snapshot.getValue() != null) {
+                                            String currentUid = FirebaseAuth.getInstance()
+                                                    .getCurrentUser()
+                                                    .getUid();
+
+                                            for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                                // Replace old uids with currentUid
+                                                chatSnapshot.getRef()
+                                                        .child("uid")
+                                                        .setValue(currentUid);
+                                                chatSnapshot.getRef()
+                                                        .child("name")
+                                                        .setValue("User " + currentUid.substring(0, 6));
+                                            }
                                         }
                                     }
-                                }
-                            }
-                            
-                            @Override
-                            public void onCancelled(DatabaseError error) {
-                                Log.e(TAG, "onCancelled: ", error.toException());
-                            }
-                        });
+
+                                    @Override
+                                    public void onCancelled(DatabaseError error) {
+                                        FirebaseCrash.report(error.toException());
+                                    }
+                                });
             }
-            startActivity(new Intent(this, WelcomeBackActivity.class));
-            finish();
         } else {
             // user is not signed in. Maybe just wait for the user to press
             // "sign in" again, or show a message
