@@ -20,16 +20,16 @@ We can represent a chat message with this Java class:
 ```java
 public static class Chat {
     private String name;
+    private String text;
     private String uid;
-    private String message;
 
     public Chat() {
     }
 
     public Chat(String name, String uid, String message) {
         this.name = name;
+        this.text = message;
         this.uid = uid;
-        this.message = message;
     }
 
     public String getName() {
@@ -40,8 +40,8 @@ public static class Chat {
         return uid;
     }
 
-    public String getMessage() {
-        return message;
+    public String getText() {
+        return text;
     }
 }
 ```
