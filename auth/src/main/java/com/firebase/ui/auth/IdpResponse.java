@@ -44,6 +44,14 @@ public class IdpResponse implements Parcelable {
             String providerId,
             @Nullable String email,
             @Nullable String token,
+            @Nullable String secret) {
+        this(providerId, email, token, secret, null);
+    }
+
+    public IdpResponse(
+            String providerId,
+            @Nullable String email,
+            @Nullable String token,
             @Nullable String secret,
             @Nullable String prevUid) {
         mProviderId = providerId;

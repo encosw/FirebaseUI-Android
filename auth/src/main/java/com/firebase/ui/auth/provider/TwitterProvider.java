@@ -85,7 +85,6 @@ public class TwitterProvider extends Callback<TwitterSession> implements IdpProv
                 TwitterAuthProvider.PROVIDER_ID,
                 null,
                 twitterSession.getAuthToken().token,
-                twitterSession.getAuthToken().secret,
-                null);
+                twitterSession.getAuthToken().secret);
     }
 }
