@@ -68,8 +68,7 @@ public class SaveSmartLock extends SmartLockBase<Status> {
         if (mPassword == null) {
             // only password OR provider can be set, not both
             if (mResponse != null) {
-                String translatedProvider =
-                        providerIdToAccountType(mResponse.getProviderType());
+                String translatedProvider = providerIdToAccountType(mResponse.getProviderType());
                 if (translatedProvider != null) {
                     builder.setAccountType(translatedProvider);
                 } else {
