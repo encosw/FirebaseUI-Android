@@ -33,7 +33,7 @@ public class IdpResponse implements Parcelable {
     private final String mPrevUid;
 
     public IdpResponse(String providerId, @Nullable String email) {
-        this(providerId, email, null, null, null);
+        this(providerId, email, null);
     }
 
     public IdpResponse(String providerId, @Nullable String email, @Nullable String token) {

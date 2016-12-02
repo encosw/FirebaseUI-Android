@@ -249,7 +249,6 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
         }
 
         private void finishAndSaveResponse() {
-            mActivityHelper.dismissDialog();
             finish(Activity.RESULT_OK,
                    new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, mIdpResponse));
         }
