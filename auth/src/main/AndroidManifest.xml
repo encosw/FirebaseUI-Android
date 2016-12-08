@@ -1,9 +1,9 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.firebase.ui.auth">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application>
 
@@ -15,14 +15,12 @@
             android:name="io.fabric.ApiKey"
             android:value="@string/twitter_consumer_secret"/>
 
-        <activity
-            android:name=".KickoffActivity"
-            android:label="@string/default_toolbar_title"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_application_id"/>
 
         <activity
-            android:name=".ui.email.EmailHintContainerActivity"
+            android:name=".KickoffActivity"
             android:label="@string/default_toolbar_title"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
@@ -40,25 +38,13 @@
             android:theme="@style/FirebaseUI"/>
 
         <activity
-            android:name=".ui.email.SignInNoPasswordActivity"
-            android:label="@string/title_sign_in_no_password_activity"
-            android:exported="false"
-            android:theme="@style/FirebaseUI"/>
-
-        <activity
-            android:name=".ui.email.SignInActivity"
-            android:label="@string/title_sign_in_activity"
-            android:exported="false"
-            android:theme="@style/FirebaseUI"/>
-
-        <activity
-            android:name=".ui.account_link.WelcomeBackIdpPrompt"
+            android:name=".ui.accountlink.WelcomeBackIdpPrompt"
             android:label="@string/title_welcome_back_idp_prompt"
             android:exported="false"
             android:theme="@style/FirebaseUI"/>
 
         <activity
-            android:name=".ui.account_link.WelcomeBackPasswordPrompt"
+            android:name=".ui.accountlink.WelcomeBackPasswordPrompt"
             android:label="@string/title_welcome_back_password_prompt"
             android:exported="false"
             android:theme="@style/FirebaseUI"/>
@@ -71,10 +57,8 @@
 
         <activity
             android:name="com.facebook.FacebookActivity"
-            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            tools:replace="android:theme"/>
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"/>
 
         <activity
             android:name="com.facebook.CustomTabActivity"

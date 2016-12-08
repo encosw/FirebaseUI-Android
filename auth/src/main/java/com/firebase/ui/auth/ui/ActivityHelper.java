@@ -30,6 +30,10 @@ public class ActivityHelper extends BaseHelper {
         mActivity = activity;
     }
 
+    public void configureTheme() {
+        mActivity.setTheme(getFlowParams().themeId);
+    }
+
     public void startActivityForResult(Intent intent, int requestCode) {
         mActivity.startActivityForResult(intent, requestCode);
     }
@@ -48,5 +52,12 @@ public class ActivityHelper extends BaseHelper {
             @NonNull String password,
             IdpResponse response) {
         saveCredentialsOrFinish(saveSmartLock, mActivity, firebaseUser, password, response);
+    }
+
+    public void saveCredentialsOrFinish(
+            @Nullable SaveSmartLock saveSmartLock,
+            FirebaseUser firebaseUser,
+            IdpResponse response) {
+        saveCredentialsOrFinish(saveSmartLock, mActivity, firebaseUser, null, response);
     }
 }

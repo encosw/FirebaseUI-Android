@@ -32,7 +32,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.uidemo.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -64,6 +63,8 @@ public class SignedInActivity extends AppCompatActivity {
     @BindView(R.id.user_enabled_providers)
     TextView mEnabledProviders;
 
+    private IdpResponse mIdpResponse;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +75,8 @@ public class SignedInActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        mIdpResponse = getIntent().getParcelableExtra(EXTRA_IDP_RESPONSE);
 
         setContentView(R.layout.signed_in_layout);
         ButterKnife.bind(this);
@@ -147,7 +150,7 @@ public class SignedInActivity extends AppCompatActivity {
         mUserDisplayName.setText(
                 TextUtils.isEmpty(user.getDisplayName()) ? "No display name" : user.getDisplayName());
 
-        StringBuilder providerList = new StringBuilder();
+        StringBuilder providerList = new StringBuilder(100);
 
         providerList.append("Providers used: ");
 
@@ -177,12 +180,11 @@ public class SignedInActivity extends AppCompatActivity {
     }
 
     private void populateIdpToken() {
-        IdpResponse idpResponse = getIntent().getParcelableExtra(ExtraConstants.EXTRA_IDP_RESPONSE);
         String token = null;
         String secret = null;
-        if (idpResponse != null) {
-            token = idpResponse.getIdpToken();
-            secret = idpResponse.getIdpSecret();
+        if (mIdpResponse != null) {
+            String token = mIdpResponse.getIdpToken();
+            String secret = mIdpResponse.getIdpSecret();
         }
         if (token == null) {
             findViewById(R.id.idp_token_layout).setVisibility(View.GONE);
@@ -197,9 +199,8 @@ public class SignedInActivity extends AppCompatActivity {
     }
 
     private void populatePrevUid() {
-        IdpResponse idpResponse = getIntent().getParcelableExtra(ExtraConstants.EXTRA_IDP_RESPONSE);
         String prevUid = null;
-        if (idpResponse != null) prevUid = idpResponse.getPrevUid();
+        if (mIdpResponse != null) prevUid = mIdpResponse.getPrevUid();
         if (prevUid == null) {
             findViewById(R.id.prev_uid_layout).setVisibility(View.GONE);
         } else {

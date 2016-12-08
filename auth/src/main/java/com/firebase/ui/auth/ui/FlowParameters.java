@@ -23,7 +23,6 @@ import android.support.annotation.StyleRes;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.util.Preconditions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

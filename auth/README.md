@@ -82,8 +82,7 @@ the [Facebook developer dashboard](https://developers.facebook.com):
 
 If support for Twitter Sign-in is also required, define the resource strings
 `twitter_consumer_key` and `twitter_consumer_secret` to match the values of your
-Twitter app as reported by the
-[Twitter application manager](https://dev.twitter.com/apps).
+Twitter app as reported by the [Twitter application manager](https://apps.twitter.com/).
 
 ```
 <resources>
@@ -92,11 +91,15 @@ Twitter app as reported by the
 </resources>
 ```
 
+In addition, if you are using Smart Lock or require a user's email, you must enable the
+"Request email addresses from users" permission in the "Permissions" tab of your app.
+
 ## Using FirebaseUI for Authentication
 
 Before invoking the FirebaseUI authentication flow, your app should check
 whether a
-[user is already signed in](https://firebase.google.com/docs/auth/android/manage-users#get_the_currently_signed-in_user) from a previous session:
+[user is already signed in](https://firebase.google.com/docs/auth/android/manage-users#get_the_currently_signed-in_user)
+from a previous session:
 
 ```java
 FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -139,11 +142,21 @@ If no customization is required, and only email authentication is required, the 
 can be started as follows:
 
 ```java
+// Choose an arbitrary request code value
+private static final int RC_SIGN_IN = 123;
+
+// ...
+
 startActivityForResult(
     // Get an instance of AuthUI based on the default app
     AuthUI.getInstance().createSignInIntentBuilder().build(),
     RC_SIGN_IN);
 ```
+
+To kick off the FirebaseUI sign in flow, call startActivityForResult(...) on the sign in Intent you built.
+The second parameter (RC_SIGN_IN) is a request code you define to identify the request when the result
+is returned to your app in onActivityResult(...). See the [response codes](#response-codes) section below for more
+details on receiving the results of the sign in flow.
 
 You can enable sign-in providers like Google Sign-In or Facebook Log In by calling the
 `setProviders` method:
@@ -221,38 +234,46 @@ There is a caveat associated with using the `setShouldLinkAccounts` method, see
 #### Handling the sign-in response
 
 #####Response codes
-The authentication flow only provides three response codes:
-`Activity.RESULT_OK` if a user is signed in, `Activity.RESULT_CANCELLED` if
-sign in failed, and `ResultCodes.RESULT_NO_NETWORK` if sign in failed due to a lack of network connectivity.
-No further information on failure is provided as it is not
-typically useful; the only recourse for most apps if sign in fails is to ask
-the user to sign in again later, or proceed with anonymous sign-in if
-supported.
+The authentication flow provides several response codes of which the most common are as follows:
+`ResultCodes.OK` if a user is signed in, `ResultCodes.CANCELLED` if the user manually canceled the sign in,
+`ResultCodes.NO_NETWORK` if sign in failed due to a lack of network connectivity,
+and `ResultCodes.UNKNOWN_ERROR` for all other errors.
+Typically, the only recourse for most apps if sign in fails is to ask
+the user to sign in again later, or proceed with anonymous sign-in if supported.
 
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (resultCode == RESULT_OK) {
-        // user is signed in!
-        startActivity(new Intent(this, WelcomeBackActivity.class));
-        finish();
-        return;
-    }
+    // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
+    if (requestCode == RC_SIGN_IN) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
 
-    // Sign in canceled
-    if (resultCode == RESULT_CANCELED) {
-        showSnackbar(R.string.sign_in_cancelled);
-        return;
-    }
+        // Successfully signed in
+        if (resultCode == ResultCodes.OK) {
+            startActivity(SignedInActivity.createIntent(this, response));
+            finish();
+            return;
+        } else {
+            // Sign in failed
+            if (response == null) {
+                // User pressed back button
+                showSnackbar(R.string.sign_in_cancelled);
+                return;
+            }
 
-    // No network
-    if (resultCode == ResultCodes.RESULT_NO_NETWORK) {
-        showSnackbar(R.string.no_internet_connection);
-        return;
-    }
+            if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
+                showSnackbar(R.string.no_internet_connection);
+                return;
+            }
 
-    // User is not signed in. Maybe just wait for the user to press
-    // "sign in" again, or show a message.
+            if (response.getErrorCode() == ErrorCodes.UNKNOWN_ERROR) {
+                showSnackbar(R.string.unknown_error);
+                return;
+            }
+        }
+
+        showSnackbar(R.string.unknown_sign_in_response);
+    }
  }
 ```
 
@@ -338,7 +359,7 @@ Intent.
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (resultCode == RESULT_OK) {
+    if (resultCode == ResultCodes.OK) {
         IdpResponse idpResponse = IdpResponse.fromResultIntent(data);
         startActivity(new Intent(this, WelcomeBackActivity.class)
                 .putExtra("my_token", idpResponse.getIdpToken()));
