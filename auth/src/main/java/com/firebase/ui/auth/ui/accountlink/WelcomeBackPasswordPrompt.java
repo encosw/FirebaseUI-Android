@@ -100,7 +100,14 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
     public void onClick(View view) {
         final int id = view.getId();
         if (id == R.id.button_done) {
-            next(mEmail, mPasswordField.getText().toString());
+            String password = mPasswordField.getText().toString();
+            if (TextUtils.isEmpty(password)) {
+                mPasswordLayout.setError(getString(R.string.required_field));
+                return;
+            } else {
+                mPasswordLayout.setError(null);
+            }
+            next(mEmail, password);
         } else if (id == R.id.trouble_signing_in) {
             startActivity(RecoverPasswordActivity.createIntent(
                     getApplicationContext(),
@@ -111,12 +118,6 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
     }
 
     private void next(final String email, final String password) {
-        // Check for null or empty password
-        if (TextUtils.isEmpty(password)) {
-            mPasswordLayout.setError(getString(R.string.required_field));
-            return;
-        }
-        mPasswordLayout.setError(null);
         mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
         mIdpResponse = new IdpResponse(mIdpResponse, mActivityHelper.getUidForAccountLinking());
 
