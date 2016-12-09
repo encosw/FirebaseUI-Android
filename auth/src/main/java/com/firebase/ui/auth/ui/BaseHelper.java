@@ -83,6 +83,7 @@ public class BaseHelper {
         return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
     }
 
+    @Nullable
     public String getUidForAccountLinking() {
         if (canLinkAccounts()) {
             return getCurrentUser().getUid();

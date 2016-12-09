@@ -47,7 +47,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -164,32 +163,28 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
             return;
         }
 
-        final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-
+        FirebaseUser currentUser = mActivityHelper.getCurrentUser();
         if (currentUser == null) {
-            Task<AuthResult> authResultTask = firebaseAuth.signInWithCredential(newCredential);
-            authResultTask.addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful() && mPrevCredential != null) {
-                        FirebaseUser firebaseUser = task.getResult().getUser();
-                        firebaseUser.linkWithCredential(mPrevCredential);
-                        firebaseAuth.signOut();
-                        firebaseAuth
-                                .signInWithCredential(mPrevCredential)
-                                .addOnFailureListener(new TaskFailureLogger(
-                                        TAG, "Error signing in with previous credential"))
-                                .addOnCompleteListener(new FinishListener(newIdpResponse));
-                    } else {
-                        finish(ResultCodes.OK, IdpResponse.getIntent(newIdpResponse));
-                    }
-                }
-            }).addOnFailureListener(
+            mActivityHelper.getFirebaseAuth()
+                    .signInWithCredential(newCredential)
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful() && mPrevCredential != null) {
+                                task.getResult().getUser()
+                                        .linkWithCredential(mPrevCredential)
+                                        .addOnFailureListener(new TaskFailureLogger(
+                                                TAG, "Error signing in with previous credential"))
+                                        .addOnCompleteListener(new FinishListener(newIdpResponse));
+                            } else {
+                                finish(ResultCodes.OK, IdpResponse.getIntent(newIdpResponse));
+                            }
+                        }
+                    }).addOnFailureListener(
                     new TaskFailureLogger(TAG, "Error signing in with new credential"));
         } else {
-            Task<AuthResult> authResultTask = currentUser.linkWithCredential(newCredential);
-            authResultTask
+            currentUser
+                    .linkWithCredential(newCredential)
                     .addOnFailureListener(
                             new TaskFailureLogger(TAG, "Error linking with credential"))
                     .addOnSuccessListener(new FinishListener(newIdpResponse))
@@ -207,15 +202,13 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
 
                                 // Real world example: currently signed in anonymously and Google account already exists.
                                 // Tries to sign in with Google account, this code gets called.
-                                IdpResponse response =
-                                        new IdpResponse(newIdpResponse, mActivityHelper.getUidForAccountLinking());
-                                FirebaseAuth
-                                        .getInstance()
-                                        .signInWithCredential(mPrevCredential != null ? mPrevCredential : newCredential)
+                                newIdpResponse.setPrevUid(mActivityHelper.getUidForAccountLinking());
+                                mActivityHelper.getFirebaseAuth()
+                                        .signInWithCredential(newCredential)
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
                                                         TAG, "Error linking with credential"))
-                                        .addOnCompleteListener(new FinishListener(response));
+                                        .addOnCompleteListener(new FinishListener(newIdpResponse));
                             }
                         }
                     });
@@ -234,8 +227,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                 .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 
-    private class FinishListener implements OnCompleteListener<AuthResult>,
-            OnSuccessListener<AuthResult> {
+    private class FinishListener
+            implements OnCompleteListener<AuthResult>, OnSuccessListener<AuthResult> {
         private final IdpResponse mIdpResponse;
 
         FinishListener(IdpResponse idpResponse) {

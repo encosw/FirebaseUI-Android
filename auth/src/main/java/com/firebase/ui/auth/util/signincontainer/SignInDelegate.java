@@ -277,10 +277,10 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
      */
     private void signInWithEmailAndPassword(String email, String password) {
         // Because we are being called from Smart Lock,
-        // we can assume that the account already exists and a user collision exception will be thrown.
-        final IdpResponse response = new IdpResponse(
-                new IdpResponse(EmailAuthProvider.PROVIDER_ID, email),
-                mHelper.getUidForAccountLinking());
+        // we can assume that the account already exists and a user collision exception will be thrown
+        // so we don't bother with linking credentials
+        final IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
+        response.setPrevUid(mHelper.getUidForAccountLinking());
 
         mHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
@@ -289,9 +289,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        finish(ResultCodes.OK,
-                               new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE,
-                                                     response));
+                        finish(ResultCodes.OK, IdpResponse.getIntent(response));
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

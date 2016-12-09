@@ -32,6 +32,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.uidemo.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -76,7 +77,7 @@ public class SignedInActivity extends AppCompatActivity {
             return;
         }
 
-        mIdpResponse = getIntent().getParcelableExtra(EXTRA_IDP_RESPONSE);
+        mIdpResponse = getIntent().getParcelableExtra(ExtraConstants.EXTRA_IDP_RESPONSE);
 
         setContentView(R.layout.signed_in_layout);
         ButterKnife.bind(this);
@@ -183,8 +184,8 @@ public class SignedInActivity extends AppCompatActivity {
         String token = null;
         String secret = null;
         if (mIdpResponse != null) {
-            String token = mIdpResponse.getIdpToken();
-            String secret = mIdpResponse.getIdpSecret();
+            token = mIdpResponse.getIdpToken();
+            secret = mIdpResponse.getIdpSecret();
         }
         if (token == null) {
             findViewById(R.id.idp_token_layout).setVisibility(View.GONE);

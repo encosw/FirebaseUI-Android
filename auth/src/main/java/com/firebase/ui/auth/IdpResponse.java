@@ -31,7 +31,7 @@ public class IdpResponse implements Parcelable {
     private final String mEmail;
     private final String mToken;
     private final String mSecret;
-    private final String mPrevUid;
+    private String mPrevUid;
     private final int mErrorCode;
 
     public IdpResponse(int errorCode) {
@@ -67,15 +67,6 @@ public class IdpResponse implements Parcelable {
         mSecret = secret;
         mPrevUid = prevUid;
         mErrorCode = errorCode;
-    }
-
-    public IdpResponse(IdpResponse response, String prevUid) {
-        this(response.getProviderType(),
-             response.getEmail(),
-             response.getIdpToken(),
-             response.getIdpSecret(),
-             prevUid,
-             response.getErrorCode());
     }
 
     public static final Creator<IdpResponse> CREATOR = new Creator<IdpResponse>() {
@@ -140,6 +131,10 @@ public class IdpResponse implements Parcelable {
         return mPrevUid;
     }
 
+    public void setPrevUid(String uid) {
+        mPrevUid = uid;
+    }
+
     /**
      * Get the error code for a failed sign in
      */
@@ -182,6 +177,6 @@ public class IdpResponse implements Parcelable {
     }
 
     public static Intent getErrorCodeIntent(int errorCode) {
-        return new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, new IdpResponse(errorCode));
+        return getIntent(new IdpResponse(errorCode));
     }
 }

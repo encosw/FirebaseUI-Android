@@ -15,7 +15,6 @@
 package com.firebase.ui.auth.ui.idp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 
 import com.firebase.ui.auth.BuildConfig;
@@ -88,7 +87,6 @@ public class CredentialSignInHandlerTest {
                 smartLock,
                 RC_ACCOUNT_LINK,
                 idpResponse);
-        Context mockContext = mock(Context.class);
 
         Task signInTask = Tasks.forResult(new FakeAuthResult(mockFirebaseUser));
         when(mockActivityHelper.getFlowParams()).thenReturn(
@@ -98,13 +96,14 @@ public class CredentialSignInHandlerTest {
         ArgumentCaptor<SaveSmartLock> smartLockCaptor = ArgumentCaptor.forClass(SaveSmartLock.class);
         ArgumentCaptor<Activity> activityCaptor = ArgumentCaptor.forClass(Activity.class);
         ArgumentCaptor<FirebaseUser> firebaseUserCaptor = ArgumentCaptor.forClass(FirebaseUser.class);
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<IdpResponse> idpResponseCaptor = ArgumentCaptor.forClass(IdpResponse.class);
 
         verify(mockActivityHelper).saveCredentialsOrFinish(
                 smartLockCaptor.capture(),
                 activityCaptor.capture(),
                 firebaseUserCaptor.capture(),
-                null,
+                passwordCaptor.capture(),
                 idpResponseCaptor.capture());
 
         assertEquals(smartLock, smartLockCaptor.getValue());
@@ -130,7 +129,6 @@ public class CredentialSignInHandlerTest {
                 RC_ACCOUNT_LINK,
                 idpResponse);
 
-        Context mockContext = mock(Context.class);
         FlowParameters mockFlowParams = mock(FlowParameters.class);
         when(mockActivityHelper.getFirebaseAuth()).thenReturn(mockFirebaseAuth);
         when(mockActivityHelper.getFlowParams()).thenReturn(mockFlowParams);
@@ -175,7 +173,6 @@ public class CredentialSignInHandlerTest {
                 RC_ACCOUNT_LINK,
                 idpResponse);
 
-        Context mockContext = mock(Context.class);
         Task mockTask = mock(Task.class);
         FlowParameters mockFlowParams = mock(FlowParameters.class);
 

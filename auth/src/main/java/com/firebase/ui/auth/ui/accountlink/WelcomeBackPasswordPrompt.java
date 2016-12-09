@@ -119,7 +119,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
 
     private void next(final String email, final String password) {
         mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
-        mIdpResponse = new IdpResponse(mIdpResponse, mActivityHelper.getUidForAccountLinking());
+        final String prevUid = mActivityHelper.getUidForAccountLinking();
 
         final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // Sign in with known email and the password provided
@@ -135,12 +135,16 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                         // If authCredential is null, the user only has an email account.
                         // Otherwise, the user has an email account that we need to link to an idp.
                         if (authCredential == null) {
+                            IdpResponse response =
+                                    new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
+                            response.setPrevUid(prevUid);
                             mActivityHelper.saveCredentialsOrFinish(
                                     mSaveSmartLock,
                                     authResult.getUser(),
                                     password,
-                                    new IdpResponse(EmailAuthProvider.PROVIDER_ID, email));
+                                    response);
                         } else {
+                            mIdpResponse.setPrevUid(prevUid);
                             authResult.getUser()
                                     .linkWithCredential(authCredential)
                                     .addOnFailureListener(new TaskFailureLogger(
