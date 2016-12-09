@@ -161,13 +161,14 @@ public class AuthMethodPickerActivity extends AppCompatBase
     public void onSuccess(final IdpResponse response) {
         AuthCredential credential = AuthCredentialHelper.getAuthCredential(response);
 
-        Task<AuthResult> task;
+        Task<AuthResult> signInTask;
         if (mActivityHelper.canLinkAccounts()) {
-            task = mActivityHelper.getCurrentUser().linkWithCredential(credential);
+            signInTask = mActivityHelper.getCurrentUser().linkWithCredential(credential);
         } else {
-            task = mActivityHelper.getFirebaseAuth().signInWithCredential(credential);
+            signInTask = mActivityHelper.getFirebaseAuth().signInWithCredential(credential);
         }
-        task.addOnFailureListener(
+
+        signInTask.addOnFailureListener(
                 new TaskFailureLogger(TAG, "Firebase sign in with credential unsuccessful"))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         this,

@@ -180,8 +180,9 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                                 finish(ResultCodes.OK, IdpResponse.getIntent(newIdpResponse));
                             }
                         }
-                    }).addOnFailureListener(
-                    new TaskFailureLogger(TAG, "Error signing in with new credential"));
+                    })
+                    .addOnFailureListener(
+                            new TaskFailureLogger(TAG, "Error signing in with new credential"));
         } else {
             currentUser
                     .linkWithCredential(newCredential)
@@ -192,16 +193,9 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             if (e instanceof FirebaseAuthUserCollisionException) {
-                                // Since we still want the user to be able to sign in even though the account already exists,
-                                // we are going to save the uid of the current user,
-                                // log them out, and then sign in with the new credential.
-
-                                // Unfortunately, this means the developer will have to manually merge the old uid with the new user's uid.
-                                // A manual merge is necessary to support anonymous user conversion to permanent
-                                // when the user we are trying to sign into already exists.
-
-                                // Real world example: currently signed in anonymously and Google account already exists.
-                                // Tries to sign in with Google account, this code gets called.
+                                // Since we still want the user to be able to sign in even though
+                                // they have an existing account, we are going to save the uid of the
+                                // current user, log them out, and then sign in with the new credential.
                                 newIdpResponse.setPrevUid(mActivityHelper.getUidForAccountLinking());
                                 mActivityHelper.getFirebaseAuth()
                                         .signInWithCredential(newCredential)
@@ -227,8 +221,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                 .putExtra(ExtraConstants.EXTRA_EMAIL, email);
     }
 
-    private class FinishListener
-            implements OnCompleteListener<AuthResult>, OnSuccessListener<AuthResult> {
+    private class FinishListener implements OnCompleteListener<AuthResult>,
+            OnSuccessListener<AuthResult> {
         private final IdpResponse mIdpResponse;
 
         FinishListener(IdpResponse idpResponse) {

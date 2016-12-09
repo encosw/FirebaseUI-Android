@@ -92,13 +92,15 @@ public class IdpSignInContainer extends BaseFragment implements IdpCallback {
     @Override
     public void onSuccess(IdpResponse response) {
         AuthCredential credential = AuthCredentialHelper.getAuthCredential(response);
-        Task<AuthResult> authResultTask;
+
+        Task<AuthResult> signInTask;
         if (mHelper.canLinkAccounts()) {
-            authResultTask = mHelper.getCurrentUser().linkWithCredential(credential);
+            signInTask = mHelper.getCurrentUser().linkWithCredential(credential);
         } else {
-            authResultTask = mHelper.getFirebaseAuth().signInWithCredential(credential);
+            signInTask = mHelper.getFirebaseAuth().signInWithCredential(credential);
         }
-        authResultTask
+
+        signInTask
                 .addOnFailureListener(
                         new TaskFailureLogger(TAG, "Failure authenticating with credential"))
                 .addOnCompleteListener(new CredentialSignInHandler(

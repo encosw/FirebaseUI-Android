@@ -284,7 +284,7 @@ for more information.
 
 ##### Handling account link failures
 
-Only applies to developers using `setShouldLinkAccounts`.
+Only applies to developers using `setShouldLinkAccounts(true)`.
 
 Imagine the following scenario: A user already has an existing account and uid in your app.
 They switch devices and you don't have Smart Lock enabled to automatically sign them in.
