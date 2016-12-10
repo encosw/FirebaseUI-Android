@@ -46,7 +46,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * Activity to link a pre-existing email/password account to a new IDP sign-in by confirming
@@ -121,9 +120,9 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
         mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
         final String prevUid = mActivityHelper.getUidForAccountLinking();
 
-        final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // Sign in with known email and the password provided
-        firebaseAuth.signInWithEmailAndPassword(email, password)
+        mActivityHelper.getFirebaseAuth()
+                .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
                         new TaskFailureLogger(TAG, "Error signing in with email and password"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
