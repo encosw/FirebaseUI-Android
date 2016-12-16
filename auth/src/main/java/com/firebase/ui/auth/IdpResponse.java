@@ -17,6 +17,7 @@ package com.firebase.ui.auth;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.firebase.ui.auth.ui.ExtraConstants;
@@ -25,41 +26,39 @@ import com.firebase.ui.auth.ui.ExtraConstants;
  * A container that encapsulates the result of authenticating with an Identity Provider.
  */
 public class IdpResponse implements Parcelable {
-
     private final String mProviderId;
-    @Nullable
     private final String mEmail;
     private final String mToken;
     private final String mSecret;
     private String mPrevUid;
     private final int mErrorCode;
 
-    public IdpResponse(int errorCode) {
+    private IdpResponse(int errorCode) {
         this(null, null, null, null, null, errorCode);
     }
 
-    public IdpResponse(String providerId, String email) {
-        this(providerId, email, null);
+    public IdpResponse(@NonNull String providerId, @NonNull String email) {
+        this(providerId, email, null, null, null, ResultCodes.OK);
     }
 
-    public IdpResponse(String providerId, @Nullable String email, @Nullable String token) {
-        this(providerId, email, token, null);
+    public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token) {
+        this(providerId, email, token, null, ResultCodes.OK);
     }
 
     public IdpResponse(
-            String providerId,
-            @Nullable String email,
-            @Nullable String token,
-            @Nullable String secret) {
+            @NonNull String providerId,
+            @NonNull String email,
+            @NonNull String token,
+            @NonNull String secret) {
         this(providerId, email, token, secret, null, ResultCodes.OK);
     }
 
-    public IdpResponse(
+    private IdpResponse(
             String providerId,
-            @Nullable String email,
-            @Nullable String token,
-            @Nullable String secret,
-            @Nullable String prevUid,
+            String email,
+            String token,
+            String secret,
+            String prevUid
             int errorCode) {
         mProviderId = providerId;
         mEmail = email;
@@ -91,7 +90,6 @@ public class IdpResponse implements Parcelable {
     /**
      * Get the type of provider. e.g. {@link AuthUI#GOOGLE_PROVIDER}
      */
-    @Nullable
     public String getProviderType() {
         return mProviderId;
     }
@@ -99,7 +97,6 @@ public class IdpResponse implements Parcelable {
     /**
      * Get the email used to sign in.
      */
-    @Nullable
     public String getEmail() {
         return mEmail;
     }

@@ -69,24 +69,28 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                     mResponse);
         } else {
             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                mHelper.getFirebaseAuth()
-                        .fetchProvidersForEmail(mResponse.getEmail())
-                        .addOnFailureListener(new TaskFailureLogger(
-                                TAG, "Error fetching providers for email"))
-                        .addOnSuccessListener(new StartWelcomeBackFlow())
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // TODO: What to do when signing in with Credential fails
-                                // and we can't continue to Welcome back flow without
-                                // knowing providers?
-                            }
-                        });
+                String email = mResponse.getEmail();
+                if (email != null) {
+                    mHelper.getFirebaseAuth()
+                            .fetchProvidersForEmail(email)
+                            .addOnFailureListener(new TaskFailureLogger(
+                                    TAG, "Error fetching providers for email"))
+                            .addOnSuccessListener(new StartWelcomeBackFlow())
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // TODO: What to do when signing in with Credential fails
+                                    // and we can't continue to Welcome back flow without
+                                    // knowing providers?
+                                }
+                            });
+                    return;
+                }
             } else {
-                mHelper.dismissDialog();
                 Log.e(TAG, "Unexpected exception when signing in with credential",
                       task.getException());
             }
+            mHelper.dismissDialog();
         }
     }
 

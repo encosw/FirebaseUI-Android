@@ -205,9 +205,7 @@ public class AuthMethodPickerActivity extends AppCompatBase
         }
     }
 
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams) {
+    public static Intent createIntent(Context context, FlowParameters flowParams) {
         return BaseHelper.createBaseIntent(context, AuthMethodPickerActivity.class, flowParams);
     }
 }
