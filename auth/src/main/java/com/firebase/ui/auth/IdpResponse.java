@@ -42,7 +42,7 @@ public class IdpResponse implements Parcelable {
     }
 
     public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token) {
-        this(providerId, email, token, null, ResultCodes.OK);
+        this(providerId, email, token, null, null, ResultCodes.OK);
     }
 
     public IdpResponse(
@@ -58,7 +58,7 @@ public class IdpResponse implements Parcelable {
             String email,
             String token,
             String secret,
-            String prevUid
+            String prevUid,
             int errorCode) {
         mProviderId = providerId;
         mEmail = email;
