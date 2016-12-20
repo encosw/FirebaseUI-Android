@@ -40,7 +40,8 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
 
     private Activity mActivity;
     private BaseHelper mHelper;
-    @Nullable private SaveSmartLock mSmartLock;
+    @Nullable
+    private SaveSmartLock mSmartLock;
     private IdpResponse mResponse;
     private int mAccountLinkRequestCode;
 
@@ -86,10 +87,8 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                             });
                     return;
                 }
-            } else {
-                Log.e(TAG, "Unexpected exception when signing in with credential",
-                      task.getException());
             }
+            Log.e(TAG, "Unexpected exception when signing in with credential", task.getException());
             mHelper.dismissDialog();
         }
     }

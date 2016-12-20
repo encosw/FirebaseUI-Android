@@ -202,7 +202,16 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                                         .addOnFailureListener(
                                                 new TaskFailureLogger(
                                                         TAG, "Error linking with credential"))
-                                        .addOnCompleteListener(new FinishListener(newIdpResponse));
+                                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                            @Override
+                                            public void onSuccess(AuthResult result) {
+                                                mActivityHelper.getCurrentUser()
+                                                        .linkWithCredential(mPrevCredential)
+                                                        .addOnFailureListener(new TaskFailureLogger(
+                                                                TAG, "Error linking with credential"))
+                                                        .addOnSuccessListener(new FinishListener(newIdpResponse));
+                                            }
+                                        });
                             }
                         }
                     });
