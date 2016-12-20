@@ -235,8 +235,15 @@ public class RegisterEmailFragment extends BaseFragment implements
     }
 
     private void registerUser(final String email, final String name, final String password) {
-        mHelper.getFirebaseAuth()
-                .createUserWithEmailAndPassword(email, password)
+        Task<AuthResult> registerTask;
+        if (mHelper.canLinkAccounts()) {
+            registerTask = mHelper.getCurrentUser()
+                    .linkWithCredential(EmailAuthProvider.getCredential(email, password));
+        } else {
+            registerTask = mHelper.getFirebaseAuth()
+                    .createUserWithEmailAndPassword(email, password);
+        }
+        registerTask
                 .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
