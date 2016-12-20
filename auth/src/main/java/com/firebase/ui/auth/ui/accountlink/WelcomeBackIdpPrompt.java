@@ -55,7 +55,7 @@ import com.google.firebase.auth.TwitterAuthProvider;
 public class WelcomeBackIdpPrompt extends AppCompatBase
         implements View.OnClickListener, IdpCallback {
 
-    private static final String TAG = "WelcomeBackIDPPrompt";
+    private static final String TAG = "WelcomeBackIdpPrompt";
     private IdpProvider mIdpProvider;
     private IdpResponse mPrevIdpResponse;
     private AuthCredential mPrevCredential;
@@ -209,7 +209,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase
                                                         .linkWithCredential(mPrevCredential)
                                                         .addOnFailureListener(new TaskFailureLogger(
                                                                 TAG, "Error linking with credential"))
-                                                        .addOnSuccessListener(new FinishListener(newIdpResponse));
+                                                        .addOnCompleteListener(new FinishListener(newIdpResponse));
                                             }
                                         });
                             }
