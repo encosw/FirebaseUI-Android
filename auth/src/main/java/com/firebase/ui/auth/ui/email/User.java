@@ -67,7 +67,7 @@ public class User implements Parcelable {
         dest.writeParcelable(mPhotoUri, flags);
     }
 
-    public static final class Builder {
+    public static class Builder implements com.firebase.ui.auth.util.Builder<User> {
         private String mEmail;
         private String mName;
         private String mProvider;
@@ -92,6 +92,7 @@ public class User implements Parcelable {
             return this;
         }
 
+        @Override
         public User build() {
             return new User(mEmail, mName, mProvider, mPhotoUri);
         }

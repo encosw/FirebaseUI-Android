@@ -68,7 +68,7 @@ public class WelcomeBackPasswordPromptTest {
         Intent startIntent = WelcomeBackPasswordPrompt.createIntent(
                 RuntimeEnvironment.application,
                 TestHelper.getFlowParameters(Collections.<String>emptyList()),
-                new IdpResponse(EmailAuthProvider.PROVIDER_ID, TestConstants.EMAIL));
+                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build());
         return Robolectric
                 .buildActivity(WelcomeBackPasswordPrompt.class)
                 .withIntent(startIntent)

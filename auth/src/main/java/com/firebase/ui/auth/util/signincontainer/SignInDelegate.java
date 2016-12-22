@@ -279,8 +279,10 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
         // Because we are being called from Smart Lock,
         // we can assume that the account already exists and a user collision exception will be thrown
         // so we don't bother with linking credentials
-        final IdpResponse response = new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
-        response.setPrevUid(mHelper.getUidForAccountLinking());
+        final IdpResponse response =
+                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                        .setPrevUid(mHelper.getUidForAccountLinking())
+                        .build();
 
         mHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)

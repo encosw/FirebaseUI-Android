@@ -79,7 +79,8 @@ public class CredentialSignInHandlerTest {
         AppCompatBase mockActivity = mock(AppCompatBase.class);
         ActivityHelper mockActivityHelper = mock(ActivityHelper.class);
         FirebaseUser mockFirebaseUser = TestHelper.makeMockFirebaseUser();
-        IdpResponse idpResponse = new IdpResponse(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL);
+        IdpResponse idpResponse =
+                new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build();
         SaveSmartLock smartLock = mock(SaveSmartLock.class);
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,
@@ -121,7 +122,8 @@ public class CredentialSignInHandlerTest {
         AppCompatBase mockActivity = mock(AppCompatBase.class);
         ActivityHelper mockActivityHelper = mock(ActivityHelper.class);
         FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
-        IdpResponse idpResponse = new IdpResponse(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL);
+        IdpResponse idpResponse =
+                new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build();
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,
                 mockActivityHelper,
@@ -165,7 +167,8 @@ public class CredentialSignInHandlerTest {
         AppCompatBase mockActivity = mock(AppCompatBase.class);
         ActivityHelper mockActivityHelper = mock(ActivityHelper.class);
         FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
-        IdpResponse idpResponse = new IdpResponse(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL);
+        IdpResponse idpResponse =
+                new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build();
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,
                 mockActivityHelper,

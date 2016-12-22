@@ -135,8 +135,9 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                         // Otherwise, the user has an email account that we need to link to an idp.
                         if (authCredential == null) {
                             IdpResponse response =
-                                    new IdpResponse(EmailAuthProvider.PROVIDER_ID, email);
-                            response.setPrevUid(prevUid);
+                                    new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                                            .setPrevUid(prevUid)
+                                            .build();
                             mActivityHelper.saveCredentialsOrFinish(
                                     mSaveSmartLock,
                                     authResult.getUser(),

@@ -37,22 +37,6 @@ public class IdpResponse implements Parcelable {
         this(null, null, null, null, null, errorCode);
     }
 
-    public IdpResponse(@NonNull String providerId, @NonNull String email) {
-        this(providerId, email, null, null, null, ResultCodes.OK);
-    }
-
-    public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token) {
-        this(providerId, email, token, null, null, ResultCodes.OK);
-    }
-
-    public IdpResponse(
-            @NonNull String providerId,
-            @NonNull String email,
-            @NonNull String token,
-            @NonNull String secret) {
-        this(providerId, email, token, secret, null, ResultCodes.OK);
-    }
-
     private IdpResponse(
             String providerId,
             String email,
@@ -177,5 +161,38 @@ public class IdpResponse implements Parcelable {
 
     public static Intent getErrorCodeIntent(int errorCode) {
         return getIntent(new IdpResponse(errorCode));
+    }
+
+    public static class Builder implements com.firebase.ui.auth.util.Builder<IdpResponse> {
+        private String mProviderId;
+        private String mEmail;
+        private String mToken;
+        private String mSecret;
+        private String mPrevUid;
+
+        public Builder(@NonNull String providerId, @NonNull String email) {
+            mProviderId = providerId;
+            mEmail = email;
+        }
+
+        public Builder setToken(@NonNull String token) {
+            mToken = token;
+            return this;
+        }
+
+        public Builder setSecret(@NonNull String secret) {
+            mSecret = secret;
+            return this;
+        }
+
+        public Builder setPrevUid(String prevUid) {
+            mPrevUid = prevUid;
+            return this;
+        }
+
+        @Override
+        public IdpResponse build() {
+            return new IdpResponse(mProviderId, mEmail, mToken, mSecret, mPrevUid, ResultCodes.OK);
+        }
     }
 }
