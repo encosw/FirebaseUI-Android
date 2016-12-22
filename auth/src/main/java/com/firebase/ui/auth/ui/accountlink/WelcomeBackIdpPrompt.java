@@ -168,7 +168,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                     .linkWithCredential(newCredential)
                     .addOnFailureListener(
                             new TaskFailureLogger(TAG, "Error linking with credential"))
-                    .addOnSuccessListener(new FinishListener(newIdpResponse))
+                    .addOnSuccessListener(new FinishListener(idpResponse))
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
@@ -176,7 +176,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                                 // Since we still want the user to be able to sign in even though
                                 // they have an existing account, we are going to save the uid of the
                                 // current user, log them out, and then sign in with the new credential.
-                                newIdpResponse.setPrevUid(mActivityHelper.getUidForAccountLinking());
+                                idpResponse.setPrevUid(mActivityHelper.getUidForAccountLinking());
                                 mActivityHelper.getFirebaseAuth()
                                         .signInWithCredential(newCredential)
                                         .addOnFailureListener(
@@ -189,7 +189,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                                                         .linkWithCredential(mPrevCredential)
                                                         .addOnFailureListener(new TaskFailureLogger(
                                                                 TAG, "Error linking with credential"))
-                                                        .addOnCompleteListener(new FinishListener(newIdpResponse));
+                                                        .addOnCompleteListener(new FinishListener(idpResponse));
                                             }
                                         });
                             }
