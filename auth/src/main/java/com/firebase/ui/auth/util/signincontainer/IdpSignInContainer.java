@@ -37,6 +37,7 @@ import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.FragmentHelper;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
+import com.firebase.ui.auth.ui.User;
 import com.firebase.ui.auth.ui.idp.CredentialSignInHandler;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -56,9 +57,11 @@ public class IdpSignInContainer extends BaseFragment implements IdpCallback {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         mSaveSmartLock = mHelper.getSaveSmartLockInstance(getActivity());
-        String provider = getArguments().getString(ExtraConstants.EXTRA_PROVIDER);
+
+        User user = User.getUser(getArguments());
+        String provider = user.getProvider();
+
         AuthUI.IdpConfig providerConfig = null;
         for (AuthUI.IdpConfig config : mHelper.getFlowParams().providerInfo) {
             if (config.getProviderId().equalsIgnoreCase(provider)) {
@@ -77,7 +80,7 @@ public class IdpSignInContainer extends BaseFragment implements IdpCallback {
             mIdpProvider = new GoogleProvider(
                     getActivity(),
                     providerConfig,
-                    getArguments().getString(ExtraConstants.EXTRA_EMAIL));
+                    user.getEmail());
         } else if (provider.equalsIgnoreCase(FacebookAuthProvider.PROVIDER_ID)) {
             mIdpProvider = new FacebookProvider(
                     getContext(), providerConfig, mHelper.getFlowParams().themeId);
@@ -128,16 +131,14 @@ public class IdpSignInContainer extends BaseFragment implements IdpCallback {
 
     public static void signIn(FragmentActivity activity,
                               FlowParameters parameters,
-                              String email,
-                              String provider) {
+                              User user) {
         FragmentManager fm = activity.getSupportFragmentManager();
         Fragment fragment = fm.findFragmentByTag(TAG);
         if (!(fragment instanceof IdpSignInContainer)) {
             IdpSignInContainer result = new IdpSignInContainer();
 
             Bundle bundle = FragmentHelper.getFlowParamsBundle(parameters);
-            bundle.putString(ExtraConstants.EXTRA_EMAIL, email);
-            bundle.putString(ExtraConstants.EXTRA_PROVIDER, provider);
+            bundle.putParcelable(ExtraConstants.EXTRA_USER, user);
             result.setArguments(bundle);
 
             try {
