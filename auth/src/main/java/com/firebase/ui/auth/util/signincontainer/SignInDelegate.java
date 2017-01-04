@@ -63,6 +63,25 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
 
     private Credential mCredential;
 
+    public static void delegate(FragmentActivity activity, FlowParameters params) {
+        FragmentManager fm = activity.getSupportFragmentManager();
+        Fragment fragment = fm.findFragmentByTag(TAG);
+        if (!(fragment instanceof SignInDelegate)) {
+            SignInDelegate result = new SignInDelegate();
+            result.setArguments(FragmentHelper.getFlowParamsBundle(params));
+            fm.beginTransaction().add(result, TAG).disallowAddToBackStack().commit();
+        }
+    }
+
+    public static SignInDelegate getInstance(FragmentActivity activity) {
+        Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(TAG);
+        if (fragment instanceof SignInDelegate) {
+            return (SignInDelegate) fragment;
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
@@ -325,25 +344,6 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                             mHelper.getFlowParams()),
                     RC_IDP_SIGNIN);
             mHelper.dismissDialog();
-        }
-    }
-
-    public static void delegate(FragmentActivity activity, FlowParameters params) {
-        FragmentManager fm = activity.getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentByTag(TAG);
-        if (!(fragment instanceof SignInDelegate)) {
-            SignInDelegate result = new SignInDelegate();
-            result.setArguments(FragmentHelper.getFlowParamsBundle(params));
-            fm.beginTransaction().add(result, TAG).disallowAddToBackStack().commit();
-        }
-    }
-
-    public static SignInDelegate getInstance(FragmentActivity activity) {
-        Fragment fragment = activity.getSupportFragmentManager().findFragmentByTag(TAG);
-        if (fragment instanceof SignInDelegate) {
-            return (SignInDelegate) fragment;
-        } else {
-            return null;
         }
     }
 }

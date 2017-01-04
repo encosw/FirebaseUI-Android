@@ -59,6 +59,16 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
     private IdpProvider mIdpProvider;
     private AuthCredential mPrevCredential;
 
+    public static Intent createIntent(
+            Context context,
+            FlowParameters flowParams,
+            User existingUser,
+            IdpResponse newUserResponse) {
+        return BaseHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
+                .putExtra(ExtraConstants.EXTRA_USER, existingUser)
+                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, newUserResponse);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -207,18 +217,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
         finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
     }
 
-    public static Intent createIntent(
-            Context context,
-            FlowParameters flowParams,
-            User existingUser,
-            IdpResponse newUserResponse) {
-        return BaseHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
-                .putExtra(ExtraConstants.EXTRA_USER, existingUser)
-                .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, newUserResponse);
-    }
-
-    private class FinishListener implements OnCompleteListener<AuthResult>,
-            OnSuccessListener<AuthResult> {
+    private class FinishListener implements OnCompleteListener<AuthResult>, OnSuccessListener<AuthResult> {
         private final IdpResponse mIdpResponse;
 
         FinishListener(IdpResponse idpResponse) {
