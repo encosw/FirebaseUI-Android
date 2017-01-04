@@ -152,6 +152,7 @@ public class IdpResponse implements Parcelable {
                     in.readString(),
                     in.readString(),
                     in.readString(),
+                    in.readString(),
                     in.readInt()
             );
         }
