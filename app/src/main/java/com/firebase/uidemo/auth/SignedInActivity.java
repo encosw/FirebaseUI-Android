@@ -104,8 +104,7 @@ public class SignedInActivity extends AppCompatActivity {
 
     @OnClick(R.id.delete_account)
     public void deleteAccountClicked() {
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete this account?")
                 .setPositiveButton("Yes, nuke it!", new DialogInterface.OnClickListener() {
                     @Override
@@ -113,10 +112,9 @@ public class SignedInActivity extends AppCompatActivity {
                         deleteAccount();
                     }
                 })
-                .setNegativeButton("No", null)
-                .create();
-
-        dialog.show();
+                .setNegativeButton(android.R.string.no, null)
+                .create()
+                .show();
     }
 
     private void deleteAccount() {
