@@ -20,10 +20,14 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 
+import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ResultCodes;
+import com.firebase.ui.auth.provider.AuthCredentialHelper;
 import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.User;
+import com.firebase.ui.auth.ui.accountlink.AccountLinker;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackIdpPrompt;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackPasswordPrompt;
 import com.firebase.ui.auth.util.signincontainer.SaveSmartLock;
@@ -31,11 +35,17 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.ProviderQueryResult;
+import com.google.firebase.auth.TwitterAuthProvider;
+
+import java.util.List;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
@@ -83,9 +93,10 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-                                    // TODO: What to do when signing in with Credential fails
-                                    // and we can't continue to Welcome back flow without
-                                    // knowing providers?
+                                    mHelper.finishActivity(
+                                            mActivity,
+                                            ResultCodes.CANCELED,
+                                            IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
                                 }
                             });
                     return;
@@ -99,9 +110,25 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
     private class StartWelcomeBackFlow implements OnSuccessListener<ProviderQueryResult> {
         @Override
         public void onSuccess(@NonNull ProviderQueryResult result) {
+            AuthCredential credential = AuthCredentialHelper.getAuthCredential(mResponse);
+            if (mHelper.canLinkAccounts()
+                    && credential != null
+                    && result.getProviders().contains(credential.getProvider())) {
+                // We don't want to show the welcome back dialog since the user selected
+                // an existing account and we can just link the two accounts without knowing
+                // prevCredential.
+                AccountLinker.link(
+                        mActivity,
+                        mHelper,
+                        mResponse,
+                        credential,
+                        null);
+                return;
+            }
+
             mHelper.dismissDialog();
 
-            String provider = result.getProviders().get(0);
+            String provider = getHighestPriorityProvider(result.getProviders());
             if (provider.equals(EmailAuthProvider.PROVIDER_ID)) {
                 // Start email welcome back flow
                 mActivity.startActivityForResult(
@@ -121,6 +148,35 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                                         .build(),
                                 mResponse
                         ), mAccountLinkRequestCode);
+            }
+        }
+
+        private String getHighestPriorityProvider(List<String> providers) {
+            String googleProvider = null;
+            String facebookProvider = null;
+            String twitterProvider = null;
+            String otherProvider = null;
+
+            for (String provider : providers) {
+                if (provider.equalsIgnoreCase(GoogleAuthProvider.PROVIDER_ID)) {
+                    googleProvider = provider;
+                } else if (provider.equalsIgnoreCase(FacebookAuthProvider.PROVIDER_ID)) {
+                    facebookProvider = provider;
+                } else if (provider.equalsIgnoreCase(TwitterAuthProvider.PROVIDER_ID)) {
+                    twitterProvider = provider;
+                } else {
+                    otherProvider = provider;
+                }
+            }
+
+            if (googleProvider != null) {
+                return googleProvider;
+            } else if (facebookProvider != null) {
+                return facebookProvider;
+            } else if (twitterProvider != null) {
+                return twitterProvider;
+            } else {
+                return otherProvider;
             }
         }
     }

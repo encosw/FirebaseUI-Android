@@ -30,10 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class TestHelper {
     private static final String APPLICATION_ID = "testAppId";
@@ -69,21 +66,13 @@ public class TestHelper {
                 true);
     }
 
-    public static FirebaseUser makeMockFirebaseUser() {
-        FirebaseUser mockFirebaseUser = mock(FirebaseUser.class);
-        when(mockFirebaseUser.getEmail()).thenReturn(TestConstants.EMAIL);
-        when(mockFirebaseUser.getDisplayName()).thenReturn(TestConstants.NAME);
-        when(mockFirebaseUser.getPhotoUrl()).thenReturn(TestConstants.PHOTO_URI);
-        return mockFirebaseUser;
-    }
-
     public static void verifySmartLockSave(String providerId,
                                            String email,
                                            String password,
                                            String accountLinkingUid) {
         ArgumentCaptor<FirebaseUser> userCaptor = ArgumentCaptor.forClass(FirebaseUser.class);
-        ArgumentCaptor<IdpResponse> idpResponseCaptor = ArgumentCaptor.forClass(IdpResponse.class);
         ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<IdpResponse> idpResponseCaptor = ArgumentCaptor.forClass(IdpResponse.class);
 
         verify(ActivityHelperShadow.sSaveSmartLock).saveCredentialsOrFinish(
                 userCaptor.capture(),

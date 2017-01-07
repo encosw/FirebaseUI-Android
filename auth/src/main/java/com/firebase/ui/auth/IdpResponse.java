@@ -19,6 +19,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 
 import com.firebase.ui.auth.ui.ExtraConstants;
 
@@ -67,10 +68,12 @@ public class IdpResponse implements Parcelable {
         }
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static Intent getIntent(IdpResponse response) {
         return new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static Intent getErrorCodeIntent(int errorCode) {
         return getIntent(new IdpResponse(errorCode));
     }
@@ -105,10 +108,16 @@ public class IdpResponse implements Parcelable {
         return mSecret;
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public void setPrevUid(String uid) {
+        mPrevUid = uid;
+    }
+
     /**
-     * Only applies to developers using {@code setShouldLinkAccounts(true)}.
-     * <p>
-     * Get the previous user id if a conflict occurred.
+     * Only applies to developers using {@link AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)}
+     * set to {@code true}.
+     * <p><p>
+     * Get the previous user id if a user collision occurred.
      * See the <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">README</a>
      * for a much more detailed explanation.
      *
@@ -116,10 +125,6 @@ public class IdpResponse implements Parcelable {
      */
     public String getPrevUid() {
         return mPrevUid;
-    }
-
-    public void setPrevUid(String uid) {
-        mPrevUid = uid;
     }
 
     /**
@@ -163,6 +168,7 @@ public class IdpResponse implements Parcelable {
         }
     };
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static class Builder implements com.firebase.ui.auth.util.Builder<IdpResponse> {
         private String mProviderId;
         private String mEmail;
@@ -175,12 +181,12 @@ public class IdpResponse implements Parcelable {
             mEmail = email;
         }
 
-        public Builder setToken(@NonNull String token) {
+        public Builder setToken(String token) {
             mToken = token;
             return this;
         }
 
-        public Builder setSecret(@NonNull String secret) {
+        public Builder setSecret(String secret) {
             mSecret = secret;
             return this;
         }

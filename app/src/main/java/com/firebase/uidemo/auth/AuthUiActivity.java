@@ -128,14 +128,15 @@ public class AuthUiActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.auth_ui_layout);
-        ButterKnife.bind(this);
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null && !user.isAnonymous()) {
             startActivity(SignedInActivity.createIntent(this, null));
             finish();
+            return;
         }
+
+        setContentView(R.layout.auth_ui_layout);
+        ButterKnife.bind(this);
 
         if (!isGoogleConfigured()) {
             mUseGoogleProvider.setChecked(false);

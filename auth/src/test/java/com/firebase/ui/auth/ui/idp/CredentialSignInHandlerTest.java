@@ -21,6 +21,7 @@ import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.testhelpers.ActivityHelperShadow;
 import com.firebase.ui.auth.testhelpers.AutoCompleteTask;
+import com.firebase.ui.auth.testhelpers.BaseHelperShadow;
 import com.firebase.ui.auth.testhelpers.CustomRobolectricGradleTestRunner;
 import com.firebase.ui.auth.testhelpers.FakeAuthResult;
 import com.firebase.ui.auth.testhelpers.FakeProviderQueryResult;
@@ -73,10 +74,10 @@ public class CredentialSignInHandlerTest {
     }
 
     @Test
+    @Config(shadows = {BaseHelperShadow.class})
     public void testSignInSucceeded() {
         AppCompatBase mockActivity = mock(AppCompatBase.class);
         ActivityHelper mockActivityHelper = mock(ActivityHelper.class);
-        FirebaseUser mockFirebaseUser = TestHelper.makeMockFirebaseUser();
         IdpResponse idpResponse =
                 new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build();
         SaveSmartLock smartLock = mock(SaveSmartLock.class);
@@ -87,7 +88,7 @@ public class CredentialSignInHandlerTest {
                 RC_ACCOUNT_LINK,
                 idpResponse);
 
-        Task signInTask = Tasks.forResult(new FakeAuthResult(mockFirebaseUser));
+        Task signInTask = Tasks.forResult(new FakeAuthResult());
         when(mockActivityHelper.getFlowParams()).thenReturn(
                 TestHelper.getFlowParameters(Collections.<String>emptyList()));
         credentialSignInHandler.onComplete(signInTask);
@@ -107,7 +108,7 @@ public class CredentialSignInHandlerTest {
 
         assertEquals(smartLock, smartLockCaptor.getValue());
         assertEquals(mockActivity, activityCaptor.getValue());
-        assertEquals(mockFirebaseUser, firebaseUserCaptor.getValue());
+        assertEquals(BaseHelperShadow.sFirebaseUser, firebaseUserCaptor.getValue());
 
         assertEquals(idpResponse.getProviderType(), idpResponseCaptor.getValue().getProviderType());
         assertEquals(idpResponse.getEmail(), idpResponseCaptor.getValue().getEmail());

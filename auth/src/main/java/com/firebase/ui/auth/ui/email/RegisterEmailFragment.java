@@ -271,8 +271,7 @@ public class RegisterEmailFragment extends FragmentBase implements
                                                 getActivity(),
                                                 user,
                                                 password,
-                                                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID,
-                                                                        email)
+                                                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
                                                         .build());
                                     }
                                 });

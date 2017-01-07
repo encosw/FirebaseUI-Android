@@ -230,8 +230,8 @@ startActivityForResult(
     RC_SIGN_IN);
 ```
 
-There is a caveat associated with using the `setShouldLinkAccounts` method, see
-[Handling account link failures](#handling-account-link-failures)
+**There is a caveat associated with using the `setShouldLinkAccounts` method**, see
+[handling account link failures](#handling-account-link-failures).
 
 #### Handling the sign-in response
 
@@ -286,72 +286,63 @@ for more information.
 
 ##### Handling account link failures
 
-Only applies to developers using `setShouldLinkAccounts(true)`.
+_Only applies to developers using `setShouldLinkAccounts(true)`._
 
-Imagine the following scenario: A user already has an existing account and uid in your app.
-They switch devices and you don't have Smart Lock enabled to automatically sign them in.
-Therefore, the user adds some data to Firebase using an anonymous account.
-In the unlikely event that the above scenario occurs,
-you must manually handle merging of the two accounts because this user now has two
-user ids associated with him/her: the anonymous account uid and the uid of the existing account.
-At the moment, Firebase cannot handle such user collisions automatically,
-thus, you must handle this edge case to ensure data a user creates while using an
-anonymous account is transferred to the user's existing account.
+Imagine the following scenario: a user already has an existing account and uid in your app.
+Eventually, they switch devices and you automatically sign them in anonymously to give your
+users a frictionless UX by letting users interact with your app without being forced to log in immediately.
+Now, your anonymously signed in user quickly enters some data into your app before
+signing into their existing account so as not to forget why they came to your app in the first place.
+This UX is great for users, but problematic for us developers:
+your user now has two different ids that match the same person!
+The above example isn't just limited to anonymous accounts; **anytime a user has two
+existing accounts, a user collision will occur and you will have to manually merge those accounts together**.
+To help you do this, FirebaseUI provides a helper method to retrieve
+the user's previous id: `IdpResponse#getPrevUid()`.
 
-Here is how you would handle such an edge case in `onActivityResult`
-if you have data structured similarly to the
+The following is an example of how you would move data from the user's previous uid to their new one
+using the Firebase Realtime database, thus merging the two accounts.
+The example assumes you are using data structrued similarly to the 
 [sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
 
 ```java
+@Override
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == RC_SIGN_IN) {
-        if (resultCode == RESULT_OK) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-            // User is signed in, but we must check to see whether or not account linking failed.
-            String prevUid = response != null ? response.getPrevUid() : null;
-            if (prevUid != null) {
-                // Account linking failed: a previous id was found.
-                Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
-                FirebaseDatabase.getInstance()
-                        .getReference()
-                        .child("chats")
-                        .orderByChild("uid") // This is the child used in equalTo()
-                        .equalTo(prevUid) // Only get uids == prevUid
-                        .addListenerForSingleValueEvent(
-                                new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot snapshot) {
-                                        // change all references of prevUid to the current uid
-                                        if (snapshot.getValue() != null) {
-                                            String currentUid = FirebaseAuth.getInstance()
-                                                    .getCurrentUser()
-                                                    .getUid();
+    if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
+        // User is signed in, but we must check to see whether or not automatic account linking failed.
+        String prevUid = response != null ? response.getPrevUid() : null;
+        if (prevUid != null) {
+            // A previous user id was found: automatic account linking failed.
+            Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
 
-                                            for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
-                                                // Replace old uids with currentUid
-                                                chatSnapshot.getRef()
-                                                        .child("uid")
-                                                        .setValue(currentUid);
-                                                chatSnapshot.getRef()
-                                                        .child("name")
-                                                        .setValue("User " + currentUid.substring(0, 6));
-                                            }
-                                        }
-                                    }
+            FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("chats")
+                    .orderByChild("uid") // This is the child used in equalTo()
+                    .equalTo(prevUid) // Only get children with uid == prevUid
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
+                            String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                                    @Override
-                                    public void onCancelled(DatabaseError error) {
-                                        FirebaseCrash.report(error.toException());
-                                    }
-                                });
-            }
-        } else {
-            // user is not signed in. Maybe just wait for the user to press
-            // "sign in" again, or show a message
+                            // change all references of prevUid to the current uid
+                            for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                // Replace old uids with currentUid
+                                chatSnapshot.getRef().child("uid").setValue(currentUid);
+                                chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            FirebaseCrash.report(error.toException());
+                        }
+                    });
         }
     }
- }
+}
 ```
 
 ##### ID Tokens

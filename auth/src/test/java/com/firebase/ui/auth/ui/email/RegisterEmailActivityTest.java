@@ -32,14 +32,13 @@ import com.firebase.ui.auth.testhelpers.TestConstants;
 import com.firebase.ui.auth.testhelpers.TestHelper;
 import com.firebase.ui.auth.ui.User;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -47,6 +46,7 @@ import org.robolectric.annotation.Config;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -102,10 +102,7 @@ public class RegisterEmailActivityTest {
     }
 
     @Test
-    @Config(shadows = {
-            BaseHelperShadow.class,
-            ActivityHelperShadow.class
-    })
+    @Config(shadows = {BaseHelperShadow.class, ActivityHelperShadow.class})
     public void testSignUpButton_successfulRegistrationShouldContinueToSaveCredentials() {
         // init mocks
         new BaseHelperShadow();
@@ -125,19 +122,12 @@ public class RegisterEmailActivityTest {
         name.setText(TestConstants.NAME);
         password.setText(TestConstants.PASSWORD);
 
-        FirebaseUser mockFirebaseUser = Mockito.mock(FirebaseUser.class);
-        when(mockFirebaseUser.getEmail()).thenReturn(TestConstants.EMAIL);
-        when(mockFirebaseUser.getDisplayName()).thenReturn(TestConstants.NAME);
-        when(mockFirebaseUser.getPhotoUrl()).thenReturn(TestConstants.PHOTO_URI);
-        when(mockFirebaseUser.updateProfile((UserProfileChangeRequest) Mockito.any()))
+        when(BaseHelperShadow.sFirebaseUser.updateProfile(any(UserProfileChangeRequest.class)))
                 .thenReturn(new AutoCompleteTask<Void>(null, true, null));
 
-        when(BaseHelperShadow.sFirebaseAuth
-                     .createUserWithEmailAndPassword(
-                             TestConstants.EMAIL,
-                             TestConstants.PASSWORD))
+        when(BaseHelperShadow.sFirebaseAuth.getCurrentUser().linkWithCredential(any(EmailAuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<AuthResult>(
-                        new FakeAuthResult(mockFirebaseUser),
+                        new FakeAuthResult(),
                         true,
                         null));
 
