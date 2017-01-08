@@ -616,7 +616,8 @@ public class AuthUI {
         /**
          * Links the current user to an account created in the sign-in flow.
          *
-         * <p>Linking is disabled by default.
+         * <p>Linking is disabled by default because of a
+         * <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">caveat</a>.
          */
         public SignInIntentBuilder setShouldLinkAccounts(boolean shouldLinkAccounts) {
             mShouldLinkAccounts = shouldLinkAccounts;
