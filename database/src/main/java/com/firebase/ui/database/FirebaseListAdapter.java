@@ -54,7 +54,7 @@ import java.util.List;
  *            contained in the children of the given Firebase location
  */
 public abstract class FirebaseListAdapter<T> extends BaseAdapter {
-    private static final String TAG = FirebaseListAdapter.class.getSimpleName();
+    private static final String TAG = "FirebaseListAdapter";
 
     private FirebaseArray mSnapshots;
     private final Class<T> mModelClass;
@@ -70,20 +70,20 @@ public abstract class FirebaseListAdapter<T> extends BaseAdapter {
         mLayout = modelLayout;
         mSnapshots = snapshots;
 
-        mSnapshots.setOnChangedListener(new FirebaseArray.OnChangedListener() {
+        mSnapshots.setOnChangedListener(new ChangeEventListener() {
             @Override
             public void onChildChanged(EventType type, int index, int oldIndex) {
-                notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                FirebaseListAdapter.this.onCancelled(databaseError);
+                FirebaseListAdapter.this.onChildChanged(type, index, oldIndex);
             }
 
             @Override
             public void onDataChanged() {
                 FirebaseListAdapter.this.onDataChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                FirebaseListAdapter.this.onCancelled(error);
             }
         });
     }
@@ -182,10 +182,20 @@ public abstract class FirebaseListAdapter<T> extends BaseAdapter {
     }
 
     /**
-     * This method will be triggered in the event that this listener either failed at the server,
-     * or is removed as a result of the security and Firebase Database rules.
-     *
-     * @param error A description of the error that occurred
+     * @see ChangeEventListener#onChildChanged(ChangeEventListener.EventType, int, int)
+     */
+    protected void onChildChanged(ChangeEventListener.EventType type, int index, int oldIndex) {
+        notifyDataSetChanged();
+    }
+
+    /**
+     * @see ChangeEventListener#onDataChanged()
+     */
+    protected void onDataChanged() {
+    }
+
+    /**
+     * @see ChangeEventListener#onCancelled(DatabaseError)
      */
     protected void onCancelled(DatabaseError error) {
         Log.w(TAG, error.toException());
