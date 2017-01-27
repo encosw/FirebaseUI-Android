@@ -63,6 +63,7 @@ public class TestHelper {
                 AuthUI.NO_LOGO,
                 null,
                 true,
+                true,
                 true);
     }
 
