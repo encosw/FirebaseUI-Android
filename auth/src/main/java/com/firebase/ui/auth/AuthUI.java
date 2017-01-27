@@ -518,6 +518,7 @@ public class AuthUI {
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
         private boolean mShouldLinkAccounts = false;
+        private boolean mAllowNewEmailAccounts = true;
 
         private SignInIntentBuilder() {
             mProviders.add(new IdpConfig.Builder(EMAIL_PROVIDER).build());
@@ -624,6 +625,11 @@ public class AuthUI {
             return this;
         }
 
+        public SignInIntentBuilder setAllowNewEmailAccounts(boolean enabled) {
+            mAllowNewEmailAccounts = enabled;
+            return this;
+        }
+
         private boolean isIdpAlreadyConfigured(@NonNull String providerId) {
             for (IdpConfig config : mProviders) {
                 if (config.getProviderId().equals(providerId)) {
@@ -645,7 +651,8 @@ public class AuthUI {
                                       mLogo,
                                       mTosUrl,
                                       mIsSmartLockEnabled,
-                                      mShouldLinkAccounts);
+                                      mShouldLinkAccounts,
+                                      mAllowNewEmailAccounts);
         }
     }
 }

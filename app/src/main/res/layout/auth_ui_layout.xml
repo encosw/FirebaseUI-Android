@@ -239,7 +239,14 @@
                 android:id="@+id/should_link_enabled"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/enable_link_accounts" />
+                android:text="@string/enable_link_accounts"/>
+
+            <CheckBox
+                android:id="@+id/allow_new_email_accounts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/allow_new_email_acccount"/>
 
         </LinearLayout>
 
