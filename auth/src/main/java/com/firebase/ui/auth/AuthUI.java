@@ -625,6 +625,11 @@ public class AuthUI {
             return this;
         }
 
+        /**
+         * Enables or disables creating new accounts in the email sign in flow.
+         * <p>
+         * <p>Account creation is enabled by default.
+         */
         public SignInIntentBuilder setAllowNewEmailAccounts(boolean enabled) {
             mAllowNewEmailAccounts = enabled;
             return this;
@@ -643,7 +648,7 @@ public class AuthUI {
             return KickoffActivity.createIntent(mApp.getApplicationContext(), getFlowParams());
         }
 
-        @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+        @VisibleForTesting()
         public FlowParameters getFlowParams() {
             return new FlowParameters(mApp.getName(),
                                       new ArrayList<>(mProviders),
