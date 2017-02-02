@@ -82,10 +82,10 @@ public class AuthMethodPickerActivity extends AppCompatBase
         populateIdpList(mActivityHelper.getFlowParams().providerInfo);
 
         int logoId = mActivityHelper.getFlowParams().logoId;
-        ImageView logo = (ImageView) findViewById(R.id.logo);
         if (logoId == AuthUI.NO_LOGO) {
-            logo.setVisibility(View.GONE);
+            findViewById(R.id.logo_layout).setVisibility(View.GONE);
         } else {
+            ImageView logo = (ImageView) findViewById(R.id.logo);
             logo.setImageResource(logoId);
         }
     }
