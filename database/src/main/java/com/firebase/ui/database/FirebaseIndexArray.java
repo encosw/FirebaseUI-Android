@@ -14,57 +14,60 @@
 
 package com.firebase.ui.database;
 
+import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import java.util.Set;
 
-class FirebaseIndexArray extends FirebaseArray {
-    private static final String TAG = FirebaseIndexArray.class.getSimpleName();
+public class FirebaseIndexArray extends FirebaseArray {
+    private static final String TAG = "FirebaseIndexArray";
 
-    private Query mQuery;
-    private ChangeEventListener mListener;
+    private DatabaseReference mDataRef;
     private Map<Query, ValueEventListener> mRefs = new HashMap<>();
     private List<DataSnapshot> mDataSnapshots = new ArrayList<>();
 
-    public FirebaseIndexArray(Query keyRef, Query dataRef) {
-        super(keyRef);
-        mQuery = dataRef;
+    /**
+     * @param keyQuery The Firebase location containing the list of keys to be found in {@code
+     *                 dataRef}. Can also be a slice of a location, using some combination of {@code
+     *                 limit()}, {@code startAt()}, and {@code endAt()}.
+     * @param dataRef  The Firebase location to watch for data changes. Each key key found at {@code
+     *                 keyQuery}'s location represents a list item in the {@link RecyclerView}.
+     */
+    public FirebaseIndexArray(Query keyQuery, DatabaseReference dataRef) {
+        super(keyQuery);
+        mDataRef = dataRef;
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
-        Set<Query> refs = new HashSet<>(mRefs.keySet());
-        for (Query ref : refs) {
-            ref.removeEventListener(mRefs.remove(ref));
+    public void removeChangeEventListener(@NonNull ChangeEventListener listener) {
+        super.removeChangeEventListener(listener);
+        if (!isListening()) {
+            for (Query query : mRefs.keySet()) {
+                query.removeEventListener(mRefs.get(query));
+            }
+            mRefs.clear();
+            mDataSnapshots.clear();
         }
     }
 
-    @Override
-    public int getCount() {
-        return mDataSnapshots.size();
-    }
-
-    @Override
-    public DataSnapshot getItem(int index) {
-        return mDataSnapshots.get(index);
-    }
-
     private int getIndexForKey(String key) {
-        int dataCount = getCount();
+        int dataCount = size();
         int index = 0;
         for (int keyIndex = 0; index < dataCount; keyIndex++) {
-            String superKey = super.getItem(keyIndex).getKey();
+            String superKey = super.get(keyIndex).getKey();
             if (key.equals(superKey)) {
                 break;
             } else if (mDataSnapshots.get(index).getKey().equals(superKey)) {
@@ -75,39 +78,39 @@ class FirebaseIndexArray extends FirebaseArray {
     }
 
     private boolean isMatch(int index, String key) {
-        return index >= 0 && index < getCount() && mDataSnapshots.get(index).getKey().equals(key);
+        return index >= 0 && index < size() && mDataSnapshots.get(index).getKey().equals(key);
     }
 
     @Override
     public void onChildAdded(DataSnapshot keySnapshot, String previousChildKey) {
-        super.setOnChangedListener(null);
+        setShouldNotifyListeners(false);
         super.onChildAdded(keySnapshot, previousChildKey);
-        super.setOnChangedListener(mListener);
+        setShouldNotifyListeners(true);
 
-        Query ref = mQuery.getRef().child(keySnapshot.getKey());
+        Query ref = mDataRef.child(keySnapshot.getKey());
         mRefs.put(ref, ref.addValueEventListener(new DataRefListener()));
     }
 
     @Override
     public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
-        super.setOnChangedListener(null);
+        setShouldNotifyListeners(false);
         super.onChildChanged(snapshot, previousChildKey);
-        super.setOnChangedListener(mListener);
+        setShouldNotifyListeners(true);
     }
 
     @Override
     public void onChildRemoved(DataSnapshot keySnapshot) {
         String key = keySnapshot.getKey();
         int index = getIndexForKey(key);
-        mQuery.getRef().child(key).removeEventListener(mRefs.remove(mQuery.getRef().child(key)));
+        mDataRef.child(key).removeEventListener(mRefs.remove(mDataRef.getRef().child(key)));
 
-        super.setOnChangedListener(null);
+        setShouldNotifyListeners(false);
         super.onChildRemoved(keySnapshot);
-        super.setOnChangedListener(mListener);
+        setShouldNotifyListeners(true);
 
         if (isMatch(index, key)) {
             mDataSnapshots.remove(index);
-            notifyChangedListeners(ChangeEventListener.EventType.REMOVED, index);
+            notifyChangeEventListeners(ChangeEventListener.EventType.REMOVED, index);
         }
     }
 
@@ -116,15 +119,15 @@ class FirebaseIndexArray extends FirebaseArray {
         String key = keySnapshot.getKey();
         int oldIndex = getIndexForKey(key);
 
-        super.setOnChangedListener(null);
+        setShouldNotifyListeners(false);
         super.onChildMoved(keySnapshot, previousChildKey);
-        super.setOnChangedListener(mListener);
+        setShouldNotifyListeners(true);
 
         if (isMatch(oldIndex, key)) {
             DataSnapshot snapshot = mDataSnapshots.remove(oldIndex);
             int newIndex = getIndexForKey(key);
             mDataSnapshots.add(newIndex, snapshot);
-            notifyChangedListeners(ChangeEventListener.EventType.MOVED, newIndex, oldIndex);
+            notifyChangeEventListeners(ChangeEventListener.EventType.MOVED, newIndex, oldIndex);
         }
     }
 
@@ -134,13 +137,7 @@ class FirebaseIndexArray extends FirebaseArray {
         super.onCancelled(error);
     }
 
-    @Override
-    public void setOnChangedListener(ChangeEventListener listener) {
-        super.setOnChangedListener(listener);
-        mListener = listener;
-    }
-
-    private class DataRefListener implements ValueEventListener {
+    protected class DataRefListener implements ValueEventListener {
         @Override
         public void onDataChange(DataSnapshot snapshot) {
             String key = snapshot.getKey();
@@ -149,15 +146,15 @@ class FirebaseIndexArray extends FirebaseArray {
             if (snapshot.getValue() != null) {
                 if (!isMatch(index, key)) {
                     mDataSnapshots.add(index, snapshot);
-                    notifyChangedListeners(ChangeEventListener.EventType.ADDED, index);
+                    notifyChangeEventListeners(ChangeEventListener.EventType.ADDED, index);
                 } else {
                     mDataSnapshots.set(index, snapshot);
-                    notifyChangedListeners(ChangeEventListener.EventType.CHANGED, index);
+                    notifyChangeEventListeners(ChangeEventListener.EventType.CHANGED, index);
                 }
             } else {
                 if (isMatch(index, key)) {
                     mDataSnapshots.remove(index);
-                    notifyChangedListeners(ChangeEventListener.EventType.REMOVED, index);
+                    notifyChangeEventListeners(ChangeEventListener.EventType.REMOVED, index);
                 } else {
                     Log.w(TAG, "Key not found at ref: " + snapshot.getRef());
                 }
@@ -166,7 +163,95 @@ class FirebaseIndexArray extends FirebaseArray {
 
         @Override
         public void onCancelled(DatabaseError error) {
-            notifyCancelledListeners(error);
+            notifyListenersOnCancelled(error);
         }
+    }
+
+    @Override
+    public int size() {
+        return mDataSnapshots.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return mDataSnapshots.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return mDataSnapshots.contains(o);
+    }
+
+    @Override
+    public Iterator<DataSnapshot> iterator() {
+        return new ImmutableIterator(mDataSnapshots.iterator());
+    }
+
+    @Override
+    public Object[] toArray() {
+        return mDataSnapshots.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return mDataSnapshots.toArray(a);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return mDataSnapshots.containsAll(c);
+    }
+
+    @Override
+    public DataSnapshot get(int index) {
+        return mDataSnapshots.get(index);
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        return mDataSnapshots.indexOf(o);
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return mDataSnapshots.lastIndexOf(o);
+    }
+
+    @Override
+    public ListIterator<DataSnapshot> listIterator() {
+        return new ImmutableListIterator(mDataSnapshots.listIterator());
+    }
+
+    @Override
+    public ListIterator<DataSnapshot> listIterator(int index) {
+        return new ImmutableListIterator(mDataSnapshots.listIterator(index));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!super.equals(obj)) return false;
+
+        FirebaseIndexArray array = (FirebaseIndexArray) obj;
+
+        return mDataRef.equals(array.mDataRef) && mDataSnapshots.equals(array.mDataSnapshots);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + mDataRef.hashCode();
+        result = 31 * result + mDataSnapshots.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "FirebaseIndexArray{" +
+                "mIsListening=" + isListening() +
+                ", mDataRef=" + mDataRef +
+                ", mDataSnapshots=" + mDataSnapshots +
+                '}';
     }
 }

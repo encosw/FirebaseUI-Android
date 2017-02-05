@@ -26,19 +26,18 @@ public class TestUtils {
         }
     }
 
-    public static FirebaseApp initializeApp(Context context) {
+    private static FirebaseApp initializeApp(Context context) {
         return FirebaseApp.initializeApp(context, new FirebaseOptions.Builder()
                 .setApplicationId("fir-ui-tests")
                 .setDatabaseUrl("https://fir-ui-tests.firebaseio.com/")
                 .build(), APP_NAME);
     }
 
-    public static void runAndWaitUntil(FirebaseArray array,
-                                       Runnable task,
-                                       Callable<Boolean> done) throws InterruptedException {
+    public static ChangeEventListener runAndWaitUntil(FirebaseArray array,
+                                                      Runnable task,
+                                                      Callable<Boolean> done) throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);
-
-        array.setOnChangedListener(new ChangeEventListener() {
+        ChangeEventListener listener = array.addChangeEventListener(new ChangeEventListener() {
             @Override
             public void onChildChanged(ChangeEventListener.EventType type, int index, int oldIndex) {
                 semaphore.release();
@@ -53,6 +52,7 @@ public class TestUtils {
             }
         });
         task.run();
+
         boolean isDone = false;
         long startedAt = System.currentTimeMillis();
         while (!isDone && System.currentTimeMillis() - startedAt < TIMEOUT) {
@@ -64,16 +64,18 @@ public class TestUtils {
                 // and we're not done
             }
         }
+
         if (!isDone) {
             throw new AssertionFailedError();
         }
-        array.setOnChangedListener(null);
+
+        return listener;
     }
 
     public static boolean isValuesEqual(FirebaseArray array, int[] expected) {
-        if (array.getCount() != expected.length) return false;
-        for (int i = 0; i < array.getCount(); i++) {
-            if (!array.getItem(i).getValue(Integer.class).equals(expected[i])) {
+        if (array.size() != expected.length) return false;
+        for (int i = 0; i < array.size(); i++) {
+            if (!array.get(i).getValue(Integer.class).equals(expected[i])) {
                 return false;
             }
         }
@@ -81,6 +83,6 @@ public class TestUtils {
     }
 
     public static Bean getBean(FirebaseArray array, int index) {
-        return array.getItem(index).getValue(Bean.class);
+        return array.get(index).getValue(Bean.class);
     }
 }

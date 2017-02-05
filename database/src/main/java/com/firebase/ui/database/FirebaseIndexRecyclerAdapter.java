@@ -59,8 +59,11 @@ import com.google.firebase.database.Query;
  * </pre>
  *
  * @param <T>  The Java class that maps to the type of objects stored in the Firebase location.
- * @param <VH> The ViewHolder class that contains the Views in the layout that is shown for each object.
+ * @param <VH> The ViewHolder class that contains the Views in the layout that is shown for each
+ *             object.
+ * @deprecated use {@link com.firebase.ui.database.adapter.FirebaseIndexRecyclerAdapter} instead
  */
+@Deprecated
 public abstract class FirebaseIndexRecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends FirebaseRecyclerAdapter<T, VH> {
     /**
@@ -82,6 +85,9 @@ public abstract class FirebaseIndexRecyclerAdapter<T, VH extends RecyclerView.Vi
                                         Class<VH> viewHolderClass,
                                         Query keyRef,
                                         Query dataRef) {
-        super(modelClass, modelLayout, viewHolderClass, new FirebaseIndexArray(keyRef, dataRef));
+        super(modelClass,
+              modelLayout,
+              viewHolderClass,
+              new FirebaseIndexArray(keyRef, dataRef.getRef()));
     }
 }

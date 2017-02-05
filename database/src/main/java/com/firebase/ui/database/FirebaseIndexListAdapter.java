@@ -31,9 +31,11 @@ import com.google.firebase.database.Query;
  *     listView.setListAdapter(adapter);
  * </pre>
  *
- * @param <T> The class type to use as a model for the data
- *           contained in the children of the given Firebase location
+ * @param <T> The class type to use as a model for the data contained in the children of the given
+ *            Firebase location
+ * @deprecated use {@link com.firebase.ui.database.adapter.FirebaseIndexRecyclerAdapter} instead
  */
+@Deprecated
 public abstract class FirebaseIndexListAdapter<T> extends FirebaseListAdapter<T> {
     /**
      * @param activity    The activity containing the ListView
@@ -54,6 +56,6 @@ public abstract class FirebaseIndexListAdapter<T> extends FirebaseListAdapter<T>
                                     @LayoutRes int modelLayout,
                                     Query keyRef,
                                     Query dataRef) {
-        super(activity, modelClass, modelLayout, new FirebaseIndexArray(keyRef, dataRef));
+        super(activity, modelClass, modelLayout, new FirebaseIndexArray(keyRef, dataRef.getRef()));
     }
 }

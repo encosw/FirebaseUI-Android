@@ -38,14 +38,16 @@ import static com.firebase.ui.database.TestUtils.runAndWaitUntil;
 public class FirebaseArrayTest extends InstrumentationTestCase {
     private DatabaseReference mRef;
     private FirebaseArray mArray;
+    private ChangeEventListener mListener;
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         FirebaseApp app = getAppInstance(getInstrumentation().getContext());
         mRef = FirebaseDatabase.getInstance(app).getReference().child("firebasearray");
         mArray = new FirebaseArray(mRef);
-        mRef.removeValue();
-        runAndWaitUntil(mArray, new Runnable() {
+
+        mListener = runAndWaitUntil(mArray, new Runnable() {
             public void run() {
                 for (int i = 1; i <= 3; i++) {
                     mRef.push().setValue(i, i);
@@ -53,30 +55,26 @@ public class FirebaseArrayTest extends InstrumentationTestCase {
             }
         }, new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                return mArray.getCount() == 3;
+                return mArray.size() == 3;
             }
         });
     }
 
     @After
     public void tearDown() throws Exception {
-        if (mRef != null) {
-            mRef.getRoot().removeValue();
-        }
-
-        if (mArray != null) {
-            mArray.cleanup();
-        }
+        mArray.removeChangeEventListener(mListener);
+        mRef.getRoot().removeValue();
+        super.tearDown();
     }
 
     @Test
     public void testSize() throws Exception {
-        assertEquals(3, mArray.getCount());
+        assertEquals(3, mArray.size());
     }
 
     @Test
     public void testPushIncreasesSize() throws Exception {
-        assertEquals(3, mArray.getCount());
+        assertEquals(3, mArray.size());
         runAndWaitUntil(mArray, new Runnable() {
             public void run() {
                 mRef.push().setValue(4);
@@ -84,7 +82,7 @@ public class FirebaseArrayTest extends InstrumentationTestCase {
         }, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return mArray.getCount() == 4;
+                return mArray.size() == 4;
             }
         });
     }
@@ -98,7 +96,7 @@ public class FirebaseArrayTest extends InstrumentationTestCase {
         }, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return mArray.getItem(3).getValue(Integer.class).equals(4);
+                return mArray.get(3).getValue(Integer.class).equals(4);
             }
         });
     }
@@ -111,8 +109,8 @@ public class FirebaseArrayTest extends InstrumentationTestCase {
             }
         }, new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                return mArray.getItem(3).getValue(Integer.class).equals(3)
-                        && mArray.getItem(0).getValue(Integer.class).equals(4);
+                return mArray.get(3).getValue(Integer.class).equals(3)
+                        && mArray.get(0).getValue(Integer.class).equals(4);
             }
         });
     }
@@ -121,7 +119,7 @@ public class FirebaseArrayTest extends InstrumentationTestCase {
     public void testChangePriorities() throws Exception {
         runAndWaitUntil(mArray, new Runnable() {
             public void run() {
-                mArray.getItem(2).getRef().setPriority(0.5);
+                mArray.get(2).getRef().setPriority(0.5);
             }
         }, new Callable<Boolean>() {
             public Boolean call() throws Exception {

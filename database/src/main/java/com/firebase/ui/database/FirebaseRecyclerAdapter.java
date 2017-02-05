@@ -69,8 +69,11 @@ import java.lang.reflect.InvocationTargetException;
  * </pre>
  *
  * @param <T>  The Java class that maps to the type of objects stored in the Firebase location.
- * @param <VH> The ViewHolder class that contains the Views in the layout that is shown for each object.
+ * @param <VH> The ViewHolder class that contains the Views in the layout that is shown for each
+ *             object.
+ * @deprecated use {@link com.firebase.ui.database.adapter.FirebaseRecyclerAdapter} instead
  */
+@Deprecated
 public abstract class FirebaseRecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
     private static final String TAG = "FirebaseRecyclerAdapter";
@@ -79,6 +82,7 @@ public abstract class FirebaseRecyclerAdapter<T, VH extends RecyclerView.ViewHol
     private Class<T> mModelClass;
     protected Class<VH> mViewHolderClass;
     protected int mModelLayout;
+    private ChangeEventListener mListener;
 
     FirebaseRecyclerAdapter(Class<T> modelClass,
                             @LayoutRes int modelLayout,
@@ -89,7 +93,7 @@ public abstract class FirebaseRecyclerAdapter<T, VH extends RecyclerView.ViewHol
         mViewHolderClass = viewHolderClass;
         mSnapshots = snapshots;
 
-        mSnapshots.setOnChangedListener(new ChangeEventListener() {
+        mListener = mSnapshots.addChangeEventListener(new ChangeEventListener() {
             @Override
             public void onChildChanged(EventType type, int index, int oldIndex) {
                 FirebaseRecyclerAdapter.this.onChildChanged(type, index, oldIndex);
@@ -125,16 +129,16 @@ public abstract class FirebaseRecyclerAdapter<T, VH extends RecyclerView.ViewHol
     }
 
     public void cleanup() {
-        mSnapshots.cleanup();
+        mSnapshots.removeChangeEventListener(mListener);
     }
 
     @Override
     public int getItemCount() {
-        return mSnapshots.getCount();
+        return mSnapshots.size();
     }
 
     public T getItem(int position) {
-        return parseSnapshot(mSnapshots.getItem(position));
+        return parseSnapshot(mSnapshots.get(position));
     }
 
     /**
@@ -149,13 +153,13 @@ public abstract class FirebaseRecyclerAdapter<T, VH extends RecyclerView.ViewHol
     }
 
     public DatabaseReference getRef(int position) {
-        return mSnapshots.getItem(position).getRef();
+        return mSnapshots.get(position).getRef();
     }
 
     @Override
     public long getItemId(int position) {
         // http://stackoverflow.com/questions/5100071/whats-the-purpose-of-item-ids-in-android-listview-adapter
-        return mSnapshots.getItem(position).getKey().hashCode();
+        return mSnapshots.get(position).getKey().hashCode();
     }
 
     @Override
