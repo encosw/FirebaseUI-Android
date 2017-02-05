@@ -7,3 +7,6 @@
 -dontnote retrofit2.Platform
 -dontnote retrofit2.Platform$IOS$MainThreadExecutor
 -dontwarn retrofit2.Platform$Java8
+
+# Don't warn about custom @IntDef annotations
+-dontwarn com.firebase.ui.database.SubscriptionEventListener$EventType
