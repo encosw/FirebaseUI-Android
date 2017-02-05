@@ -29,7 +29,7 @@ and [Web](https://github.com/firebase/firebaseui-web/).
 
 ![FirebaseUI authentication demo on Android](demo.gif)
 
-## Table of Content
+## Table of Contents
 
 1. [Configuration](#configuration)
 2. [Usage instructions](#using-firebaseui-for-authentication)
@@ -46,7 +46,7 @@ Gradle, add the dependency:
 ```groovy
 dependencies {
     // ...
-    compile 'com.firebaseui:firebase-ui-auth:1.1.0'
+    compile 'com.firebaseui:firebase-ui-auth:1.1.1'
 }
 ```
 
