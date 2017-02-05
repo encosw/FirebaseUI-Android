@@ -16,6 +16,7 @@ package com.firebase.ui.database;
 
 import android.support.annotation.NonNull;
 
+import com.firebase.ui.database.SubscriptionEventListener.EventType;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -60,7 +61,7 @@ public class FirebaseArray extends ImmutableList<DataSnapshot> implements ChildE
 
         synchronized (mListeners) {
             mListeners.add(listener);
-            notifySubscriptionEventListeners(SubscriptionEventListener.EventType.ADDED);
+            notifySubscriptionEventListeners(EventType.ADDED);
             if (mListeners.size() == 1) { // Only start listening when the first listener is added
                 mQuery.addChildEventListener(this);
                 mQuery.addValueEventListener(this);
@@ -79,7 +80,7 @@ public class FirebaseArray extends ImmutableList<DataSnapshot> implements ChildE
     public void removeChangeEventListener(@NonNull ChangeEventListener listener) {
         synchronized (mListeners) {
             mListeners.remove(listener);
-            notifySubscriptionEventListeners(SubscriptionEventListener.EventType.REMOVED);
+            notifySubscriptionEventListeners(EventType.REMOVED);
             if (mListeners.isEmpty()) {
                 mQuery.removeEventListener((ValueEventListener) this);
                 mQuery.removeEventListener((ChildEventListener) this);
@@ -110,11 +111,11 @@ public class FirebaseArray extends ImmutableList<DataSnapshot> implements ChildE
         mSubscribers.remove(listener);
     }
 
-    protected void notifySubscriptionEventListeners(@SubscriptionEventListener.EventType int eventType) {
+    protected void notifySubscriptionEventListeners(@EventType int eventType) {
         for (SubscriptionEventListener listener : mSubscribers) {
-            if (eventType == SubscriptionEventListener.EventType.ADDED) {
+            if (eventType == EventType.ADDED) {
                 listener.onSubscriptionAdded();
-            } else if (eventType == SubscriptionEventListener.EventType.REMOVED) {
+            } else if (eventType == EventType.REMOVED) {
                 listener.onSubscriptionRemoved();
             }
         }
