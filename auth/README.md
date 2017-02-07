@@ -235,7 +235,8 @@ startActivityForResult(
 
 #### Handling the sign-in response
 
-#####Response codes
+##### Response codes
+
 The authentication flow provides several response codes of which the most common are as follows:
 `ResultCodes.OK` if a user is signed in, `ResultCodes.CANCELLED` if the user manually canceled the sign in,
 `ResultCodes.NO_NETWORK` if sign in failed due to a lack of network connectivity,
@@ -431,7 +432,7 @@ represented in the following diagram:
 
 ![FirebaseUI authentication flow on Android](flow.png)
 
-### UI customization
+## UI customization
 
 To provide customization of the visual style of the activities that implement
 the flow, a new theme can be declared. Standard material design color
@@ -538,4 +539,4 @@ startActivityForResult(
 
 #### Twitter
 
-Twitter permissions can only be configured through Twitter's developer console.
+Twitter permissions can only be configured through [Twitter's developer console](https://apps.twitter.com/).
