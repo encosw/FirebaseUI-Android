@@ -24,6 +24,7 @@ import android.support.annotation.StyleRes;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.util.Preconditions;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,7 +62,8 @@ public class FlowParameters implements Parcelable {
             boolean shouldLinkAccounts,
             boolean allowNewEmailAccounts) {
         this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
-        this.providerInfo = Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null");
+        this.providerInfo = Collections.unmodifiableList(
+                Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null"));
         this.themeId = themeId;
         this.logoId = logoId;
         this.termsOfServiceUrl = termsOfServiceUrl;
@@ -95,12 +97,9 @@ public class FlowParameters implements Parcelable {
             int themeId = in.readInt();
             int logoId = in.readInt();
             String termsOfServiceUrl = in.readString();
-            int smartLockEnabledInt = in.readInt();
-            boolean smartLockEnabled = smartLockEnabledInt != 0;
-            int shouldLinkAccountsInt = in.readInt();
-            boolean shouldLinkAccounts = shouldLinkAccountsInt != 0;
-            int allowNewEmailAccountsInt = in.readInt();
-            boolean allowNewEmailAccounts = allowNewEmailAccountsInt != 0;
+            boolean smartLockEnabled = in.readInt() != 0;
+            boolean shouldLinkAccounts = in.readInt() != 0;
+            boolean allowNewEmailAccounts = in.readInt() != 0;
 
             return new FlowParameters(
                     appName,
