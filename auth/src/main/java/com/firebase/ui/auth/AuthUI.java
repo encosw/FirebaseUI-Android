@@ -409,6 +409,7 @@ public class AuthUI {
         private LinkedHashSet<IdpConfig> mProviders = new LinkedHashSet<>();
         private String mTosUrl;
         private boolean mIsSmartLockEnabled = true;
+        private boolean mShouldLinkAccounts = false;
         private boolean mAllowNewEmailAccounts = true;
 
         private SignInIntentBuilder() {
@@ -506,6 +507,17 @@ public class AuthUI {
         }
 
         /**
+         * Links the current user to an account created in the sign-in flow.
+         *
+         * <p>Linking is disabled by default because of a
+         * <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">caveat</a>.
+         */
+        public SignInIntentBuilder setShouldLinkAccounts(boolean shouldLinkAccounts) {
+            mShouldLinkAccounts = shouldLinkAccounts;
+            return this;
+        }
+
+        /**
          * Enables or disables creating new accounts in the email sign in flow.
          * <p>
          * <p>Account creation is enabled by default.
@@ -536,6 +548,7 @@ public class AuthUI {
                                       mLogo,
                                       mTosUrl,
                                       mIsSmartLockEnabled,
+                                      mShouldLinkAccounts,
                                       mAllowNewEmailAccounts);
         }
     }

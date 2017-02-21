@@ -48,7 +48,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * Activity to link a pre-existing email/password account to a new IDP sign-in by confirming
@@ -109,7 +108,14 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
     public void onClick(View view) {
         final int id = view.getId();
         if (id == R.id.button_done) {
-            next(mEmail, mPasswordField.getText().toString());
+            String password = mPasswordField.getText().toString();
+            if (TextUtils.isEmpty(password)) {
+                mPasswordLayout.setError(getString(R.string.required_field));
+                return;
+            } else {
+                mPasswordLayout.setError(null);
+            }
+            next(mEmail, password);
         } else if (id == R.id.trouble_signing_in) {
             startActivity(RecoverPasswordActivity.createIntent(
                     this,
@@ -120,18 +126,12 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
     }
 
     private void next(final String email, final String password) {
-        // Check for null or empty password
-        if (TextUtils.isEmpty(password)) {
-            mPasswordLayout.setError(getString(R.string.required_field));
-            return;
-        } else {
-            mPasswordLayout.setError(null);
-        }
         mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
+        final String prevUid = mActivityHelper.getUidForAccountLinking();
 
-        final FirebaseAuth firebaseAuth = mActivityHelper.getFirebaseAuth();
         // Sign in with known email and the password provided
-        firebaseAuth.signInWithEmailAndPassword(email, password)
+        mActivityHelper.getFirebaseAuth()
+                .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
                         new TaskFailureLogger(TAG, "Error signing in with email and password"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
@@ -143,12 +143,17 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase implements View.OnC
                         // If authCredential is null, the user only has an email account.
                         // Otherwise, the user has an email account that we need to link to an idp.
                         if (authCredential == null) {
+                            IdpResponse response =
+                                    new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                                            .setPrevUid(prevUid)
+                                            .build();
                             mActivityHelper.saveCredentialsOrFinish(
                                     mSaveSmartLock,
                                     authResult.getUser(),
                                     password,
-                                    new IdpResponse(EmailAuthProvider.PROVIDER_ID, email));
+                                    response);
                         } else {
+                            mIdpResponse.setPrevUid(prevUid);
                             authResult.getUser()
                                     .linkWithCredential(authCredential)
                                     .addOnFailureListener(new TaskFailureLogger(

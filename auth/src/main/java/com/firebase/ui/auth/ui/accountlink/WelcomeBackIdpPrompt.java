@@ -17,13 +17,11 @@ package com.firebase.ui.auth.ui.accountlink;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.ErrorCodes;
@@ -40,16 +38,9 @@ import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
-import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
 
@@ -135,72 +126,18 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
     }
 
     @Override
-    public void onSuccess(final IdpResponse idpResponse) {
-        if (idpResponse == null) {
-            return; // do nothing
-        }
-
+    public void onSuccess(IdpResponse idpResponse) {
         AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(idpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
-            return;
-        }
-
-        FirebaseUser currentUser = mActivityHelper.getCurrentUser();
-        if (currentUser == null) {
-            mActivityHelper.getFirebaseAuth()
-                    .signInWithCredential(newCredential)
-                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult result) {
-                            if (mPrevCredential != null) {
-                                result.getUser()
-                                        .linkWithCredential(mPrevCredential)
-                                        .addOnFailureListener(new TaskFailureLogger(
-                                                TAG, "Error signing in with previous credential"))
-                                        .addOnCompleteListener(new FinishListener(idpResponse));
-                            } else {
-                                finish(ResultCodes.OK, IdpResponse.getIntent(idpResponse));
-                            }
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            finishWithError();
-                        }
-                    })
-                    .addOnFailureListener(
-                            new TaskFailureLogger(TAG, "Error signing in with new credential"));
         } else {
-            currentUser
-                    .linkWithCredential(newCredential)
-                    .addOnFailureListener(
-                            new TaskFailureLogger(TAG, "Error linking with credential"))
-                    .addOnCompleteListener(new FinishListener(idpResponse));
+            AccountLinker.link(this, mActivityHelper, idpResponse, newCredential, mPrevCredential);
         }
     }
 
     @Override
     public void onFailure(Bundle extra) {
-        finishWithError();
-    }
-
-    private void finishWithError() {
-        Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();
         finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
-    }
-
-    private class FinishListener implements OnCompleteListener<AuthResult> {
-        private final IdpResponse mIdpResponse;
-
-        FinishListener(IdpResponse idpResponse) {
-            mIdpResponse = idpResponse;
-        }
-
-        public void onComplete(@NonNull Task task) {
-            finish(ResultCodes.OK, IdpResponse.getIntent(mIdpResponse));
-        }
     }
 }

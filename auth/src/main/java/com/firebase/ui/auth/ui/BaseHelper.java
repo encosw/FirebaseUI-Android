@@ -100,16 +100,21 @@ public class BaseHelper {
         return getFirebaseAuth().getCurrentUser();
     }
 
-    public SaveSmartLock getSaveSmartLockInstance(FragmentActivity activity) {
-        return SaveSmartLock.getInstance(activity, getFlowParams());
+    public boolean canLinkAccounts() {
+        return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
     }
 
-    public void saveCredentialsOrFinish(
-            @Nullable SaveSmartLock saveSmartLock,
-            Activity activity,
-            FirebaseUser firebaseUser,
-            @NonNull IdpResponse response) {
-        saveCredentialsOrFinish(saveSmartLock, activity, firebaseUser, null, response);
+    @Nullable
+    public String getUidForAccountLinking() {
+        if (canLinkAccounts()) {
+            return getCurrentUser().getUid();
+        } else {
+            return null;
+        }
+    }
+
+    public SaveSmartLock getSaveSmartLockInstance(FragmentActivity activity) {
+        return SaveSmartLock.getInstance(activity, getFlowParams());
     }
 
     public void saveCredentialsOrFinish(

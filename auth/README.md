@@ -215,6 +215,24 @@ startActivityForResult(
     RC_SIGN_IN);
 ```
 
+The default FirebaseUI sign-in flow shows UI to either create a new account or sign into an existing account.
+If you are using 
+[anonymous authentication](https://firebase.google.com/docs/auth/android/anonymous-auth)
+in your application before calling FirebaseUI,
+you may want to link the anonymous account to the permanent account the user selects in the UI flow.
+
+```java
+startActivityForResult(
+    AuthUI.getInstance()
+        .createSignInIntentBuilder()
+        .setShouldLinkAccounts(true) // Any two accounts can be linked together using this method.
+        .build(),
+    RC_SIGN_IN);
+```
+
+**There is a caveat associated with using the `setShouldLinkAccounts` method**, see
+[handling account link failures](#handling-account-link-failures).
+
 #### Handling the sign-in response
 
 ##### Response codes
@@ -266,6 +284,67 @@ Alternatively, you can register a listener for authentication state changes;
 see the
 [Firebase Auth documentation](https://firebase.google.com/docs/auth/android/manage-users#get_the_currently_signed-in_user)
 for more information.
+
+##### Handling account link failures
+
+_Only applies to developers using `setShouldLinkAccounts(true)`._
+
+Imagine the following scenario: a user already has an existing account and uid in your app.
+Eventually, they switch devices and you automatically sign them in anonymously to give your
+users a frictionless UX by letting users interact with your app without being forced to log in immediately.
+Now, your anonymously signed in user quickly enters some data into your app before
+signing into their existing account so as not to forget why they came to your app in the first place.
+This UX is great for users, but problematic for us developers:
+your user now has two different ids that match the same person!
+The above example isn't just limited to anonymous accounts; **anytime a user has two
+existing accounts, a user collision will occur and you will have to manually merge those accounts together**.
+To help you do this, FirebaseUI provides a helper method to retrieve
+the user's previous id: `IdpResponse#getPrevUid()`.
+
+The following is an example of how you would move data from the user's previous uid to their new one
+using the Firebase Realtime database, thus merging the two accounts.
+The example assumes you are using data structrued similarly to the 
+[sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
+
+```java
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
+        IdpResponse response = IdpResponse.fromResultIntent(data);
+        // User is signed in, but we must check to see whether or not automatic account linking failed.
+        String prevUid = response != null ? response.getPrevUid() : null;
+        if (prevUid != null) {
+            // A previous user id was found: automatic account linking failed.
+            Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
+
+            FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("chats")
+                    .orderByChild("uid") // This is the child used in equalTo()
+                    .equalTo(prevUid) // Only get children with uid == prevUid
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
+                            String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                            // change all references of prevUid to the current uid
+                            for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
+                                // Replace old uids with currentUid
+                                chatSnapshot.getRef().child("uid").setValue(currentUid);
+                                chatSnapshot.getRef().child("name").setValue("User " + currentUid.substring(0, 6));
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            FirebaseCrash.report(error.toException());
+                        }
+                    });
+        }
+    }
+}
+```
 
 ##### ID Tokens
 To retrieve the ID token that the IDP returned, you can extract an `IdpResponse` from the result

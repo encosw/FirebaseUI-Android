@@ -82,6 +82,7 @@ public class SignedInActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         populateProfile();
         populateIdpToken();
+        populatePrevUid();
     }
 
     @OnClick(R.id.sign_out)
@@ -103,8 +104,7 @@ public class SignedInActivity extends AppCompatActivity {
 
     @OnClick(R.id.delete_account)
     public void deleteAccountClicked() {
-
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete this account?")
                 .setPositiveButton("Yes, nuke it!", new DialogInterface.OnClickListener() {
                     @Override
@@ -112,10 +112,9 @@ public class SignedInActivity extends AppCompatActivity {
                         deleteAccount();
                     }
                 })
-                .setNegativeButton("No", null)
-                .create();
-
-        dialog.show();
+                .setNegativeButton(android.R.string.no, null)
+                .create()
+                .show();
     }
 
     private void deleteAccount() {
@@ -194,6 +193,16 @@ public class SignedInActivity extends AppCompatActivity {
             findViewById(R.id.idp_secret_layout).setVisibility(View.GONE);
         } else {
             ((TextView) findViewById(R.id.idp_secret)).setText(secret);
+        }
+    }
+
+    private void populatePrevUid() {
+        String prevUid = null;
+        if (mIdpResponse != null) prevUid = mIdpResponse.getPrevUid();
+        if (prevUid == null) {
+            findViewById(R.id.prev_uid_layout).setVisibility(View.GONE);
+        } else {
+            ((TextView) findViewById(R.id.prev_uid)).setText(prevUid);
         }
     }
 

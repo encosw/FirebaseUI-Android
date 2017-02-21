@@ -39,6 +39,7 @@ import com.firebase.ui.auth.ResultCodes;
 import com.firebase.uidemo.R;
 import com.google.android.gms.common.Scopes;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,6 +103,9 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.smartlock_enabled)
     CheckBox mEnableSmartLock;
 
+    @BindView(R.id.should_link_enabled)
+    CheckBox mShouldLinkAccounts;
+
     @BindView(R.id.allow_new_email_accounts)
     CheckBox mAllowNewEmailAccounts;
 
@@ -127,10 +131,11 @@ public class AuthUiActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        if (auth.getCurrentUser() != null) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null && !user.isAnonymous()) {
             startActivity(SignedInActivity.createIntent(this, null));
             finish();
+            return;
         }
 
         setContentView(R.layout.auth_ui_layout);
@@ -186,6 +191,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
+                        .setShouldLinkAccounts(mShouldLinkAccounts.isChecked())
                         .setAllowNewEmailAccounts(mAllowNewEmailAccounts.isChecked())
                         .build(),
                 RC_SIGN_IN);

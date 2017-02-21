@@ -260,7 +260,15 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
      * On failure, delete the credential from SmartLock (if applicable) and then launch the
      * auth method picker flow.
      */
-    private void signInWithEmailAndPassword(final String email, String password) {
+    private void signInWithEmailAndPassword(String email, String password) {
+        // Because we are being called from Smart Lock,
+        // we can assume that the account already exists and a user collision exception will be thrown
+        // so we don't bother with linking credentials
+        final IdpResponse response =
+                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                        .setPrevUid(mHelper.getUidForAccountLinking())
+                        .build();
+
         mHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(new TaskFailureLogger(
@@ -268,9 +276,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        finish(ResultCodes.OK,
-                               IdpResponse.getIntent(new IdpResponse(EmailAuthProvider.PROVIDER_ID,
-                                                                     email)));
+                        finish(ResultCodes.OK, IdpResponse.getIntent(response));
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {

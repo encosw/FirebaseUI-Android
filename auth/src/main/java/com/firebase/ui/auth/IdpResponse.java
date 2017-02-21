@@ -19,6 +19,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 
 import com.firebase.ui.auth.ui.ExtraConstants;
 
@@ -30,26 +31,11 @@ public class IdpResponse implements Parcelable {
     private final String mEmail;
     private final String mToken;
     private final String mSecret;
+    private String mPrevUid;
     private final int mErrorCode;
 
     private IdpResponse(int errorCode) {
-        this(null, null, null, null, errorCode);
-    }
-
-    public IdpResponse(@NonNull String providerId, @NonNull String email) {
-        this(providerId, email, null, null, ResultCodes.OK);
-    }
-
-    public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token) {
-        this(providerId, email, token, null, ResultCodes.OK);
-    }
-
-    public IdpResponse(
-            @NonNull String providerId,
-            @NonNull String email,
-            @NonNull String token,
-            @NonNull String secret) {
-        this(providerId, email, token, secret, ResultCodes.OK);
+        this(null, null, null, null, null, errorCode);
     }
 
     private IdpResponse(
@@ -57,11 +43,13 @@ public class IdpResponse implements Parcelable {
             String email,
             String token,
             String secret,
+            String prevUid,
             int errorCode) {
         mProviderId = providerId;
         mEmail = email;
         mToken = token;
         mSecret = secret;
+        mPrevUid = prevUid;
         mErrorCode = errorCode;
     }
 
@@ -80,10 +68,12 @@ public class IdpResponse implements Parcelable {
         }
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static Intent getIntent(IdpResponse response) {
         return new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, response);
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static Intent getErrorCodeIntent(int errorCode) {
         return getIntent(new IdpResponse(errorCode));
     }
@@ -118,6 +108,25 @@ public class IdpResponse implements Parcelable {
         return mSecret;
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public void setPrevUid(String uid) {
+        mPrevUid = uid;
+    }
+
+    /**
+     * Only applies to developers using {@link AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)}
+     * set to {@code true}.
+     * <p><p>
+     * Get the previous user id if a user collision occurred.
+     * See the <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">README</a>
+     * for a much more detailed explanation.
+     *
+     * @see AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)
+     */
+    public String getPrevUid() {
+        return mPrevUid;
+    }
+
     /**
      * Get the error code for a failed sign in
      */
@@ -136,6 +145,7 @@ public class IdpResponse implements Parcelable {
         dest.writeString(mEmail);
         dest.writeString(mToken);
         dest.writeString(mSecret);
+        dest.writeString(mPrevUid);
         dest.writeInt(mErrorCode);
     }
 
@@ -143,6 +153,7 @@ public class IdpResponse implements Parcelable {
         @Override
         public IdpResponse createFromParcel(Parcel in) {
             return new IdpResponse(
+                    in.readString(),
                     in.readString(),
                     in.readString(),
                     in.readString(),
@@ -156,4 +167,38 @@ public class IdpResponse implements Parcelable {
             return new IdpResponse[size];
         }
     };
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public static class Builder implements com.firebase.ui.auth.util.Builder<IdpResponse> {
+        private String mProviderId;
+        private String mEmail;
+        private String mToken;
+        private String mSecret;
+        private String mPrevUid;
+
+        public Builder(@NonNull String providerId, @NonNull String email) {
+            mProviderId = providerId;
+            mEmail = email;
+        }
+
+        public Builder setToken(String token) {
+            mToken = token;
+            return this;
+        }
+
+        public Builder setSecret(String secret) {
+            mSecret = secret;
+            return this;
+        }
+
+        public Builder setPrevUid(String prevUid) {
+            mPrevUid = prevUid;
+            return this;
+        }
+
+        @Override
+        public IdpResponse build() {
+            return new IdpResponse(mProviderId, mEmail, mToken, mSecret, mPrevUid, ResultCodes.OK);
+        }
+    }
 }

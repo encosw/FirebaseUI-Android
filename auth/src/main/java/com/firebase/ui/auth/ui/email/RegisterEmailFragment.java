@@ -236,8 +236,15 @@ public class RegisterEmailFragment extends FragmentBase implements
     }
 
     private void registerUser(final String email, final String name, final String password) {
-        mHelper.getFirebaseAuth()
-                .createUserWithEmailAndPassword(email, password)
+        Task<AuthResult> registerTask;
+        if (mHelper.canLinkAccounts()) {
+            registerTask = mHelper.getCurrentUser()
+                    .linkWithCredential(EmailAuthProvider.getCredential(email, password));
+        } else {
+            registerTask = mHelper.getFirebaseAuth()
+                    .createUserWithEmailAndPassword(email, password);
+        }
+        registerTask
                 .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
@@ -264,8 +271,8 @@ public class RegisterEmailFragment extends FragmentBase implements
                                                 getActivity(),
                                                 user,
                                                 password,
-                                                new IdpResponse(EmailAuthProvider.PROVIDER_ID,
-                                                                email));
+                                                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                                                        .build());
                                     }
                                 });
                     }

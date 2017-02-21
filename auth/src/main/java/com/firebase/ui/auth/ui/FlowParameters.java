@@ -49,7 +49,7 @@ public class FlowParameters implements Parcelable {
     public final String termsOfServiceUrl;
 
     public final boolean smartLockEnabled;
-
+    public final boolean shouldLinkAccounts;
     public final boolean allowNewEmailAccounts;
 
     public FlowParameters(
@@ -59,6 +59,7 @@ public class FlowParameters implements Parcelable {
             @DrawableRes int logoId,
             @Nullable String termsOfServiceUrl,
             boolean smartLockEnabled,
+            boolean shouldLinkAccounts,
             boolean allowNewEmailAccounts) {
         this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
         this.providerInfo = Collections.unmodifiableList(
@@ -67,6 +68,7 @@ public class FlowParameters implements Parcelable {
         this.logoId = logoId;
         this.termsOfServiceUrl = termsOfServiceUrl;
         this.smartLockEnabled = smartLockEnabled;
+        this.shouldLinkAccounts = shouldLinkAccounts;
         this.allowNewEmailAccounts = allowNewEmailAccounts;
     }
 
@@ -78,6 +80,7 @@ public class FlowParameters implements Parcelable {
         dest.writeInt(logoId);
         dest.writeString(termsOfServiceUrl);
         dest.writeInt(smartLockEnabled ? 1 : 0);
+        dest.writeInt(shouldLinkAccounts ? 1 : 0);
         dest.writeInt(allowNewEmailAccounts ? 1 : 0);
     }
 
@@ -95,6 +98,7 @@ public class FlowParameters implements Parcelable {
             int logoId = in.readInt();
             String termsOfServiceUrl = in.readString();
             boolean smartLockEnabled = in.readInt() != 0;
+            boolean shouldLinkAccounts = in.readInt() != 0;
             boolean allowNewEmailAccounts = in.readInt() != 0;
 
             return new FlowParameters(
@@ -104,6 +108,7 @@ public class FlowParameters implements Parcelable {
                     logoId,
                     termsOfServiceUrl,
                     smartLockEnabled,
+                    shouldLinkAccounts,
                     allowNewEmailAccounts);
         }
 
