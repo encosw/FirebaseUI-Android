@@ -175,7 +175,9 @@ public class AuthMethodPickerActivity extends AppCompatBase
         }
 
         signInTask.addOnFailureListener(
-                new TaskFailureLogger(TAG, "Firebase sign in with credential unsuccessful"))
+                new TaskFailureLogger(TAG, "Firebase sign in with credential " +
+                        credential.getProvider() +
+                        " unsuccessful. Visit https://console.firebase.google.com to enable it."))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         this,
                         mActivityHelper,
