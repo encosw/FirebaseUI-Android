@@ -76,8 +76,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
         if (!wasListening) {
             mQuery.addChildEventListener(this);
             mQuery.addValueEventListener(this);
-
-            mHasFinishedListening = false;
         }
 
         return listener;
