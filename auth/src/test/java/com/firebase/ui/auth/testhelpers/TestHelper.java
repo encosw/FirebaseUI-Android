@@ -61,10 +61,12 @@ public class TestHelper {
                 idpConfigs,
                 AuthUI.getDefaultTheme(),
                 AuthUI.NO_LOGO,
-                null,
-                true,
-                true,
-                true);
+                null  /* tosUrl */,
+                true  /* smartLockEnabled */,
+                true, /* link accounts */
+                true  /* allowNewEmailAccounts */,
+                false /* isReauth */,
+                null  /* reauthReason */);
     }
 
     public static void verifySmartLockSave(String providerId,
