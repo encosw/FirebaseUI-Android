@@ -32,8 +32,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
     private Query mQuery;
     private List<DataSnapshot> mSnapshots = new ArrayList<>();
 
-    private boolean mHasFinishedListening;
-
     /**
      * Create a new FirebaseArray that parses snapshots as members of a given class.
      *
@@ -91,14 +89,11 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
             mQuery.removeEventListener((ChildEventListener) this);
 
             clearData();
-            mHasFinishedListening = true;
         }
     }
 
     @Override
     public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-        if (mHasFinishedListening) return;
-
         int index = 0;
         if (previousChildKey != null) {
             index = getIndexForKey(previousChildKey) + 1;
@@ -111,8 +106,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
-        if (mHasFinishedListening) return;
-
         int index = getIndexForKey(snapshot.getKey());
 
         updateData(index, snapshot);
@@ -121,8 +114,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildRemoved(DataSnapshot snapshot) {
-        if (mHasFinishedListening) return;
-
         int index = getIndexForKey(snapshot.getKey());
 
         removeData(index);
@@ -131,8 +122,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildMoved(DataSnapshot snapshot, String previousChildKey) {
-        if (mHasFinishedListening) return;
-
         int oldIndex = getIndexForKey(snapshot.getKey());
         mSnapshots.remove(oldIndex);
 
