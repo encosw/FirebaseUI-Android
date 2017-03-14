@@ -94,6 +94,8 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
+        if (!isListening()) return;
+
         int index = 0;
         if (previousChildKey != null) {
             index = getIndexForKey(previousChildKey) + 1;
@@ -106,6 +108,8 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
+        if (!isListening()) return;
+
         int index = getIndexForKey(snapshot.getKey());
 
         updateData(index, snapshot);
@@ -114,6 +118,8 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildRemoved(DataSnapshot snapshot) {
+        if (!isListening()) return;
+
         int index = getIndexForKey(snapshot.getKey());
 
         removeData(index);
@@ -122,6 +128,8 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T> implemen
 
     @Override
     public void onChildMoved(DataSnapshot snapshot, String previousChildKey) {
+        if (!isListening()) return;
+
         int oldIndex = getIndexForKey(snapshot.getKey());
         mSnapshots.remove(oldIndex);
 
