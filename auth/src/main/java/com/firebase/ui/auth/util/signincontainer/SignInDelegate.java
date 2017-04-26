@@ -383,7 +383,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                             .setProvider(accountTypeToProviderId(accountType))
                             .build());
         } else {
-            Log.w(TAG, "unknown provider: " + accountType);
+            Log.w(TAG, "Unknown provider: " + accountType);
             startActivityForResult(
                     AuthMethodPickerActivity.createIntent(
                             getContext(),
