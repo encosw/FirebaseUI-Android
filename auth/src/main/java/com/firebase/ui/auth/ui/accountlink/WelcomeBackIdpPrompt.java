@@ -132,7 +132,11 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             Log.e(TAG, "No credential returned");
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
         } else {
-            AccountLinker.link(this, mActivityHelper, idpResponse, newCredential, mPrevCredential);
+            AccountLinker.linkToNewUser(this,
+                                        mActivityHelper,
+                                        idpResponse,
+                                        newCredential,
+                                        mPrevCredential);
         }
     }
 

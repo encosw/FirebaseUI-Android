@@ -20,9 +20,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 
-import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.firebase.ui.auth.ResultCodes;
 import com.firebase.ui.auth.provider.AuthCredentialHelper;
 import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
@@ -93,10 +91,9 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception e) {
-                                    mHelper.finishActivity(
-                                            mActivity,
-                                            ResultCodes.CANCELED,
-                                            IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+                                    // TODO: What to do when signing in with Credential fails
+                                    // and we can't continue to Welcome back flow without
+                                    // knowing providers?
                                 }
                             });
                     return;
@@ -121,7 +118,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                 // We don't want to show the welcome back dialog since the user selected
                 // an existing account and we can just link the two accounts without knowing
                 // prevCredential.
-                AccountLinker.link(mActivity, mHelper, mResponse, credential, null);
+                AccountLinker.linkWithCurrentUser(mActivity, mHelper, mResponse, credential);
                 return;
             }
 
@@ -168,15 +165,10 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                 }
             }
 
-            if (googleProvider != null) {
-                return googleProvider;
-            } else if (facebookProvider != null) {
-                return facebookProvider;
-            } else if (twitterProvider != null) {
-                return twitterProvider;
-            } else {
-                return otherProvider;
-            }
+            if (googleProvider != null) return googleProvider;
+            if (facebookProvider != null) return facebookProvider;
+            if (twitterProvider != null) return twitterProvider;
+            return otherProvider;
         }
     }
 }

@@ -49,7 +49,7 @@ public class FlowParameters implements Parcelable {
     public final String termsOfServiceUrl;
 
     public final boolean smartLockEnabled;
-    public final boolean shouldLinkAccounts;
+    public final boolean accountLinkingEnabled;
     public final boolean allowNewEmailAccounts;
 
     @Nullable
@@ -63,7 +63,7 @@ public class FlowParameters implements Parcelable {
             @DrawableRes int logoId,
             @Nullable String termsOfServiceUrl,
             boolean smartLockEnabled,
-            boolean shouldLinkAccounts,
+            boolean accountLinkingEnabled,
             boolean allowNewEmailAccounts,
             boolean isReauth,
             String reauthReason) {
@@ -74,7 +74,7 @@ public class FlowParameters implements Parcelable {
         this.logoId = logoId;
         this.termsOfServiceUrl = termsOfServiceUrl;
         this.smartLockEnabled = smartLockEnabled;
-        this.shouldLinkAccounts = shouldLinkAccounts;
+        this.accountLinkingEnabled = accountLinkingEnabled;
         this.allowNewEmailAccounts = allowNewEmailAccounts;
         this.isReauth = isReauth;
         this.reauthReason = reauthReason;
@@ -88,7 +88,7 @@ public class FlowParameters implements Parcelable {
         dest.writeInt(logoId);
         dest.writeString(termsOfServiceUrl);
         dest.writeInt(smartLockEnabled ? 1 : 0);
-        dest.writeInt(shouldLinkAccounts ? 1 : 0);
+        dest.writeInt(accountLinkingEnabled ? 1 : 0);
         dest.writeInt(allowNewEmailAccounts ? 1 : 0);
         dest.writeInt(isReauth ? 1 : 0);
         dest.writeString(reauthReason);
@@ -108,7 +108,7 @@ public class FlowParameters implements Parcelable {
             int logoId = in.readInt();
             String termsOfServiceUrl = in.readString();
             boolean smartLockEnabled = in.readInt() != 0;
-            boolean shouldLinkAccounts = in.readInt() != 0;
+            boolean accountLinkingEnabled = in.readInt() != 0;
             boolean allowNewEmailAccounts = in.readInt() != 0;
             boolean isReauth = in.readInt() != 0;
             String reauthReason = in.readString();
@@ -120,7 +120,7 @@ public class FlowParameters implements Parcelable {
                     logoId,
                     termsOfServiceUrl,
                     smartLockEnabled,
-                    shouldLinkAccounts,
+                    accountLinkingEnabled,
                     allowNewEmailAccounts,
                     isReauth,
                     reauthReason);

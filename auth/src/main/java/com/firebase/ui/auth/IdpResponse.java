@@ -114,14 +114,14 @@ public class IdpResponse implements Parcelable {
     }
 
     /**
-     * Only applies to developers using {@link AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)}
+     * Only applies to developers using {@link AuthUI.SignInIntentBuilder#setIsAccountLinkingEnabled(boolean)}
      * set to {@code true}.
      * <p><p>
      * Get the previous user id if a user collision occurred.
      * See the <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">README</a>
      * for a much more detailed explanation.
      *
-     * @see AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean)
+     * @see AuthUI.SignInIntentBuilder#setIsAccountLinkingEnabled(boolean)
      */
     public String getPrevUid() {
         return mPrevUid;
