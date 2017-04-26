@@ -24,8 +24,8 @@ import com.google.firebase.auth.FirebaseUser;
  * "One link to rule them all." - AccountLinker
  * <p><p>
  * AccountLinker can handle up to 3 way account linking: user is currently logged in anonymously,
- * has an existing Google account, and is trying to log in with Facebook.
- * Results: Google and Facebook are linked and the uid of the anonymous account is returned for manual merging.
+ * has an existing Google account, and is trying to log in with Facebook. Results: Google and
+ * Facebook are linked and the uid of the anonymous account is returned for manual merging.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureListener {
@@ -35,34 +35,38 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     private BaseHelper mHelper;
     private IdpResponse mResponse;
 
-    /**
-     * The credential of the user's existing account.
-     */
+    /** The credential of the user's existing account. */
     private AuthCredential mExistingCredential;
 
-    /**
-     * The credential the user originally tried to sign in with.
-     */
-    private AuthCredential mNewCredential;
+    /** The credential the user originally tried to sign in with. */
+    @Nullable private AuthCredential mNewCredential;
 
     private AccountLinker(Activity activity,
                           BaseHelper helper,
                           IdpResponse response,
-                          AuthCredential existingCredential,
-                          AuthCredential newCredential) {
+                          @NonNull AuthCredential existingCredential,
+                          @Nullable AuthCredential newCredential) {
         mActivity = activity;
         mHelper = helper;
         mResponse = response;
         mExistingCredential = existingCredential;
         mNewCredential = newCredential;
+
         start();
     }
 
-    public static void link(Activity activity,
-                            BaseHelper helper,
-                            IdpResponse response,
-                            @NonNull AuthCredential existingCredential,
-                            @Nullable AuthCredential newCredential) {
+    public static void linkWithCurrentUser(Activity activity,
+                                           BaseHelper helper,
+                                           IdpResponse response,
+                                           AuthCredential existingCredential) {
+        new AccountLinker(activity, helper, response, existingCredential, null);
+    }
+
+    public static void linkToNewUser(Activity activity,
+                                     BaseHelper helper,
+                                     IdpResponse response,
+                                     AuthCredential existingCredential,
+                                     AuthCredential newCredential) {
         new AccountLinker(activity, helper, response, existingCredential, newCredential);
     }
 
@@ -147,7 +151,8 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                 });
             }
         } else {
-            Log.w(TAG, "See AuthUI.SignInIntentBuilder#setShouldLinkAccounts(boolean) to support account linking");
+            Log.w(TAG, "See AuthUI.SignInIntentBuilder#setIsAccountLinkingEnabled(boolean)"
+                    + " to support account linking");
             finishWithError();
         }
     }

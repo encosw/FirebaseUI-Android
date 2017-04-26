@@ -101,7 +101,7 @@ public class BaseHelper {
     }
 
     public boolean canLinkAccounts() {
-        return mFlowParams.shouldLinkAccounts && getCurrentUser() != null;
+        return mFlowParams.accountLinkingEnabled && getCurrentUser() != null;
     }
 
     @Nullable

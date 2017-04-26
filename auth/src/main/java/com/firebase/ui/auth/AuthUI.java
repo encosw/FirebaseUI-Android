@@ -613,7 +613,7 @@ public class AuthUI {
      * Builder for the intent to start the user authentication flow.
      */
     public final class SignInIntentBuilder extends AuthIntentBuilder<SignInIntentBuilder> {
-        private boolean mShouldLinkAccounts = false;
+        private boolean mIsAccountLinkingEnabled = false;
         private boolean mAllowNewEmailAccounts = true;
 
         private SignInIntentBuilder() {
@@ -626,8 +626,8 @@ public class AuthUI {
          * <p>Linking is disabled by default because of a
          * <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">caveat</a>.
          */
-        public SignInIntentBuilder setShouldLinkAccounts(boolean shouldLinkAccounts) {
-            mShouldLinkAccounts = shouldLinkAccounts;
+        public SignInIntentBuilder setIsAccountLinkingEnabled(boolean enabled) {
+            mIsAccountLinkingEnabled = enabled;
             return this;
         }
 
@@ -650,7 +650,7 @@ public class AuthUI {
                     mLogo,
                     mTosUrl,
                     mIsSmartLockEnabled,
-                    mShouldLinkAccounts,
+                    mIsAccountLinkingEnabled,
                     mAllowNewEmailAccounts,
                     false,
                     null);

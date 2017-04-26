@@ -63,7 +63,7 @@ public class TestHelper {
                 AuthUI.NO_LOGO,
                 null  /* tosUrl */,
                 true  /* smartLockEnabled */,
-                true, /* link accounts */
+                true, /* accountLinkingEnabled */
                 true  /* allowNewEmailAccounts */,
                 false /* isReauth */,
                 null  /* reauthReason */);

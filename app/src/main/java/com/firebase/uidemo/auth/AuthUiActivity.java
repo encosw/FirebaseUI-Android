@@ -103,8 +103,8 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.smartlock_enabled)
     CheckBox mEnableSmartLock;
 
-    @BindView(R.id.should_link_enabled)
-    CheckBox mShouldLinkAccounts;
+    @BindView(R.id.account_linking_enabled)
+    CheckBox mEnableAccountLinking;
 
     @BindView(R.id.allow_new_email_accounts)
     CheckBox mAllowNewEmailAccounts;
@@ -190,7 +190,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setProviders(getSelectedProviders())
                         .setTosUrl(getSelectedTosUrl())
                         .setIsSmartLockEnabled(mEnableSmartLock.isChecked())
-                        .setShouldLinkAccounts(mShouldLinkAccounts.isChecked())
+                        .setIsAccountLinkingEnabled(mEnableAccountLinking.isChecked())
                         .setAllowNewEmailAccounts(mAllowNewEmailAccounts.isChecked())
                         .build(),
                 RC_SIGN_IN);

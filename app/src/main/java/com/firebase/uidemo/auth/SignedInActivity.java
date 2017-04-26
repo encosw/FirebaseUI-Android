@@ -140,7 +140,6 @@ public class SignedInActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton(android.R.string.no, null)
-                .create()
                 .show();
     }
 
@@ -228,8 +227,8 @@ public class SignedInActivity extends AppCompatActivity {
     }
 
     private void populatePrevUid() {
-        String prevUid = null;
-        if (mIdpResponse != null) prevUid = mIdpResponse.getPrevUid();
+        String prevUid = mIdpResponse == null ? null : mIdpResponse.getPrevUid();
+
         if (prevUid == null) {
             findViewById(R.id.prev_uid_layout).setVisibility(View.GONE);
         } else {
@@ -239,8 +238,7 @@ public class SignedInActivity extends AppCompatActivity {
 
     @MainThread
     private void showSnackbar(@StringRes int errorMessageRes) {
-        Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG)
-                .show();
+        Snackbar.make(mRootView, errorMessageRes, Snackbar.LENGTH_LONG).show();
     }
 
     static final class SignedInConfig implements Parcelable {

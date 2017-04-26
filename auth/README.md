@@ -216,7 +216,7 @@ startActivityForResult(
 ```
 
 The default FirebaseUI sign-in flow shows UI to either create a new account or sign into an existing account.
-If you are using 
+If you are using
 [anonymous authentication](https://firebase.google.com/docs/auth/android/anonymous-auth)
 in your application before calling FirebaseUI,
 you may want to link the anonymous account to the permanent account the user selects in the UI flow.
@@ -230,7 +230,7 @@ startActivityForResult(
     RC_SIGN_IN);
 ```
 
-**There is a caveat associated with using the `setShouldLinkAccounts` method**, see
+**There is a caveat associated with using the `setIsAccountLinkingEnabled` method**, see
 [handling account link failures](#handling-account-link-failures).
 
 #### Handling the sign-in response
@@ -287,7 +287,7 @@ for more information.
 
 ##### Handling account link failures
 
-_Only applies to developers using `setShouldLinkAccounts(true)`._
+_Only applies to developers using `setIsAccountLinkingEnabled(true)`._
 
 Imagine the following scenario: a user already has an existing account and uid in your app.
 Eventually, they switch devices and you automatically sign them in anonymously to give your
@@ -303,8 +303,8 @@ the user's previous id: `IdpResponse#getPrevUid()`.
 
 The following is an example of how you would move data from the user's previous uid to their new one
 using the Firebase Realtime database, thus merging the two accounts.
-The example assumes you are using data structrued similarly to the 
-[sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatActivity.java#L200):
+The example assumes you are using data structured similarly to the
+[sample](https://github.com/firebase/FirebaseUI-Android/blob/master/app/src/main/java/com/firebase/uidemo/database/ChatHolder.java):
 
 ```java
 @Override
@@ -313,7 +313,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == RC_SIGN_IN && resultCode == RESULT_OK) {
         IdpResponse response = IdpResponse.fromResultIntent(data);
         // User is signed in, but we must check to see whether or not automatic account linking failed.
-        String prevUid = response != null ? response.getPrevUid() : null;
+        String prevUid = response == null ? null : response.getPrevUid();
         if (prevUid != null) {
             // A previous user id was found: automatic account linking failed.
             Log.d(TAG, "handleSignInResponse received an id to be merged: " + prevUid);
