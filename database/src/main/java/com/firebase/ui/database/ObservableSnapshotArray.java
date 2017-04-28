@@ -7,6 +7,7 @@ import android.support.annotation.RestrictTo;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -74,10 +75,12 @@ public abstract class ObservableSnapshotArray<E> extends ImmutableList<DataSnaps
      * @see #removeChangeEventListener(ChangeEventListener)
      */
     @CallSuper
-    public void removeAllListeners() {
-        for (ChangeEventListener listener : mListeners) {
+    public List<ChangeEventListener> removeAllListeners() {
+        List<ChangeEventListener> listeners = new ArrayList<>(mListeners);
+        for (ChangeEventListener listener : listeners) {
             removeChangeEventListener(listener);
         }
+        return listeners;
     }
 
     protected abstract List<DataSnapshot> getSnapshots();
