@@ -79,7 +79,9 @@ public class CredentialSignInHandlerTest {
         AppCompatBase mockActivity = mock(AppCompatBase.class);
         ActivityHelper mockActivityHelper = mock(ActivityHelper.class);
         IdpResponse idpResponse =
-                new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build();
+                new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL)
+                        .setToken(TestConstants.TOKEN)
+                        .build();
         SaveSmartLock smartLock = mock(SaveSmartLock.class);
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,
@@ -88,32 +90,32 @@ public class CredentialSignInHandlerTest {
                 RC_ACCOUNT_LINK,
                 idpResponse);
 
-        Task signInTask = Tasks.forResult(new FakeAuthResult());
         when(mockActivityHelper.getFlowParams()).thenReturn(
                 TestHelper.getFlowParameters(Collections.<String>emptyList()));
-        credentialSignInHandler.onComplete(signInTask);
+        credentialSignInHandler.onComplete(Tasks.forResult(FakeAuthResult.INSTANCE));
 
         ArgumentCaptor<SaveSmartLock> smartLockCaptor = ArgumentCaptor.forClass(SaveSmartLock.class);
         ArgumentCaptor<Activity> activityCaptor = ArgumentCaptor.forClass(Activity.class);
         ArgumentCaptor<FirebaseUser> firebaseUserCaptor = ArgumentCaptor.forClass(FirebaseUser.class);
-        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<IdpResponse> idpResponseCaptor = ArgumentCaptor.forClass(IdpResponse.class);
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(mockActivityHelper).saveCredentialsOrFinish(
                 smartLockCaptor.capture(),
                 activityCaptor.capture(),
                 firebaseUserCaptor.capture(),
-                passwordCaptor.capture(),
+                passwordCaptor.capture(), // Needed to make Mockito happy
                 idpResponseCaptor.capture());
 
         assertEquals(smartLock, smartLockCaptor.getValue());
         assertEquals(mockActivity, activityCaptor.getValue());
         assertEquals(BaseHelperShadow.sFirebaseUser, firebaseUserCaptor.getValue());
 
-        assertEquals(idpResponse.getProviderType(), idpResponseCaptor.getValue().getProviderType());
-        assertEquals(idpResponse.getEmail(), idpResponseCaptor.getValue().getEmail());
-        assertEquals(idpResponse.getIdpToken(), idpResponseCaptor.getValue().getIdpToken());
-        assertEquals(idpResponse.getIdpSecret(), idpResponseCaptor.getValue().getIdpSecret());
+        IdpResponse response = idpResponseCaptor.getValue();
+        assertEquals(idpResponse.getProviderType(), response.getProviderType());
+        assertEquals(idpResponse.getEmail(), response.getEmail());
+        assertEquals(idpResponse.getIdpToken(), response.getIdpToken());
+        assertEquals(idpResponse.getIdpSecret(), response.getIdpSecret());
     }
 
     @Test
@@ -123,7 +125,7 @@ public class CredentialSignInHandlerTest {
         FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
         IdpResponse idpResponse =
                 new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL)
-                        .setToken("token")
+                        .setToken(TestConstants.TOKEN)
                         .build();
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,
@@ -171,7 +173,7 @@ public class CredentialSignInHandlerTest {
         FirebaseAuth mockFirebaseAuth = mock(FirebaseAuth.class);
         IdpResponse idpResponse =
                 new IdpResponse.Builder(GoogleAuthProvider.PROVIDER_ID, TestConstants.EMAIL)
-                        .setToken("token")
+                        .setToken(TestConstants.TOKEN)
                         .build();
         CredentialSignInHandler credentialSignInHandler = new CredentialSignInHandler(
                 mockActivity,

@@ -31,8 +31,6 @@ import com.firebase.ui.auth.testhelpers.FakeAuthResult;
 import com.firebase.ui.auth.testhelpers.TestConstants;
 import com.firebase.ui.auth.testhelpers.TestHelper;
 import com.firebase.ui.auth.ui.User;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.EmailAuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
@@ -126,10 +124,7 @@ public class RegisterEmailActivityTest {
                 .thenReturn(new AutoCompleteTask<Void>(null, true, null));
 
         when(BaseHelperShadow.sFirebaseAuth.getCurrentUser().linkWithCredential(any(EmailAuthCredential.class)))
-                .thenReturn(new AutoCompleteTask<AuthResult>(
-                        new FakeAuthResult(),
-                        true,
-                        null));
+                .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE));
 
         Button button = (Button) registerEmailActivity.findViewById(R.id.button_create);
         button.performClick();
