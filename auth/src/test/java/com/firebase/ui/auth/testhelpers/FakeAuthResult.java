@@ -17,11 +17,15 @@ package com.firebase.ui.auth.testhelpers;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 
-public class FakeAuthResult implements AuthResult {
-    private FirebaseUser mFirebaseUser = BaseHelperShadow.sFirebaseUser;
+public final class FakeAuthResult implements AuthResult {
+    public static final AuthResult INSTANCE = new FakeAuthResult();
+
+    private FakeAuthResult() {
+        // Singleton
+    }
 
     @Override
     public FirebaseUser getUser() {
-        return mFirebaseUser;
+        return BaseHelperShadow.sFirebaseUser;
     }
 }
