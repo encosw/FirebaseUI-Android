@@ -21,6 +21,7 @@ public class TestConstants {
     public static final String PASSWORD = "hunter2";
     public static final String NAME = "Test Testerson";
     public static final String TOKEN = "token";
+    public static final String UID = "uid";
     public static final String TOS_URL = "http://www.google.com";
     public static final Uri PHOTO_URI = Uri.parse("http://example.com/profile.png");
 }

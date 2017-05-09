@@ -101,7 +101,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     @Override
     public void onSuccess(AuthResult result) {
         if (mNewCredential == null) {
-            mHelper.finishActivity(mActivity, ResultCodes.OK, IdpResponse.getIntent(mResponse));
+            mHelper.finishActivity(mActivity, ResultCodes.OK, mResponse.toIntent());
         } else {
             // Link the user's existing account (mExistingCredential) with the account they were
             // trying to sign in to (mNewCredential)
@@ -176,7 +176,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
         }
 
         private void finishOk() {
-            mHelper.finishActivity(mActivity, ResultCodes.OK, IdpResponse.getIntent(mResponse));
+            mHelper.finishActivity(mActivity, ResultCodes.OK, mResponse.toIntent());
         }
     }
 }
