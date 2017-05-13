@@ -28,7 +28,7 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.provider.AuthCredentialHelper;
+import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
@@ -67,7 +67,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
         setContentView(R.layout.welcome_back_idp_prompt_layout);
 
         IdpResponse newUserIdpResponse = IdpResponse.fromResultIntent(getIntent());
-        mPrevCredential = AuthCredentialHelper.getAuthCredential(newUserIdpResponse);
+        mPrevCredential = ProviderUtils.getAuthCredential(newUserIdpResponse);
 
         User oldUser = User.getUser(getIntent());
 
@@ -127,7 +127,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
 
     @Override
     public void onSuccess(IdpResponse idpResponse) {
-        AuthCredential newCredential = AuthCredentialHelper.getAuthCredential(idpResponse);
+        AuthCredential newCredential = ProviderUtils.getAuthCredential(idpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
