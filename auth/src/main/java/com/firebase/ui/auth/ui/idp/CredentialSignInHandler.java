@@ -23,9 +23,8 @@ import android.util.Log;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.provider.AuthCredentialHelper;
+import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.ui.BaseHelper;
-import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.User;
 import com.firebase.ui.auth.ui.accountlink.AccountLinker;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackIdpPrompt;
@@ -38,14 +37,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.ProviderQueryResult;
-import com.google.firebase.auth.TwitterAuthProvider;
-
-import java.util.List;
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
@@ -85,10 +78,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                 String email = mResponse.getEmail();
                 if (email != null) {
-                    mHelper.getFirebaseAuth()
-                            .fetchProvidersForEmail(email)
-                            .addOnFailureListener(new TaskFailureLogger(
-                                    TAG, "Error fetching providers for email"))
+                    ProviderUtils.fetchTopProvider(mHelper.getFirebaseAuth(), email)
                             .addOnSuccessListener(new StartWelcomeBackFlow())
                             .addOnFailureListener(new OnFailureListener() {
                                 @Override
@@ -109,9 +99,9 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
         }
     }
 
-    private class StartWelcomeBackFlow implements OnSuccessListener<ProviderQueryResult> {
+    private class StartWelcomeBackFlow implements OnSuccessListener<String> {
         @Override
-        public void onSuccess(@NonNull ProviderQueryResult result) {
+        public void onSuccess(String provider) {
             AuthCredential credential = AuthCredentialHelper.getAuthCredential(mResponse);
             if (mHelper.canLinkAccounts()
                     && credential != null
@@ -122,18 +112,19 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                 AccountLinker.linkWithCurrentUser(mActivity, mHelper, mResponse, credential);
                 return;
             }
-
             mHelper.dismissDialog();
 
-            String provider = getHighestPriorityProvider(result.getProviders());
-            if (provider.equals(EmailAuthProvider.PROVIDER_ID)) {
+            if (provider == null) {
+                throw new IllegalStateException(
+                        "No provider even though we received a FirebaseAuthUserCollisionException");
+            } else if (provider.equals(EmailAuthProvider.PROVIDER_ID)) {
                 // Start email welcome back flow
                 mActivity.startActivityForResult(
                         WelcomeBackPasswordPrompt.createIntent(
                                 mActivity,
                                 mHelper.getFlowParams(),
-                                mResponse
-                        ), mAccountLinkRequestCode);
+                                mResponse),
+                        mAccountLinkRequestCode);
             } else {
                 // Start Idp welcome back flow
                 mActivity.startActivityForResult(
@@ -143,33 +134,9 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                                 new User.Builder(mResponse.getEmail())
                                         .setProvider(provider)
                                         .build(),
-                                mResponse
-                        ), mAccountLinkRequestCode);
+                                mResponse),
+                        mAccountLinkRequestCode);
             }
-        }
-
-        private String getHighestPriorityProvider(List<String> providers) {
-            String googleProvider = null;
-            String facebookProvider = null;
-            String twitterProvider = null;
-            String otherProvider = null;
-
-            for (String provider : providers) {
-                if (provider.equalsIgnoreCase(GoogleAuthProvider.PROVIDER_ID)) {
-                    googleProvider = provider;
-                } else if (provider.equalsIgnoreCase(FacebookAuthProvider.PROVIDER_ID)) {
-                    facebookProvider = provider;
-                } else if (provider.equalsIgnoreCase(TwitterAuthProvider.PROVIDER_ID)) {
-                    twitterProvider = provider;
-                } else {
-                    otherProvider = provider;
-                }
-            }
-
-            if (googleProvider != null) return googleProvider;
-            if (facebookProvider != null) return facebookProvider;
-            if (twitterProvider != null) return twitterProvider;
-            return otherProvider;
         }
     }
 }
