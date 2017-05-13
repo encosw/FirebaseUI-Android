@@ -92,8 +92,9 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                     return;
                 }
             }
-                Log.e(TAG, "Unexpected exception when signing in with credential " + mResponse.getProviderType() + " unsuccessful. Visit https://console.firebase.google.com to enable it.",
-                      task.getException());
+            Log.e(TAG,
+                  "Unexpected exception when signing in with credential " + mResponse.getProviderType() + " unsuccessful. Visit https://console.firebase.google.com to enable it.",
+                  task.getException());
 
             mHelper.dismissDialog();
         }
@@ -102,10 +103,10 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
     private class StartWelcomeBackFlow implements OnSuccessListener<String> {
         @Override
         public void onSuccess(String provider) {
-            AuthCredential credential = AuthCredentialHelper.getAuthCredential(mResponse);
+            AuthCredential credential = ProviderUtils.getAuthCredential(mResponse);
             if (mHelper.canLinkAccounts()
                     && credential != null
-                    && result.getProviders().contains(credential.getProvider())) {
+                    && provider.equals(credential.getProvider())) {
                 // We don't want to show the welcome back dialog since the user selected
                 // an existing account and we can just link the two accounts without knowing
                 // prevCredential.
