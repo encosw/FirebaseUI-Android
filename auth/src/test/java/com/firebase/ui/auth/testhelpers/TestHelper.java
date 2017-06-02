@@ -65,9 +65,7 @@ public class TestHelper {
                 null /* privacyPolicyUrl */,
                 true  /* smartLockEnabled */,
                 true, /* accountLinkingEnabled */
-                true  /* allowNewEmailAccounts */,
-                false /* isReauth */,
-                null  /* reauthReason */);
+                true  /* allowNewEmailAccounts */);
     }
 
     public static void verifySmartLockSave(String providerId,

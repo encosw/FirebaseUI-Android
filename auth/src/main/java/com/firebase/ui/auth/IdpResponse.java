@@ -88,6 +88,7 @@ public class IdpResponse implements Parcelable {
      * Get the type of provider. e.g. {@link AuthUI#GOOGLE_PROVIDER}
      */
     @NonNull
+    @AuthUI.SupportedProvider
     public String getProviderType() {
         return mProviderId;
     }
@@ -184,7 +185,7 @@ public class IdpResponse implements Parcelable {
         private String mSecret;
         private String mPrevUid;
 
-        public Builder(@NonNull String providerId, @Nullable String email) {
+        public Builder(@AuthUI.SupportedProvider @NonNull String providerId, @Nullable String email) {
             mProviderId = providerId;
             mEmail = email;
         }
