@@ -21,6 +21,8 @@ public abstract class ObservableSnapshotArray<E> extends AbstractList<DataSnapsh
     protected final List<ChangeEventListener> mListeners = new CopyOnWriteArrayList<>();
     protected final SnapshotParser<E> mParser;
 
+    private boolean mHasDataChanged = false;
+
     /**
      * Create an ObservableSnapshotArray where snapshots are parsed as objects of a particular
      * class.
@@ -54,6 +56,9 @@ public abstract class ObservableSnapshotArray<E> extends AbstractList<DataSnapsh
         for (int i = 0; i < size(); i++) {
             listener.onChildChanged(ChangeEventListener.EventType.ADDED, get(i), i, -1);
         }
+        if (mHasDataChanged) {
+            listener.onDataChanged();
+        }
 
         return listener;
     }
@@ -64,6 +69,11 @@ public abstract class ObservableSnapshotArray<E> extends AbstractList<DataSnapsh
     @CallSuper
     public void removeChangeEventListener(@NonNull ChangeEventListener listener) {
         mListeners.remove(listener);
+
+        // Reset mHasDataChanged if there are no more listeners
+        if (!isListening()) {
+            mHasDataChanged = false;
+        }
     }
 
     /**
@@ -96,6 +106,7 @@ public abstract class ObservableSnapshotArray<E> extends AbstractList<DataSnapsh
     }
 
     protected final void notifyListenersOnDataChanged() {
+        mHasDataChanged = true;
         for (ChangeEventListener listener : mListeners) {
             listener.onDataChanged();
         }
