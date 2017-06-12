@@ -42,7 +42,7 @@ public class IdpResponse implements Parcelable {
     private final int mErrorCode;
 
     private IdpResponse(int errorCode) {
-        this(null, null, null, null, null, errorCode);
+        this(null, null, null, null, null, null, errorCode);
     }
 
     private IdpResponse(
@@ -174,6 +174,7 @@ public class IdpResponse implements Parcelable {
         @Override
         public IdpResponse createFromParcel(Parcel in) {
             return new IdpResponse(
+                    in.readString(),
                     in.readString(),
                     in.readString(),
                     in.readString(),
