@@ -28,13 +28,14 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.EmailProvider;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
 import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
+import com.firebase.ui.auth.provider.PhoneProvider;
 import com.firebase.ui.auth.provider.Provider;
+import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.TwitterProvider;
 import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.BaseHelper;
@@ -50,10 +51,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Presents the list of authentication options for this app to the user. If an
- * identity provider option is selected, a {@link CredentialSignInHandler}
- * is launched to manage the IDP-specific sign-in flow. If email authentication is chosen,
- * the {@link RegisterEmailActivity} is started.
+ * Presents the list of authentication options for this app to the user. If an identity provider
+ * option is selected, a {@link CredentialSignInHandler} is launched to manage the IDP-specific
+ * sign-in flow. If email authentication is chosen, the {@link RegisterEmailActivity} is started. if
+ * phone authentication is chosen, the {@link com.firebase.ui.auth.ui.phone.PhoneVerificationActivity}
+ * is started.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallback {
@@ -101,6 +103,9 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
                     break;
                 case AuthUI.EMAIL_PROVIDER:
                     mProviders.add(new EmailProvider(this, mActivityHelper));
+                    break;
+                case AuthUI.PHONE_VERIFICATION_PROVIDER:
+                    mProviders.add(new PhoneProvider(this, mActivityHelper));
                     break;
                 default:
                     Log.e(TAG, "Encountered unknown provider parcel with type: "
@@ -155,7 +160,8 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
         signInTask.addOnFailureListener(
                 new TaskFailureLogger(TAG, "Firebase sign in with credential " +
                         credential.getProvider() +
-                        " unsuccessful. Visit https://console.firebase.google.com to enable it."))
+                        " unsuccessful. " +
+                        "Visit https://console.firebase.google.com to enable it."))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         this,
                         mActivityHelper,
