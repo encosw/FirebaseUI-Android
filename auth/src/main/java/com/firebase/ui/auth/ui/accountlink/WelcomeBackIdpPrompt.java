@@ -28,11 +28,11 @@ import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
 import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
+import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.TwitterProvider;
 import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.BaseHelper;
@@ -132,11 +132,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             Log.e(TAG, "No credential returned");
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
         } else {
-            AccountLinker.linkToNewUser(this,
-                                        mActivityHelper,
-                                        idpResponse,
-                                        newCredential,
-                                        mPrevCredential);
+            AccountLinker.linkToNewUser(
+                    this, mActivityHelper, idpResponse, newCredential, mPrevCredential);
         }
     }
 
