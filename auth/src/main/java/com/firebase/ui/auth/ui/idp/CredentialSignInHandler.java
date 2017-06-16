@@ -20,7 +20,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ResultCodes;
@@ -94,7 +93,9 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
                 }
             }
             Log.e(TAG,
-                  "Unexpected exception when signing in with credential " + mResponse.getProviderType() + " unsuccessful. Visit https://console.firebase.google.com to enable it.",
+                  "Unexpected exception when signing in with credential "
+                          + mResponse.getProviderType()
+                          + " unsuccessful. Visit https://console.firebase.google.com to enable it.",
                   task.getException());
 
             mHelper.dismissDialog();
