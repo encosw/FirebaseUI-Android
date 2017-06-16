@@ -46,18 +46,17 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Attempts to acquire a credential from Smart Lock for Passwords to sign in
- * an existing account. If this succeeds, an attempt is made to sign the user in
- * with this credential. If it does not, the
- * {@link AuthMethodPickerActivity authentication method picker activity}
- * is started, unless only email is supported, in which case the
- * {@link RegisterEmailActivity} is started.
+ * Attempts to acquire a credential from Smart Lock for Passwords to sign in an existing account. If
+ * this succeeds, an attempt is made to sign the user in with this credential. If it does not, the
+ * {@link AuthMethodPickerActivity authentication method picker activity} is started, unless only
+ * email is supported, in which case the {@link RegisterEmailActivity} is started.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
@@ -176,6 +175,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
             case RC_IDP_SIGNIN:
             case RC_AUTH_METHOD_PICKER:
             case RC_EMAIL_FLOW:
+            case RC_PHONE_FLOW:
                 finish(resultCode, data);
                 break;
             default:
@@ -281,8 +281,9 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
         // Because we are being called from Smart Lock,
         // we can assume that the account already exists and a user collision exception will be thrown
         // so we don't bother with linking credentials
-        final IdpResponse response =
-                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email).build();
+        final IdpResponse response = new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                .setPrevUid(mHelper.getUidForAccountLinking())
+                .build();
 
         mHelper.getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)

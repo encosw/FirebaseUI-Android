@@ -99,11 +99,7 @@ public class BaseHelper {
 
     @Nullable
     public String getUidForAccountLinking() {
-        if (canLinkAccounts()) {
-            return getCurrentUser().getUid();
-        } else {
-            return null;
-        }
+        return canLinkAccounts() ? getCurrentUser().getUid() : null;
     }
 
     public SaveSmartLock getSaveSmartLockInstance(FragmentActivity activity) {
