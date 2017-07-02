@@ -222,13 +222,14 @@ public class RegisterEmailFragment extends FragmentBase implements
 
     private void registerUser(final String email, final String name, final String password) {
         Task<AuthResult> registerTask;
-        if (mHelper.canLinkAccounts()) {
+        if (AuthInstances.canLinkAccounts(getFlowParams())) {
             registerTask = AuthInstances.getCurrentUser(getFlowParams())
                     .linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {
             registerTask = AuthInstances.getFirebaseAuth(getFlowParams())
                     .createUserWithEmailAndPassword(email, password);
         }
+
         registerTask
                 .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {

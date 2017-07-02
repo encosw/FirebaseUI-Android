@@ -147,7 +147,7 @@ public class IdpSignInContainer extends FragmentBase implements IdpCallback {
         AuthCredential credential = ProviderUtils.getAuthCredential(response);
 
         Task<AuthResult> signInTask;
-        if (mHelper.canLinkAccounts()) {
+        if (AuthInstances.canLinkAccounts(getFlowParams())) {
             signInTask = AuthInstances.getCurrentUser(getFlowParams()).linkWithCredential(credential);
         } else {
             signInTask = AuthInstances.getFirebaseAuth(getFlowParams()).signInWithCredential(credential);

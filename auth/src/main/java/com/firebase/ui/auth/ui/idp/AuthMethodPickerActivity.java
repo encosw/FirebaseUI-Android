@@ -154,8 +154,8 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
         AuthCredential credential = ProviderUtils.getAuthCredential(response);
 
         Task<AuthResult> signInTask;
-        if (mActivityHelper.canLinkAccounts()) {
-            signInTask = mActivityHelper.getCurrentUser().linkWithCredential(credential);
+        if (AuthInstances.canLinkAccounts(getFlowParams())) {
+            signInTask = AuthInstances.getCurrentUser(getFlowParams()).linkWithCredential(credential);
         } else {
             signInTask = AuthInstances.getFirebaseAuth(getFlowParams()).signInWithCredential(credential);
         }

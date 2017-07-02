@@ -99,13 +99,13 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
         @Override
         public void onSuccess(String provider) {
             AuthCredential credential = ProviderUtils.getAuthCredential(mResponse);
-            if (mHelper.canLinkAccounts()
+            if (AuthInstances.canLinkAccounts(mActivity.getFlowParams())
                     && credential != null
                     && provider.equals(credential.getProvider())) {
                 // We don't want to show the welcome back dialog since the user selected
                 // an existing account and we can just link the two accounts without knowing
                 // prevCredential.
-                AccountLinker.linkWithCurrentUser(mActivity, mHelper, mResponse, credential);
+                AccountLinker.linkWithCurrentUser(mActivity, mResponse, credential);
                 return;
             }
             mActivity.getDialogHolder().dismissDialog();

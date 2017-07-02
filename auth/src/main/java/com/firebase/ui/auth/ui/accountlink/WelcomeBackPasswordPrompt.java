@@ -145,7 +145,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         }
         getDialogHolder().showLoadingDialog(R.string.progress_dialog_signing_in);
 
-        final String prevUid = mActivityHelper.getUidForAccountLinking();
+        final String prevUid = AuthInstances.getUidForAccountLinking(getFlowParams());
 
         // Sign in with known email and the password provided
         AuthInstances.getFirebaseAuth(getFlowParams())

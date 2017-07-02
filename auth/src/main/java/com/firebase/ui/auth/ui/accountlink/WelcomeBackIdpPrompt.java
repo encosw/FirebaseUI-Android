@@ -133,7 +133,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
         } else {
             AccountLinker.linkToNewUser(
-                    this, mActivityHelper, idpResponse, newCredential, mPrevCredential);
+                    this, idpResponse, newCredential, mPrevCredential);
         }
     }
 

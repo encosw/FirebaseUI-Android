@@ -17,18 +17,26 @@ import com.google.firebase.auth.PhoneAuthProvider;
  * dependency injection.
  */
 public class AuthInstances {
+    public static CredentialsApi getCredentialsApi() {
+        return Auth.CredentialsApi;
+    }
 
     public static FirebaseAuth getFirebaseAuth(FlowParameters parameters) {
         return FirebaseAuth.getInstance(FirebaseApp.getInstance(parameters.appName));
     }
 
-    public static CredentialsApi getCredentialsApi() {
-        return Auth.CredentialsApi;
-    }
-
     @Nullable
     public static FirebaseUser getCurrentUser(FlowParameters parameters) {
         return getFirebaseAuth(parameters).getCurrentUser();
+    }
+
+    public static boolean canLinkAccounts(FlowParameters parameters) {
+        return parameters.accountLinkingEnabled && getCurrentUser(parameters) != null;
+    }
+
+    @Nullable
+    public static String getUidForAccountLinking(FlowParameters parameters) {
+        return canLinkAccounts(parameters) ? getCurrentUser(parameters).getUid() : null;
     }
 
     public static SaveSmartLock getSaveSmartLockInstance(FragmentActivity activity,
@@ -39,6 +47,4 @@ public class AuthInstances {
     public static PhoneAuthProvider getPhoneAuthProviderInstance() {
         return PhoneAuthProvider.getInstance();
     }
-
-
 }
