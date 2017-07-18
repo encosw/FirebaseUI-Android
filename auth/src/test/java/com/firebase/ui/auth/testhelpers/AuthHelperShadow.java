@@ -19,6 +19,7 @@ public class AuthHelperShadow {
 
     public static final FirebaseAuth sFirebaseAuth;
     public static final FirebaseUser sFirebaseUser;
+    public static Boolean sCanLinkAccounts = true;
     public static final CredentialsApi sCredentialsApi;
     public static final SaveSmartLock sSaveSmartLock;
     public static final PhoneAuthProvider sPhoneAuthProvider;
@@ -29,6 +30,7 @@ public class AuthHelperShadow {
 
         // FirebaseUser
         sFirebaseUser = Mockito.mock(FirebaseUser.class);
+        when(sFirebaseUser.getUid()).thenReturn(TestConstants.UID);
         when(sFirebaseUser.getEmail()).thenReturn(TestConstants.EMAIL);
         when(sFirebaseUser.getDisplayName()).thenReturn(TestConstants.NAME);
         when(sFirebaseUser.getPhotoUrl()).thenReturn(TestConstants.PHOTO_URI);
@@ -59,6 +61,16 @@ public class AuthHelperShadow {
     @Implementation
     public static FirebaseUser getCurrentUser() {
         return sFirebaseUser;
+    }
+
+    @Implementation
+    public static boolean canLinkAccounts() {
+        return sCanLinkAccounts;
+    }
+
+    @Implementation
+    public static String getUidForAccountLinking() {
+        return TestConstants.UID;
     }
 
     @Implementation

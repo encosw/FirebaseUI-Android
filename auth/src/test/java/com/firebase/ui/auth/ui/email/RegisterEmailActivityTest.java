@@ -119,6 +119,7 @@ public class RegisterEmailActivityTest {
         name.setText(TestConstants.NAME);
         password.setText(TestConstants.PASSWORD);
 
+        AuthHelperShadow.sCanLinkAccounts = true;
         when(AuthHelperShadow.sFirebaseUser.updateProfile(any(UserProfileChangeRequest.class)))
                 .thenReturn(new AutoCompleteTask<Void>(null, true, null));
 

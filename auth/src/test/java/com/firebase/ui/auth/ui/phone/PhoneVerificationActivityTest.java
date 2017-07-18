@@ -35,7 +35,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
@@ -87,8 +86,6 @@ public class PhoneVerificationActivityTest {
     PhoneAuthProvider.ForceResendingToken forceResendingToken;
     @Mock
     PhoneAuthCredential credential;
-    @Mock
-    FirebaseUser mockFirebaseUser;
 
     private String verificationId = "hjksdf737hc";
 
@@ -214,6 +211,7 @@ public class PhoneVerificationActivityTest {
     @Config(shadows = {AuthHelperShadow.class})
     public void testSubmitCode_badCodeShowsAlertDialog() {
         reset(AuthHelperShadow.sPhoneAuthProvider);
+        AuthHelperShadow.sCanLinkAccounts = false;
         when(AuthHelperShadow.sFirebaseAuth.signInWithCredential(any(AuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<AuthResult>(
                         null, true,
@@ -275,6 +273,7 @@ public class PhoneVerificationActivityTest {
 
         when(AuthHelperShadow.sFirebaseUser.getPhoneNumber()).thenReturn(PHONE);
         when(AuthHelperShadow.sFirebaseUser.getEmail()).thenReturn(null);
+        AuthHelperShadow.sCanLinkAccounts = false;
         when(AuthHelperShadow.sFirebaseAuth.signInWithCredential(any(AuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
         mActivity.verifyPhoneNumber(PHONE, false);
@@ -302,6 +301,7 @@ public class PhoneVerificationActivityTest {
 
         when(AuthHelperShadow.sFirebaseUser.getPhoneNumber()).thenReturn(PHONE);
         when(AuthHelperShadow.sFirebaseUser.getEmail()).thenReturn(null);
+        AuthHelperShadow.sCanLinkAccounts = false;
 
         when(AuthHelperShadow.sFirebaseAuth.signInWithCredential(any(AuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
@@ -333,7 +333,6 @@ public class PhoneVerificationActivityTest {
         assertNotNull(verifyPhoneNumberFragment);
 
         assertNull(submitConfirmationCodeFragment);
-
     }
 
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks testSendConfirmationCode() {
