@@ -8,10 +8,8 @@ import android.util.Log;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
-import com.firebase.ui.auth.util.AuthInstances;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -67,10 +65,10 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     }
 
     private void start() {
-        FirebaseUser currentUser = AuthInstances.getCurrentUser(getFlowParams());
+        FirebaseUser currentUser = mActivity.getAuthHelper().getCurrentUser();
         if (currentUser == null) {
             // The user has an existing account and is trying to log in with a new provider
-            AuthInstances.getFirebaseAuth(getFlowParams())
+            mActivity.getAuthHelper().getFirebaseAuth()
                     .signInWithCredential(mExistingCredential)
                     .addOnSuccessListener(this)
                     .addOnFailureListener(new OnFailureListener() {
@@ -111,13 +109,13 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
 
     @Override
     public void onFailure(@NonNull Exception e) {
-        if (e instanceof FirebaseAuthUserCollisionException && AuthInstances.canLinkAccounts(getFlowParams())) {
-            mResponse.setPrevUid(AuthInstances.getUidForAccountLinking(getFlowParams()));
+        if (e instanceof FirebaseAuthUserCollisionException && mActivity.getAuthHelper().canLinkAccounts()) {
+            mResponse.setPrevUid(mActivity.getAuthHelper().getUidForAccountLinking());
 
             // Since we still want the user to be able to sign in even though
             // they have an existing account, we are going to save the uid of the
             // current user, log them out, and then sign in with the new credential.
-            Task<AuthResult> signInTask = AuthInstances.getFirebaseAuth(getFlowParams())
+            Task<AuthResult> signInTask = mActivity.getAuthHelper().getFirebaseAuth()
                     .signInWithCredential(mExistingCredential)
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -138,7 +136,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                 signInTask.addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult result) {
-                        AuthInstances.getCurrentUser(getFlowParams())
+                        mActivity.getAuthHelper().getCurrentUser()
                                 .linkWithCredential(mNewCredential)
                                 .addOnFailureListener(
                                         new TaskFailureLogger(TAG, "Error linking with credential"))
@@ -151,10 +149,6 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                     + " to support account linking");
             finishWithError();
         }
-    }
-
-    private FlowParameters getFlowParams() {
-        return mActivity.getFlowParams();
     }
 
     private void finishWithError() {

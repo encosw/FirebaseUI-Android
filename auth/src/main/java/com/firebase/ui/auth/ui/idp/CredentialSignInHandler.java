@@ -98,7 +98,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
         @Override
         public void onSuccess(String provider) {
             AuthCredential credential = ProviderUtils.getAuthCredential(mResponse);
-            if (AuthInstances.canLinkAccounts(mActivity.getFlowParams())
+            if (mActivity.getAuthHelper().canLinkAccounts()
                     && credential != null
                     && provider.equals(credential.getProvider())) {
                 // We don't want to show the welcome back dialog since the user selected

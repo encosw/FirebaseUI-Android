@@ -145,7 +145,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         final String prevUid = getAuthHelper().getUidForAccountLinking();
 
         // Sign in with known email and the password provided
-        AuthInstances.getFirebaseAuth(getFlowParams())
+        getAuthHelper().getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(
                         new TaskFailureLogger(TAG, "Error signing in with email and password"))
