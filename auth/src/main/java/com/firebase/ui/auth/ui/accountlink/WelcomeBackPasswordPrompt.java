@@ -158,15 +158,13 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
                         // If authCredential is null, the user only has an email account.
                         // Otherwise, the user has an email account that we need to link to an idp.
                         if (authCredential == null) {
-                            IdpResponse response =
-                                    new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
-                                            .setPrevUid(prevUid)
-                                            .build();
                             saveCredentialsOrFinish(
                                     mSaveSmartLock,
                                     authResult.getUser(),
                                     password,
-                                    response);
+                                    new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                                            .setPrevUid(prevUid)
+                                            .build());
                         } else {
                             mIdpResponse.setPrevUid(prevUid);
                             authResult.getUser()

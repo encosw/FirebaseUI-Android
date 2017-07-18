@@ -60,6 +60,7 @@ import java.util.List;
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallback {
     private static final String TAG = "AuthMethodPicker";
+
     private static final int RC_ACCOUNT_LINK = 3;
 
     private List<Provider> mProviders;
@@ -67,9 +68,7 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     private SaveSmartLock mSaveSmartLock;
 
     public static Intent createIntent(Context context, FlowParameters flowParams) {
-        return HelperActivityBase.createBaseIntent(context,
-                                                   AuthMethodPickerActivity.class,
-                                                   flowParams);
+        return HelperActivityBase.createBaseIntent(context, AuthMethodPickerActivity.class, flowParams);
     }
 
     @Override
@@ -159,11 +158,11 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
             signInTask = getAuthHelper().getFirebaseAuth().signInWithCredential(credential);
         }
 
-        signInTask.addOnFailureListener(
-                new TaskFailureLogger(TAG, "Firebase sign in with credential " +
-                        credential.getProvider() +
-                        " unsuccessful. " +
-                        "Visit https://console.firebase.google.com to enable it."))
+        signInTask
+                .addOnFailureListener(
+                        new TaskFailureLogger(TAG, "Firebase sign in with credential " +
+                                credential.getProvider() + " unsuccessful. " +
+                                "Visit https://console.firebase.google.com to enable it."))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         this,
                         mSaveSmartLock,
