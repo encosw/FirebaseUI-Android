@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ResultCodes;
@@ -24,7 +23,6 @@ import com.firebase.ui.auth.ui.User;
 import com.firebase.ui.auth.ui.email.RegisterEmailActivity;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.ui.phone.PhoneVerificationActivity;
-import com.firebase.ui.auth.util.AuthInstances;
 import com.firebase.ui.auth.util.GoogleApiHelper;
 import com.firebase.ui.auth.util.GoogleSignInHelper;
 import com.google.android.gms.auth.api.Auth;
@@ -48,9 +46,7 @@ import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.auth.TwitterAuthProvider;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Attempts to acquire a credential from Smart Lock for Passwords to sign in an existing account. If
@@ -107,12 +103,12 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                     .build();
             mGoogleApiClient.connect();
 
-            AuthInstances.getCredentialsApi()
+            getAuthHelper().getCredentialsApi()
                     .request(mGoogleApiClient,
-                             new CredentialRequest.Builder()
-                                     .setPasswordLoginSupported(true)
-                                     .setAccountTypes(getSupportedAccountTypes().toArray(new String[0]))
-                                     .build())
+                            new CredentialRequest.Builder()
+                                    .setPasswordLoginSupported(true)
+                                    .setAccountTypes(getSupportedAccountTypes().toArray(new String[0]))
+                                    .build())
                     .setResultCallback(this);
         } else {
             startAuthMethodChoice();
@@ -238,29 +234,27 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
     private void startAuthMethodChoice() {
         FlowParameters flowParams = getFlowParams();
         List<AuthUI.IdpConfig> idpConfigs = flowParams.providerInfo;
-        Map<String, IdpConfig> providerIdToConfig = new HashMap<>();
-        for (IdpConfig providerConfig : idpConfigs) {
-            providerIdToConfig.put(providerConfig.getProviderId(), providerConfig);
-        }
-
-        List<IdpConfig> visibleProviders = idpConfigs;
 
         // If there is only one provider selected, launch the flow directly
-        if (visibleProviders.size() == 1) {
-            String firstProvider = visibleProviders.get(0).getProviderId();
-            if (firstProvider.equals(EmailAuthProvider.PROVIDER_ID)) {
-                // Go directly to email flow
-                startActivityForResult(
-                        RegisterEmailActivity.createIntent(getContext(), flowParams),
-                        RC_EMAIL_FLOW);
-            } else if (firstProvider.equals(PhoneAuthProvider.PROVIDER_ID)) {
-                // Go directly to phone flow
-                startActivityForResult(
-                        PhoneVerificationActivity.createIntent(getContext(), flowParams, null),
-                        RC_PHONE_FLOW);
-            } else {
-                // Launch IDP flow
-                redirectToIdpSignIn(null, providerIdToAccountType(firstProvider));
+        if (idpConfigs.size() == 1) {
+            String firstProvider = idpConfigs.get(0).getProviderId();
+            switch (firstProvider) {
+                case EmailAuthProvider.PROVIDER_ID:
+                    // Go directly to email flow
+                    startActivityForResult(
+                            RegisterEmailActivity.createIntent(getContext(), flowParams),
+                            RC_EMAIL_FLOW);
+                    break;
+                case PhoneAuthProvider.PROVIDER_ID:
+                    // Go directly to phone flow
+                    startActivityForResult(
+                            PhoneVerificationActivity.createIntent(getContext(), flowParams, null),
+                            RC_PHONE_FLOW);
+                    break;
+                default:
+                    // Launch IDP flow
+                    redirectToIdpSignIn(null, providerIdToAccountType(firstProvider));
+                    break;
             }
         } else {
             startActivityForResult(
@@ -285,7 +279,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                 .setPrevUid(AuthInstances.getUidForAccountLinking(getFlowParams()))
                 .build();
 
-        AuthInstances.getFirebaseAuth(getFlowParams())
+        getAuthHelper().getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(new TaskFailureLogger(
                         TAG, "Error signing in with email and password"))

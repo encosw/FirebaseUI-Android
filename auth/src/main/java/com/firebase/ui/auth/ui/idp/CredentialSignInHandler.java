@@ -29,7 +29,6 @@ import com.firebase.ui.auth.ui.User;
 import com.firebase.ui.auth.ui.accountlink.AccountLinker;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackIdpPrompt;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackPasswordPrompt;
-import com.firebase.ui.auth.util.AuthInstances;
 import com.firebase.ui.auth.util.signincontainer.SaveSmartLock;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -72,7 +71,7 @@ public class CredentialSignInHandler implements OnCompleteListener<AuthResult> {
             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                 String email = mResponse.getEmail();
                 if (email != null) {
-                    FirebaseAuth auth = AuthInstances.getFirebaseAuth(mActivity.getFlowParams());
+                    FirebaseAuth auth = mActivity.getAuthHelper().getFirebaseAuth();
                     ProviderUtils.fetchTopProvider(auth, email)
                             .addOnSuccessListener(new StartWelcomeBackFlow())
                             .addOnFailureListener(new OnFailureListener() {

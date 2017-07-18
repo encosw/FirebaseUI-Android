@@ -42,7 +42,6 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.firebase.ui.auth.ui.email.RegisterEmailActivity;
-import com.firebase.ui.auth.util.AuthInstances;
 import com.firebase.ui.auth.util.signincontainer.SaveSmartLock;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -77,7 +76,7 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.auth_method_picker_layout);
-        mSaveSmartLock = AuthInstances.getSaveSmartLockInstance(this, getFlowParams());
+        mSaveSmartLock = getAuthHelper().getSaveSmartLockInstance(this);
 
         populateIdpList(getFlowParams().providerInfo);
 
@@ -154,10 +153,10 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
         AuthCredential credential = ProviderUtils.getAuthCredential(response);
 
         Task<AuthResult> signInTask;
-        if (AuthInstances.canLinkAccounts(getFlowParams())) {
-            signInTask = AuthInstances.getCurrentUser(getFlowParams()).linkWithCredential(credential);
+        if (getAuthHelper().canLinkAccounts()) {
+            signInTask = getAuthHelper().getCurrentUser().linkWithCredential(credential);
         } else {
-            signInTask = AuthInstances.getFirebaseAuth(getFlowParams()).signInWithCredential(credential);
+            signInTask = getAuthHelper().getFirebaseAuth().signInWithCredential(credential);
         }
 
         signInTask.addOnFailureListener(
@@ -173,7 +172,7 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     }
 
     @Override
-    public void onFailure(Bundle extra) {
+    public void onFailure() {
         // stay on this screen
         getDialogHolder().dismissDialog();
     }
