@@ -55,6 +55,7 @@ import butterknife.OnClick;
 public class SignedInActivity extends AppCompatActivity {
 
     private static final String EXTRA_SIGNED_IN_CONFIG = "extra_signed_in_config";
+    private static final int RC_LINK_ACCOUNT = 4433;
 
     @BindView(android.R.id.content)
     View mRootView;
@@ -95,7 +96,7 @@ public class SignedInActivity extends AppCompatActivity {
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
-            startActivity(AuthUiActivity.createIntent(this));
+            startActivity(AuthUiActivity.createIntent(this, false));
             finish();
             return;
         }
@@ -110,6 +111,14 @@ public class SignedInActivity extends AppCompatActivity {
         populatePrevUid();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_LINK_ACCOUNT && resultCode == RESULT_OK) {
+            finish();
+        }
+    }
+
     @OnClick(R.id.sign_out)
     public void signOut() {
         AuthUI.getInstance()
@@ -118,13 +127,18 @@ public class SignedInActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this));
+                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this, false));
                             finish();
                         } else {
                             showSnackbar(R.string.sign_out_failed);
                         }
                     }
                 });
+    }
+
+    @OnClick(R.id.link_account)
+    public void linkAccount() {
+        startActivityForResult(AuthUiActivity.createIntent(this, true), RC_LINK_ACCOUNT);
     }
 
     @OnClick(R.id.delete_account)
@@ -148,7 +162,7 @@ public class SignedInActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this));
+                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this, false));
                             finish();
                         } else {
                             showSnackbar(R.string.delete_account_failed);

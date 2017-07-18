@@ -278,13 +278,6 @@
                 android:text="@string/enable_hint_selector" />
 
             <CheckBox
-                android:id="@+id/account_linking_enabled"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/enable_account_linking"/>
-
-            <CheckBox
                 android:id="@+id/allow_new_email_accounts"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -39,7 +39,6 @@ import com.firebase.ui.auth.ResultCodes;
 import com.firebase.uidemo.R;
 import com.google.android.gms.common.Scopes;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +54,9 @@ public class AuthUiActivity extends AppCompatActivity {
     private static final String FIREBASE_TOS_URL = "https://firebase.google.com/terms/";
     private static final String GOOGLE_PRIVACY_POLICY_URL = "https://www.google.com/policies/privacy/";
     private static final String FIREBASE_PRIVACY_POLICY_URL = "https://firebase.google.com/terms/analytics/#7_privacy";
+
     private static final int RC_SIGN_IN = 100;
+    private static final String OVERRIDE_LOGIN_CHECKS_EXTRA = "overide_login_checks";
 
     @BindView(R.id.default_theme)
     RadioButton mUseDefaultTheme;
@@ -117,9 +118,6 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.hint_selector_enabled)
     CheckBox mEnableHintSelector;
 
-    @BindView(R.id.account_linking_enabled)
-    CheckBox mEnableAccountLinking;
-
     @BindView(R.id.allow_new_email_accounts)
     CheckBox mAllowNewEmailAccounts;
 
@@ -141,10 +139,9 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.google_scope_youtube_data)
     CheckBox mGoogleScopeYoutubeData;
 
-    public static Intent createIntent(Context context) {
-        Intent in = new Intent();
-        in.setClass(context, AuthUiActivity.class);
-        return in;
+    public static Intent createIntent(Context context, boolean overrideLoginChecks) {
+        return new Intent(context, AuthUiActivity.class)
+                .putExtra(OVERRIDE_LOGIN_CHECKS_EXTRA, overrideLoginChecks);
     }
 
     @Override
@@ -153,8 +150,8 @@ public class AuthUiActivity extends AppCompatActivity {
         setContentView(R.layout.auth_ui_layout);
         ButterKnife.bind(this);
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null && !user.isAnonymous()) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null
+                && !getIntent().getBooleanExtra(OVERRIDE_LOGIN_CHECKS_EXTRA, false)) {
             startSignedInActivity(null);
             finish();
             return;
@@ -212,7 +209,7 @@ public class AuthUiActivity extends AppCompatActivity {
                         .setPrivacyPolicyUrl(getSelectedPrivacyPolicyUrl())
                         .setIsSmartLockEnabled(mEnableCredentialSelector.isChecked(),
                                                mEnableHintSelector.isChecked())
-                        .setIsAccountLinkingEnabled(mEnableAccountLinking.isChecked())
+                        .setIsAccountLinkingEnabled(true)
                         .setAllowNewEmailAccounts(mAllowNewEmailAccounts.isChecked())
                         .build(),
                 RC_SIGN_IN);
@@ -236,6 +233,7 @@ public class AuthUiActivity extends AppCompatActivity {
         // Successfully signed in
         if (resultCode == ResultCodes.OK) {
             startSignedInActivity(response);
+            setResult(RESULT_OK);
             finish();
             return;
         } else {
