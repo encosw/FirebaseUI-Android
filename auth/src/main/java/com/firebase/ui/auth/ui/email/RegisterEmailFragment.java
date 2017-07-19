@@ -10,18 +10,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
+import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.FragmentBase;
+import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.ImeHelper;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
-import com.firebase.ui.auth.ui.TermsTextView;
-import com.firebase.ui.auth.ui.User;
+import com.firebase.ui.auth.ui.accountlink.ProfileMerger;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackIdpPrompt;
 import com.firebase.ui.auth.ui.accountlink.WelcomeBackPasswordPrompt;
 import com.firebase.ui.auth.ui.email.fieldvalidators.EmailFieldValidator;
@@ -34,11 +36,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 
 /**
  * Fragment to display an email/name/password sign up form for new users.
@@ -49,10 +50,12 @@ public class RegisterEmailFragment extends FragmentBase implements
 
     public static final String TAG = "RegisterEmailFragment";
 
+    private HelperActivityBase mActivity;
+
     private EditText mEmailEditText;
     private EditText mNameEditText;
     private EditText mPasswordEditText;
-    private TermsTextView mAgreementText;
+    private TextView mAgreementText;
     private TextInputLayout mEmailInput;
     private TextInputLayout mPasswordInput;
 
@@ -95,7 +98,7 @@ public class RegisterEmailFragment extends FragmentBase implements
         mEmailEditText = (EditText) v.findViewById(R.id.email);
         mNameEditText = (EditText) v.findViewById(R.id.name);
         mPasswordEditText = (EditText) v.findViewById(R.id.password);
-        mAgreementText = (TermsTextView) v.findViewById(R.id.create_account_text);
+        mAgreementText = (TextView) v.findViewById(R.id.create_account_text);
         mEmailInput = (TextInputLayout) v.findViewById(R.id.email_layout);
         mPasswordInput = (TextInputLayout) v.findViewById(R.id.password_layout);
 
@@ -156,17 +159,23 @@ public class RegisterEmailFragment extends FragmentBase implements
         super.onActivityCreated(savedInstanceState);
         getActivity().setTitle(R.string.title_register_email);
 
-        mSaveSmartLock = mHelper.getSaveSmartLockInstance(getActivity());
-        mAgreementText.showTerms(mHelper.getFlowParams(), R.string.button_text_save);
+        if (!(getActivity() instanceof HelperActivityBase)) {
+            throw new RuntimeException("Must be attached to a HelperActivityBase.");
+        }
+
+        mActivity = (HelperActivityBase) getActivity();
+        mSaveSmartLock = getAuthHelper().getSaveSmartLockInstance(mActivity);
+        new PreambleHandler(getContext(), getFlowParams(), R.string.button_text_save)
+                .setPreamble(mAgreementText);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(ExtraConstants.EXTRA_USER,
-                               new User.Builder(mEmailEditText.getText().toString())
-                                       .setName(mNameEditText.getText().toString())
-                                       .setPhotoUri(mUser.getPhotoUri())
-                                       .build());
+                new User.Builder(EmailAuthProvider.PROVIDER_ID, mEmailEditText.getText().toString())
+                        .setName(mNameEditText.getText().toString())
+                        .setPhotoUri(mUser.getPhotoUri())
+                        .build());
         super.onSaveInstanceState(outState);
     }
 
@@ -205,52 +214,39 @@ public class RegisterEmailFragment extends FragmentBase implements
         boolean passwordValid = mPasswordFieldValidator.validate(password);
         boolean nameValid = mNameValidator.validate(name);
         if (emailValid && passwordValid && nameValid) {
-            mHelper.showLoadingDialog(R.string.progress_dialog_signing_up);
+            getDialogHolder().showLoadingDialog(R.string.progress_dialog_signing_up);
             registerUser(email, name, password);
         }
     }
 
     private void registerUser(final String email, final String name, final String password) {
         Task<AuthResult> registerTask;
-        if (mHelper.canLinkAccounts()) {
-            registerTask = mHelper.getCurrentUser()
+        if (getAuthHelper().canLinkAccounts()) {
+            registerTask = getAuthHelper().getCurrentUser()
                     .linkWithCredential(EmailAuthProvider.getCredential(email, password));
         } else {
-            registerTask = mHelper.getFirebaseAuth()
+            registerTask = getAuthHelper().getFirebaseAuth()
                     .createUserWithEmailAndPassword(email, password);
         }
+
+        final IdpResponse response = new IdpResponse.Builder(
+                new User.Builder(EmailAuthProvider.PROVIDER_ID, email)
+                        .setName(name)
+                        .setPhotoUri(mUser.getPhotoUri())
+                        .build())
+                .build();
+
         registerTask
+                .continueWithTask(new ProfileMerger(response))
                 .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
-                        // Set display name
-                        UserProfileChangeRequest changeNameRequest =
-                                new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(name)
-                                        .setPhotoUri(mUser.getPhotoUri())
-                                        .build();
-
-                        final FirebaseUser user = authResult.getUser();
-                        user.updateProfile(changeNameRequest)
-                                .addOnFailureListener(new TaskFailureLogger(
-                                        TAG, "Error setting display name"))
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        // This executes even if the name change fails, since
-                                        // the account creation succeeded and we want to save
-                                        // the credential to SmartLock (if enabled).
-                                        mHelper.saveCredentialsOrFinish(
-                                                mSaveSmartLock,
-                                                getActivity(),
-                                                user,
-                                                password,
-                                                new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID,
-                                                                        email)
-                                                        .build());
-                                    }
-                                });
+                        mActivity.saveCredentialsOrFinish(
+                                mSaveSmartLock,
+                                authResult.getUser(),
+                                password,
+                                response);
                     }
                 })
                 .addOnFailureListener(getActivity(), new OnFailureListener() {
@@ -267,43 +263,42 @@ public class RegisterEmailFragment extends FragmentBase implements
                             // Collision with existing user email, it should be very hard for
                             // the user to even get to this error due to CheckEmailFragment.
 
-                            ProviderUtils.fetchTopProvider(mHelper.getFirebaseAuth(), email).addOnSuccessListener(
+                            FirebaseAuth auth = getAuthHelper().getFirebaseAuth();
+                            ProviderUtils.fetchTopProvider(auth, email).addOnSuccessListener(
                                     getActivity(),
                                     new OnSuccessListener<String>() {
                                         @Override
                                         public void onSuccess(String provider) {
                                             Toast.makeText(getContext(),
-                                                           R.string.error_user_collision,
-                                                           Toast.LENGTH_LONG)
+                                                    R.string.error_user_collision,
+                                                    Toast.LENGTH_LONG)
                                                     .show();
 
                                             if (provider == null) {
-                                                String msg =
+                                                throw new IllegalStateException(
                                                         "User has no providers even though " +
-                                                        "we got a " +
-                                                        "FirebaseAuthUserCollisionException";
-                                                throw new IllegalStateException(msg);
+                                                                "we got a " +
+                                                                "FirebaseAuthUserCollisionException");
                                             } else if (EmailAuthProvider.PROVIDER_ID.equalsIgnoreCase(
                                                     provider)) {
                                                 getActivity().startActivityForResult(
                                                         WelcomeBackPasswordPrompt.createIntent(
                                                                 getContext(),
-                                                                mHelper.getFlowParams(),
-                                                                new IdpResponse.Builder(
+                                                                getFlowParams(),
+                                                                new IdpResponse.Builder(new User.Builder(
                                                                         EmailAuthProvider.PROVIDER_ID,
-                                                                        email).build()),
+                                                                        email).build()).build()),
                                                         RegisterEmailActivity.RC_WELCOME_BACK_IDP);
                                             } else {
                                                 getActivity().startActivityForResult(
                                                         WelcomeBackIdpPrompt.createIntent(
                                                                 getContext(),
-                                                                mHelper.getFlowParams(),
-                                                                new User.Builder(email)
-                                                                        .setProvider(provider)
+                                                                getFlowParams(),
+                                                                new User.Builder(provider, email)
                                                                         .build(),
-                                                                new IdpResponse.Builder(
+                                                                new IdpResponse.Builder(new User.Builder(
                                                                         EmailAuthProvider.PROVIDER_ID,
-                                                                        email).build()),
+                                                                        email).build()).build()),
                                                         RegisterEmailActivity.RC_WELCOME_BACK_IDP);
                                             }
                                         }
@@ -311,7 +306,7 @@ public class RegisterEmailFragment extends FragmentBase implements
                                     .addOnCompleteListener(new OnCompleteListener<String>() {
                                         @Override
                                         public void onComplete(@NonNull Task<String> task) {
-                                            mHelper.dismissDialog();
+                                            getDialogHolder().dismissDialog();
                                         }
                                     });
                             return;
@@ -321,7 +316,7 @@ public class RegisterEmailFragment extends FragmentBase implements
                             mEmailInput.setError(getString(R.string.email_account_creation_error));
                         }
 
-                        mHelper.dismissDialog();
+                        getDialogHolder().dismissDialog();
                     }
                 });
     }

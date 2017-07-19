@@ -23,14 +23,13 @@ import android.widget.EditText;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.testhelpers.ActivityHelperShadow;
+import com.firebase.ui.auth.User;
+import com.firebase.ui.auth.testhelpers.AuthHelperShadow;
 import com.firebase.ui.auth.testhelpers.AutoCompleteTask;
-import com.firebase.ui.auth.testhelpers.BaseHelperShadow;
 import com.firebase.ui.auth.testhelpers.CustomRobolectricGradleTestRunner;
 import com.firebase.ui.auth.testhelpers.FakeAuthResult;
 import com.firebase.ui.auth.testhelpers.TestConstants;
 import com.firebase.ui.auth.testhelpers.TestHelper;
-import com.firebase.ui.auth.ui.User;
 import com.google.firebase.auth.EmailAuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -76,7 +75,8 @@ public class RegisterEmailActivityTest {
         RegisterEmailActivity registerEmailActivity = createActivity();
 
         // Trigger RegisterEmailFragment (bypass check email)
-        registerEmailActivity.onNewUser(new User.Builder(TestConstants.EMAIL).build());
+        registerEmailActivity.onNewUser(
+                new User.Builder(EmailAuthProvider.PROVIDER_ID, TestConstants.EMAIL).build());
 
         Button button = (Button) registerEmailActivity.findViewById(R.id.button_create);
         button.performClick();
@@ -101,30 +101,31 @@ public class RegisterEmailActivityTest {
     }
 
     @Test
-    @Config(shadows = {BaseHelperShadow.class, ActivityHelperShadow.class})
+    @Config(shadows = {AuthHelperShadow.class})
     public void testSignUpButton_successfulRegistrationShouldContinueToSaveCredentials() {
         // init mocks
-        new BaseHelperShadow();
-        reset(BaseHelperShadow.sSaveSmartLock);
+        reset(AuthHelperShadow.sSaveSmartLock);
 
         TestHelper.initializeApp(RuntimeEnvironment.application);
         RegisterEmailActivity registerEmailActivity = createActivity();
 
         // Trigger new user UI (bypassing check email)
-        registerEmailActivity.onNewUser(new User.Builder(TestConstants.EMAIL)
-                                                .setName(TestConstants.NAME)
-                                                .setPhotoUri(TestConstants.PHOTO_URI)
-                                                .build());
+        registerEmailActivity.onNewUser(
+                new User.Builder(EmailAuthProvider.PROVIDER_ID, TestConstants.EMAIL)
+                        .setName(TestConstants.NAME)
+                        .setPhotoUri(TestConstants.PHOTO_URI)
+                        .build());
 
         EditText name = (EditText) registerEmailActivity.findViewById(R.id.name);
         EditText password = (EditText) registerEmailActivity.findViewById(R.id.password);
         name.setText(TestConstants.NAME);
         password.setText(TestConstants.PASSWORD);
 
-        when(BaseHelperShadow.sFirebaseUser.updateProfile(any(UserProfileChangeRequest.class)))
+        AuthHelperShadow.sCanLinkAccounts = true;
+        when(AuthHelperShadow.sFirebaseUser.updateProfile(any(UserProfileChangeRequest.class)))
                 .thenReturn(new AutoCompleteTask<Void>(null, true, null));
 
-        when(BaseHelperShadow.sFirebaseAuth.getCurrentUser().linkWithCredential(any(EmailAuthCredential.class)))
+        when(AuthHelperShadow.sFirebaseAuth.getCurrentUser().linkWithCredential(any(EmailAuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
 
         Button button = (Button) registerEmailActivity.findViewById(R.id.button_create);

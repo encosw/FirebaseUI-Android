@@ -35,10 +35,10 @@ import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
 import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.TwitterProvider;
 import com.firebase.ui.auth.ui.AppCompatBase;
-import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
-import com.firebase.ui.auth.ui.User;
+import com.firebase.ui.auth.ui.HelperActivityBase;
+import com.firebase.ui.auth.User;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -56,7 +56,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             FlowParameters flowParams,
             User existingUser,
             IdpResponse newUserResponse) {
-        return BaseHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
+        return HelperActivityBase.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
                 .putExtra(ExtraConstants.EXTRA_USER, existingUser)
                 .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, newUserResponse);
     }
@@ -71,8 +71,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
 
         User oldUser = User.getUser(getIntent());
 
-        String providerId = oldUser.getProvider();
-        for (IdpConfig idpConfig : mActivityHelper.getFlowParams().providerInfo) {
+        String providerId = oldUser.getProviderId();
+        for (IdpConfig idpConfig : getFlowParams().providerInfo) {
             if (providerId.equals(idpConfig.getProviderId())) {
                 switch (providerId) {
                     case GoogleAuthProvider.PROVIDER_ID:
@@ -80,7 +80,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                         break;
                     case FacebookAuthProvider.PROVIDER_ID:
                         mIdpProvider = new FacebookProvider(
-                                idpConfig, mActivityHelper.getFlowParams().themeId);
+                                idpConfig, getFlowParams().themeId);
                         break;
                     case TwitterAuthProvider.PROVIDER_ID:
                         mIdpProvider = new TwitterProvider(this);
@@ -109,7 +109,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
         findViewById(R.id.welcome_back_idp_button).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
+                getDialogHolder().showLoadingDialog(R.string.progress_dialog_signing_in);
                 mIdpProvider.startLogin(WelcomeBackIdpPrompt.this);
             }
         });
@@ -133,12 +133,12 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
         } else {
             AccountLinker.linkToNewUser(
-                    this, mActivityHelper, idpResponse, newCredential, mPrevCredential);
+                    this, idpResponse, newCredential, mPrevCredential);
         }
     }
 
     @Override
-    public void onFailure(Bundle extra) {
+    public void onFailure() {
         finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
     }
 }
