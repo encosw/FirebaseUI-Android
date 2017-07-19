@@ -41,6 +41,7 @@ import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
+import com.firebase.ui.auth.ui.accountlink.ProfileMerger;
 import com.firebase.ui.auth.ui.email.RegisterEmailActivity;
 import com.firebase.ui.auth.util.signincontainer.SaveSmartLock;
 import com.google.android.gms.tasks.Task;
@@ -68,7 +69,9 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     private SaveSmartLock mSaveSmartLock;
 
     public static Intent createIntent(Context context, FlowParameters flowParams) {
-        return HelperActivityBase.createBaseIntent(context, AuthMethodPickerActivity.class, flowParams);
+        return HelperActivityBase.createBaseIntent(context,
+                AuthMethodPickerActivity.class,
+                flowParams);
     }
 
     @Override
@@ -153,7 +156,9 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
 
         Task<AuthResult> signInTask;
         if (getAuthHelper().canLinkAccounts()) {
-            signInTask = getAuthHelper().getCurrentUser().linkWithCredential(credential);
+            signInTask = getAuthHelper().getCurrentUser()
+                    .linkWithCredential(credential)
+                    .continueWithTask(new ProfileMerger(response));
         } else {
             signInTask = getAuthHelper().getFirebaseAuth().signInWithCredential(credential);
         }

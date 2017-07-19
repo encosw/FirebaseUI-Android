@@ -31,7 +31,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     private static final String TAG = "AccountLinker";
 
     private final HelperActivityBase mActivity;
-    private final IdpResponse mResponse;
+    private final IdpResponse mIdpResponse;
 
     /** The credential of the user's existing account. */
     private final AuthCredential mExistingCredential;
@@ -44,7 +44,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                           @NonNull AuthCredential existingCredential,
                           @Nullable AuthCredential newCredential) {
         mActivity = activity;
-        mResponse = response;
+        mIdpResponse = response;
         mExistingCredential = existingCredential;
         mNewCredential = newCredential;
 
@@ -85,6 +85,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
             // trying to be linked to an existing account which is bound to fail.
             currentUser
                     .linkWithCredential(mNewCredential == null ? mExistingCredential : mNewCredential)
+                    .continueWithTask(new ProfileMerger(mIdpResponse))
                     .addOnSuccessListener(new FinishListener())
                     .addOnFailureListener(this)
                     .addOnFailureListener(
@@ -95,12 +96,13 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     @Override
     public void onSuccess(AuthResult result) {
         if (mNewCredential == null) {
-            mActivity.finish(ResultCodes.OK, mResponse.toIntent());
+            mActivity.finish(ResultCodes.OK, mIdpResponse.toIntent());
         } else {
             // Link the user's existing account (mExistingCredential) with the account they were
             // trying to sign in to (mNewCredential)
             result.getUser()
                     .linkWithCredential(mNewCredential)
+                    .continueWithTask(new ProfileMerger(mIdpResponse))
                     .addOnFailureListener(new TaskFailureLogger(
                             TAG, "Error signing in with previous credential"))
                     .addOnCompleteListener(new FinishListener());
@@ -110,7 +112,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     @Override
     public void onFailure(@NonNull Exception e) {
         if (e instanceof FirebaseAuthUserCollisionException && mActivity.getAuthHelper().canLinkAccounts()) {
-            mResponse.setPrevUid(mActivity.getAuthHelper().getUidForAccountLinking());
+            mIdpResponse.setPrevUid(mActivity.getAuthHelper().getUidForAccountLinking());
 
             // Since we still want the user to be able to sign in even though
             // they have an existing account, we are going to save the uid of the
@@ -138,6 +140,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                     public void onSuccess(AuthResult result) {
                         mActivity.getAuthHelper().getCurrentUser()
                                 .linkWithCredential(mNewCredential)
+                                .continueWithTask(new ProfileMerger(mIdpResponse))
                                 .addOnFailureListener(
                                         new TaskFailureLogger(TAG, "Error linking with credential"))
                                 .addOnCompleteListener(new FinishListener());
@@ -169,7 +172,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
         }
 
         private void finishOk() {
-            mActivity.finish(ResultCodes.OK, mResponse.toIntent());
+            mActivity.finish(ResultCodes.OK, mIdpResponse.toIntent());
         }
     }
 }

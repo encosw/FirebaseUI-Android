@@ -14,6 +14,7 @@
 
 package com.firebase.ui.auth.util.signincontainer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,6 +28,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ResultCodes;
+import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
@@ -38,7 +40,7 @@ import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.FragmentBase;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
-import com.firebase.ui.auth.User;
+import com.firebase.ui.auth.ui.accountlink.ProfileMerger;
 import com.firebase.ui.auth.ui.idp.CredentialSignInHandler;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -85,6 +87,16 @@ public class IdpSignInContainer extends FragmentBase implements IdpCallback {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (!(getActivity() instanceof HelperActivityBase)) {
+            throw new RuntimeException("Can only attach IdpSignInContainer to HelperActivityBase.");
+        }
+
+        mActivity = (HelperActivityBase) getActivity();
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mSaveSmartLock = getAuthHelper().getSaveSmartLockInstance(mActivity);
@@ -125,17 +137,6 @@ public class IdpSignInContainer extends FragmentBase implements IdpCallback {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (!(getActivity() instanceof HelperActivityBase)) {
-            throw new RuntimeException("Can only attach IdpSignInContainer to HelperActivityBase.");
-        }
-
-        mActivity = (HelperActivityBase) getActivity();
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(ExtraConstants.HAS_EXISTING_INSTANCE, true);
         super.onSaveInstanceState(outState);
@@ -147,7 +148,9 @@ public class IdpSignInContainer extends FragmentBase implements IdpCallback {
 
         Task<AuthResult> signInTask;
         if (getAuthHelper().canLinkAccounts()) {
-            signInTask = getAuthHelper().getCurrentUser().linkWithCredential(credential);
+            signInTask = getAuthHelper().getCurrentUser()
+                    .linkWithCredential(credential)
+                    .continueWithTask(new ProfileMerger(response));
         } else {
             signInTask = getAuthHelper().getFirebaseAuth().signInWithCredential(credential);
         }

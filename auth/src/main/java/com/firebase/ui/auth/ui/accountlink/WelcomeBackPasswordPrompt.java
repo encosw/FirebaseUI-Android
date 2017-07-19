@@ -172,6 +172,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
                             mIdpResponse.setPrevUid(prevUid);
                             authResult.getUser()
                                     .linkWithCredential(authCredential)
+                                    .continueWithTask(new ProfileMerger(mIdpResponse))
                                     .addOnFailureListener(new TaskFailureLogger(
                                             TAG, "Error signing in with credential " +
                                             authCredential.getProvider()))

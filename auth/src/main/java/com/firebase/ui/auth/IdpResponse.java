@@ -84,6 +84,11 @@ public class IdpResponse implements Parcelable {
         return new Intent().putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, this);
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    public User getUser() {
+        return mUser;
+    }
+
     /**
      * Get the type of provider. e.g. {@link AuthUI#GOOGLE_PROVIDER}
      */
