@@ -38,7 +38,7 @@ import com.firebase.ui.auth.ui.AppCompatBase;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.HelperActivityBase;
-import com.firebase.ui.auth.ui.User;
+import com.firebase.ui.auth.User;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -71,7 +71,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
 
         User oldUser = User.getUser(getIntent());
 
-        String providerId = oldUser.getProvider();
+        String providerId = oldUser.getProviderId();
         for (IdpConfig idpConfig : getFlowParams().providerInfo) {
             if (providerId.equals(idpConfig.getProviderId())) {
                 switch (providerId) {

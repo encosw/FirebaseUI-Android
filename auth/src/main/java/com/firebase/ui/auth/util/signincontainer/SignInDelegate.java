@@ -19,7 +19,7 @@ import com.firebase.ui.auth.ResultCodes;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
-import com.firebase.ui.auth.ui.User;
+import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.ui.email.RegisterEmailActivity;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.ui.phone.PhoneVerificationActivity;
@@ -275,9 +275,10 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
         // Because we are being called from Smart Lock,
         // we can assume that the account already exists and a user collision exception will be thrown
         // so we don't bother with linking credentials
-        final IdpResponse response = new IdpResponse.Builder(EmailAuthProvider.PROVIDER_ID, email)
+        final IdpResponse response = new IdpResponse.Builder(new User.Builder(EmailAuthProvider.PROVIDER_ID, email)
                 .setPrevUid(getAuthHelper().getUidForAccountLinking())
-                .build();
+                .build())
+                        .build();
 
         getAuthHelper().getFirebaseAuth()
                 .signInWithEmailAndPassword(email, password)
@@ -345,8 +346,7 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
             IdpSignInContainer.signIn(
                     getActivity(),
                     getFlowParams(),
-                    new User.Builder(email)
-                            .setProvider(accountTypeToProviderId(accountType))
+                    new User.Builder(SmartLockBase.accountTypeToProviderId(accountType), email)
                             .build());
         } else {
             Log.w(TAG, "Unknown provider: " + accountType);
