@@ -290,7 +290,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
 
     private void finish(FirebaseUser user) {
         IdpResponse response = new IdpResponse.Builder(
-                new User.Builder(PhoneAuthProvider.PROVIDER_ID, null).build())
+                new User.Builder(PhoneAuthProvider.PROVIDER_ID, null)
                         .setPhoneNumber(user.getPhoneNumber())
                         .build())
                 .build();

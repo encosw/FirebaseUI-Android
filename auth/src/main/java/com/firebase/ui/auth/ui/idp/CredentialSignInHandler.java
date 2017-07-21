@@ -23,6 +23,7 @@ import android.util.Log;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.ResultCodes;
+import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.accountlink.AccountLinker;
