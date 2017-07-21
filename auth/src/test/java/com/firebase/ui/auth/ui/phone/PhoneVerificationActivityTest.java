@@ -140,7 +140,7 @@ public class PhoneVerificationActivityTest {
         assertNotNull(verifyPhoneNumberFragment);
 
         mSendCodeButton.performClick();
-        assertEquals(mErrorEditText.getText(), mActivity.getString(R.string.invalid_phone_number));
+        assertEquals(mErrorEditText.getText(), mActivity.getString(R.string.fui_invalid_phone_number));
 
         mCountryListSpinner.performClick();
         assertEquals(mErrorEditText.getText(), "");
@@ -155,7 +155,7 @@ public class PhoneVerificationActivityTest {
         AlertDialog alert = ShadowAlertDialog.getLatestAlertDialog();
         ShadowAlertDialog sAlert = shadowOf(alert);
         //was dialog displayed
-        assertEquals(mActivity.getString(R.string.verifying), sAlert.getMessage());
+        assertEquals(mActivity.getString(R.string.fui_verifying), sAlert.getMessage());
 
         //was upstream method invoked
         verify(AuthHelperShadow.sPhoneAuthProvider).verifyPhoneNumber(
@@ -174,7 +174,7 @@ public class PhoneVerificationActivityTest {
                         "any_message"));
 
         //was error displayed
-        assertEquals(mErrorEditText.getText(), mActivity.getString(R.string.invalid_phone_number));
+        assertEquals(mErrorEditText.getText(), mActivity.getString(R.string.fui_invalid_phone_number));
     }
 
     @Test
@@ -224,7 +224,7 @@ public class PhoneVerificationActivityTest {
 
         mConfirmationCodeEditText.setText("123456");
         mSubmitConfirmationButton.performClick();
-        assertEquals(mActivity.getString(R.string.incorrect_code_dialog_body),
+        assertEquals(mActivity.getString(R.string.fui_incorrect_code_dialog_body),
                      getAlertDialogMessage());
 
         //test bad code cleared on clicking OK in alert
