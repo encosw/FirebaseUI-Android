@@ -84,7 +84,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
     @Override
     protected void onCreate(final Bundle savedInstance) {
         super.onCreate(savedInstance);
-        setContentView(R.layout.activity_register_phone);
+        setContentView(R.layout.fui_activity_register_phone);
 
         mHandler = new Handler();
         mVerificationState = VerificationState.VERIFICATION_NOT_STARTED;
@@ -152,14 +152,14 @@ public class PhoneVerificationActivity extends AppCompatBase {
     void verifyPhoneNumber(String phoneNumber, boolean forceResend) {
         sendCode(phoneNumber, forceResend);
         if (forceResend) {
-            showLoadingDialog(getString(R.string.resending));
+            showLoadingDialog(getString(R.string.fui_resending));
         } else {
-            showLoadingDialog(getString(R.string.verifying));
+            showLoadingDialog(getString(R.string.fui_verifying));
         }
     }
 
     public void submitConfirmationCode(String confirmationCode) {
-        showLoadingDialog(getString(R.string.verifying));
+        showLoadingDialog(getString(R.string.fui_verifying));
         signIn(PhoneAuthProvider.getCredential(mVerificationId, confirmationCode));
     }
 
@@ -173,7 +173,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
                     getSubmitConfirmationCodeFragment();
 
 
-            showLoadingDialog(getString(R.string.retrieving_sms));
+            showLoadingDialog(getString(R.string.fui_retrieving_sms));
             if (submitConfirmationCodeFragment != null) {
                 submitConfirmationCodeFragment.setConfirmationCode(String.valueOf
                         (phoneAuthCredential.getSmsCode()));
@@ -183,7 +183,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
     }
 
     private void onCodeSent() {
-        completeLoadingDialog(getString(R.string.code_sent));
+        completeLoadingDialog(getString(R.string.fui_code_sent));
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -205,15 +205,15 @@ public class PhoneVerificationActivity extends AppCompatBase {
 
             switch (error) {
                 case ERROR_INVALID_PHONE_NUMBER:
-                    verifyPhoneNumberFragment.showError(getString(R.string.invalid_phone_number));
+                    verifyPhoneNumberFragment.showError(getString(R.string.fui_invalid_phone_number));
                     dismissLoadingDialog();
                     break;
                 case ERROR_TOO_MANY_REQUESTS:
-                    showAlertDialog(getString(R.string.error_too_many_attempts), null);
+                    showAlertDialog(getString(R.string.fui_error_too_many_attempts), null);
                     dismissLoadingDialog();
                     break;
                 case ERROR_QUOTA_EXCEEDED:
-                    showAlertDialog(getString(R.string.error_quota_exceeded), null);
+                    showAlertDialog(getString(R.string.fui_error_quota_exceeded), null);
                     dismissLoadingDialog();
                     break;
                 default:
@@ -290,8 +290,9 @@ public class PhoneVerificationActivity extends AppCompatBase {
 
     private void finish(FirebaseUser user) {
         IdpResponse response = new IdpResponse.Builder(
-                new User.Builder(PhoneAuthProvider.PROVIDER_ID, null).build())
-                .setPhoneNumber(user.getPhoneNumber())
+                new User.Builder(PhoneAuthProvider.PROVIDER_ID, null)
+                        .setPhoneNumber(user.getPhoneNumber())
+                        .build())
                 .build();
         finish(ResultCodes.OK, response.toIntent());
     }
@@ -300,7 +301,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
             onClickListener) {
         mAlertDialog = new AlertDialog.Builder(this)
                 .setMessage(s)
-                .setPositiveButton(R.string.incorrect_code_dialog_positive_button_text, onClickListener)
+                .setPositiveButton(R.string.fui_incorrect_code_dialog_positive_button_text, onClickListener)
                 .show();
     }
 
@@ -316,7 +317,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
             @Override
             public void onSuccess(final AuthResult authResult) {
                 mVerificationState = VerificationState.VERIFIED;
-                completeLoadingDialog(getString(R.string.verified));
+                completeLoadingDialog(getString(R.string.fui_verified));
 
                 // Activity can be recreated before this message is handled
                 mHandler.postDelayed(new Runnable() {
@@ -341,7 +342,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
                     switch (error) {
                         case ERROR_INVALID_VERIFICATION_CODE:
                             showAlertDialog(
-                                    getString(R.string.incorrect_code_dialog_body),
+                                    getString(R.string.fui_incorrect_code_dialog_body),
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -352,7 +353,7 @@ public class PhoneVerificationActivity extends AppCompatBase {
                             break;
                         case ERROR_SESSION_EXPIRED:
                             showAlertDialog(
-                                    getString(R.string.error_session_expired),
+                                    getString(R.string.fui_error_session_expired),
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {

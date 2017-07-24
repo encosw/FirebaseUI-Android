@@ -267,7 +267,7 @@ you may want to link the anonymous account to the permanent account the user sel
 startActivityForResult(
     AuthUI.getInstance()
         .createSignInIntentBuilder()
-        .setShouldLinkAccounts(true) // Any two accounts can be linked together using this method.
+        .setIsAccountLinkingEnabled(true) // Any two accounts can be linked together using this method.
         .build(),
     RC_SIGN_IN);
 ```
@@ -370,7 +370,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                         public void onDataChange(DataSnapshot snapshot) {
                             String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                            // change all references of prevUid to the current uid
+                            // Change all references of prevUid to the current uid
                             for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
                                 // Replace old uids with currentUid
                                 chatSnapshot.getRef().child("uid").setValue(currentUid);
