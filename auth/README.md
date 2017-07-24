@@ -267,7 +267,7 @@ you may want to link the anonymous account to the permanent account the user sel
 startActivityForResult(
     AuthUI.getInstance()
         .createSignInIntentBuilder()
-        .setShouldLinkAccounts(true) // Any two accounts can be linked together using this method.
+        .setIsAccountLinkingEnabled(true) // Any two accounts can be linked together using this method.
         .build(),
     RC_SIGN_IN);
 ```
