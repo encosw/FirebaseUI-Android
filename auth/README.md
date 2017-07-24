@@ -370,7 +370,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                         public void onDataChange(DataSnapshot snapshot) {
                             String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                            // change all references of prevUid to the current uid
+                            // Change all references of prevUid to the current uid
                             for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
                                 // Replace old uids with currentUid
                                 chatSnapshot.getRef().child("uid").setValue(currentUid);
