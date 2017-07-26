@@ -129,29 +129,20 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     }
 
     @Override
-    public ChangeEventListener addChangeEventListener(@NonNull ChangeEventListener listener) {
-        boolean wasListening = isListening();
-        super.addChangeEventListener(listener);
-
-        // Only start listening when the first listener is added
-        if (!wasListening) {
-            mKeySnapshots.addChangeEventListener(this);
-        }
-
-        return listener;
+    protected void onCreate() {
+        super.onCreate();
+        mKeySnapshots.addChangeEventListener(this);
     }
 
     @Override
-    public void removeChangeEventListener(@NonNull ChangeEventListener listener) {
-        super.removeChangeEventListener(listener);
-        if (!isListening()) {
-            mKeySnapshots.removeChangeEventListener(this);
-            for (DatabaseReference ref : mRefs.keySet()) {
-                ref.removeEventListener(mRefs.get(ref));
-            }
+    protected void onDestroy() {
+        super.onDestroy();
+        mKeySnapshots.removeChangeEventListener(this);
 
-            clearData();
+        for (DatabaseReference ref : mRefs.keySet()) {
+            ref.removeEventListener(mRefs.get(ref));
         }
+        mRefs.clear();
     }
 
     @Override
@@ -189,12 +180,6 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     @Override
     protected List<DataSnapshot> getSnapshots() {
         return mDataSnapshots;
-    }
-
-    @Override
-    protected void clearData() {
-        super.clearData();
-        mRefs.clear();
     }
 
     private int getIndexForKey(String key) {
