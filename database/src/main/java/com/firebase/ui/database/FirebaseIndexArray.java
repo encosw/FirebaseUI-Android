@@ -14,8 +14,6 @@
 
 package com.firebase.ui.database;
 
-import android.support.annotation.CallSuper;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
@@ -37,7 +35,6 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     private Map<DatabaseReference, ValueEventListener> mRefs = new HashMap<>();
 
     private FirebaseArray<String> mKeySnapshots;
-    private JoinResolver mJoinResolver;
     private List<DataSnapshot> mDataSnapshots = new ArrayList<>();
 
     /**
@@ -54,44 +51,13 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     private boolean mHasPendingMoveOrDelete;
 
     /**
-     * Create a new FirebaseIndexArray with a custom {@link SnapshotParser} and {@link
-     * JoinResolver}.
+     * Create a new FirebaseIndexArray that parses snapshots as members of a given class.
      *
      * @param keyQuery The Firebase location containing the list of keys to be found in {@code
      *                 dataRef}. Can also be a slice of a location, using some combination of {@code
      *                 limit()}, {@code startAt()}, and {@code endAt()}.
      * @param dataRef  The Firebase location to watch for data changes. Each key key found at {@code
      *                 keyQuery}'s location represents a list item in the {@link RecyclerView}.
-     * @see ObservableSnapshotArray#ObservableSnapshotArray(SnapshotParser)
-     */
-    public FirebaseIndexArray(Query keyQuery,
-                              DatabaseReference dataRef,
-                              SnapshotParser<T> parser,
-                              JoinResolver resolver) {
-        super(parser);
-        init(keyQuery, dataRef, resolver);
-    }
-
-    /**
-     * Create a new FirebaseIndexArray that parses snapshots as members of a given class and joins
-     * refs together with a custom {@link JoinResolver}.
-     *
-     * @see FirebaseIndexArray#FirebaseIndexArray(Query, DatabaseReference, SnapshotParser,
-     * JoinResolver)
-     * @see ObservableSnapshotArray#ObservableSnapshotArray(Class)
-     */
-    public FirebaseIndexArray(Query keyQuery,
-                              DatabaseReference dataRef,
-                              Class<T> tClass,
-                              JoinResolver resolver) {
-        super(tClass);
-        init(keyQuery, dataRef, resolver);
-    }
-
-    /**
-     * Create a new FirebaseIndexArray that parses snapshots as members of a given class.
-     *
-     * @see FirebaseIndexArray#FirebaseIndexArray(Query, DatabaseReference, Class, JoinResolver)
      * @see ObservableSnapshotArray#ObservableSnapshotArray(Class)
      */
     public FirebaseIndexArray(Query keyQuery, DatabaseReference dataRef, Class<T> tClass) {
@@ -102,24 +68,16 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     /**
      * Create a new FirebaseIndexArray with a custom {@link SnapshotParser}.
      *
-     * @see FirebaseIndexArray#FirebaseIndexArray(Query, DatabaseReference, SnapshotParser,
-     * JoinResolver)
      * @see ObservableSnapshotArray#ObservableSnapshotArray(SnapshotParser)
+     * @see FirebaseIndexArray#FirebaseIndexArray(Query, DatabaseReference, Class)
      */
     public FirebaseIndexArray(Query keyQuery, DatabaseReference dataRef, SnapshotParser<T> parser) {
         super(parser);
         init(keyQuery, dataRef);
     }
 
-    @CallSuper
-    protected void init(Query keyQuery, DatabaseReference dataRef) {
-        init(keyQuery, dataRef, new DefaultJoinResolver());
-    }
-
-    @CallSuper
-    protected void init(Query keyQuery, DatabaseReference dataRef, JoinResolver resolver) {
+    private void init(Query keyQuery, DatabaseReference dataRef) {
         mDataRef = dataRef;
-        mJoinResolver = resolver;
         mKeySnapshots = new FirebaseArray<>(keyQuery, new SnapshotParser<String>() {
             @Override
             public String parseSnapshot(DataSnapshot snapshot) {
@@ -204,9 +162,10 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     }
 
     protected void onKeyAdded(DataSnapshot data) {
-        DatabaseReference ref = mJoinResolver.onJoin(data);
+        String key = data.getKey();
+        DatabaseReference ref = mDataRef.child(key);
 
-        mKeysWithPendingData.add(data.getKey());
+        mKeysWithPendingData.add(key);
         // Start listening
         mRefs.put(ref, ref.addValueEventListener(new DataRefListener()));
     }
@@ -223,11 +182,11 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     }
 
     protected void onKeyRemoved(DataSnapshot data, int index) {
-        DatabaseReference removeRef = mJoinResolver.onDisjoin(data);
-        ValueEventListener listener = mRefs.remove(removeRef);
-        if (listener != null) removeRef.removeEventListener(listener);
+        String key = data.getKey();
+        ValueEventListener listener = mRefs.remove(mDataRef.getRef().child(key));
+        if (listener != null) mDataRef.child(key).removeEventListener(listener);
 
-        if (isKeyAtIndex(data.getKey(), index)) {
+        if (isKeyAtIndex(key, index)) {
             DataSnapshot snapshot = removeData(index);
             mHasPendingMoveOrDelete = true;
             notifyChangeEventListeners(EventType.REMOVED, snapshot, index);
@@ -293,7 +252,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
                     notifyListenersOnDataChanged();
                 } else {
                     // Data does not exist
-                    mJoinResolver.onJoinFailed(snapshot, index);
+                    Log.w(TAG, "Key not found at ref: " + snapshot.getRef());
                 }
             }
         }
@@ -301,25 +260,6 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         @Override
         public void onCancelled(DatabaseError error) {
             notifyListenersOnCancelled(error);
-        }
-    }
-
-    protected class DefaultJoinResolver implements JoinResolver {
-        @NonNull
-        @Override
-        public DatabaseReference onJoin(DataSnapshot keySnapshot) {
-            return mDataRef.child(keySnapshot.getKey());
-        }
-
-        @NonNull
-        @Override
-        public DatabaseReference onDisjoin(DataSnapshot keySnapshot) {
-            return onJoin(keySnapshot); // Match the join/disjoin pair
-        }
-
-        @Override
-        public void onJoinFailed(DataSnapshot snapshot, int index) {
-            Log.w(TAG, "Key not found at ref " + snapshot.getRef() + " for index " + index);
         }
     }
 }
