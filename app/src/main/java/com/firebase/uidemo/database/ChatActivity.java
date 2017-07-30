@@ -28,8 +28,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.database.ClassSnapshotParser;
-import com.firebase.ui.database.FirebaseArray;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.uidemo.R;
 import com.firebase.uidemo.util.SignInResultNotifier;
@@ -44,6 +42,9 @@ import com.google.firebase.database.Query;
 public class ChatActivity extends AppCompatActivity
         implements FirebaseAuth.AuthStateListener, View.OnClickListener, LifecycleRegistryOwner {
     private static final String TAG = "RecyclerViewDemo";
+
+    // TODO remove once arch components are merged into support lib
+    private final LifecycleRegistry mRegistry = new LifecycleRegistry(this);
 
     private FirebaseAuth mAuth;
     protected DatabaseReference mChatRef;
@@ -139,9 +140,10 @@ public class ChatActivity extends AppCompatActivity
     protected FirebaseRecyclerAdapter<Chat, ChatHolder> getAdapter() {
         Query lastFifty = mChatRef.limitToLast(50);
         return new FirebaseRecyclerAdapter<Chat, ChatHolder>(
-                new FirebaseArray<>(lastFifty, new ClassSnapshotParser<>(Chat.class)),
+                Chat.class,
                 R.layout.message,
                 ChatHolder.class,
+                lastFifty,
                 this) {
             @Override
             public void populateViewHolder(ChatHolder holder, Chat chat, int position) {
@@ -177,9 +179,6 @@ public class ChatActivity extends AppCompatActivity
         mSendButton.setEnabled(isSignedIn());
         mMessageEdit.setEnabled(isSignedIn());
     }
-
-    // TODO remove once arch components are merged into support lib
-    private final LifecycleRegistry mRegistry = new LifecycleRegistry(this);
 
     @Override
     public LifecycleRegistry getLifecycle() {
