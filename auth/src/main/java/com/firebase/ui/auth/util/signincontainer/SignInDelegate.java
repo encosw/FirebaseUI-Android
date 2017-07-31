@@ -40,6 +40,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FacebookAuthProvider;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.PhoneAuthProvider;
@@ -293,7 +294,8 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        if (e instanceof FirebaseAuthInvalidUserException) {
+                        if (e instanceof FirebaseAuthInvalidUserException
+                                || e instanceof FirebaseAuthInvalidCredentialsException) {
                             // In this case the credential saved in SmartLock was not
                             // a valid credential, we should delete it from SmartLock
                             // before continuing.
