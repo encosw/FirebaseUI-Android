@@ -18,22 +18,16 @@ import static org.mockito.Mockito.when;
 public class AuthHelperShadow {
 
     public static final FirebaseAuth sFirebaseAuth;
-    public static final FirebaseUser sFirebaseUser;
     public static Boolean sCanLinkAccounts = true;
     public static final CredentialsApi sCredentialsApi;
     public static final SaveSmartLock sSaveSmartLock;
     public static final PhoneAuthProvider sPhoneAuthProvider;
 
+    private static FirebaseUser sFirebaseUser;
+
     static {
         // CredentialsApi
         sCredentialsApi = Mockito.mock(CredentialsApi.class);
-
-        // FirebaseUser
-        sFirebaseUser = Mockito.mock(FirebaseUser.class);
-        when(sFirebaseUser.getUid()).thenReturn(TestConstants.UID);
-        when(sFirebaseUser.getEmail()).thenReturn(TestConstants.EMAIL);
-        when(sFirebaseUser.getDisplayName()).thenReturn(TestConstants.NAME);
-        when(sFirebaseUser.getPhotoUrl()).thenReturn(TestConstants.PHOTO_URI);
 
         // FirebaseAuth
         sFirebaseAuth = Mockito.mock(FirebaseAuth.class);
@@ -60,6 +54,10 @@ public class AuthHelperShadow {
 
     @Implementation
     public static FirebaseUser getCurrentUser() {
+        if (sFirebaseUser == null) {
+            sFirebaseUser = TestHelper.getMockFirebaseUser();
+        }
+
         return sFirebaseUser;
     }
 
