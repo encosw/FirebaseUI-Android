@@ -1,4 +1,4 @@
-package com.firebase.ui.auth.ui.accountlink;
+package com.firebase.ui.auth.util.accountlink;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +18,8 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.concurrent.Callable;
 
 /**
  * "One link to rule them all." - AccountLinker
@@ -111,14 +113,22 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
 
     @Override
     public void onFailure(@NonNull Exception e) {
-        if (e instanceof FirebaseAuthUserCollisionException && mActivity.getAuthHelper().canLinkAccounts()) {
-            mIdpResponse.setPrevUid(mActivity.getAuthHelper().getUidForAccountLinking());
+        if (e instanceof FirebaseAuthUserCollisionException
+                && mActivity.getAuthHelper().canLinkAccounts()) {
+            mIdpResponse.getUser().setPrevUid(mActivity.getAuthHelper().getUidForAccountLinking());
 
             // Since we still want the user to be able to sign in even though
             // they have an existing account, we are going to save the uid of the
             // current user, log them out, and then sign in with the new credential.
-            Task<AuthResult> signInTask = mActivity.getAuthHelper().getFirebaseAuth()
-                    .signInWithCredential(mExistingCredential)
+            Task<AuthResult> signInTask = ManualMergeUtils.injectSignInTaskBetweenDataTransfer(mActivity,
+                    mIdpResponse,
+                    new Callable<Task<AuthResult>>() {
+                        @Override
+                        public Task<AuthResult> call() throws Exception {
+                            return mActivity.getAuthHelper().getFirebaseAuth()
+                                    .signInWithCredential(mExistingCredential);
+                        }
+                    })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
@@ -148,7 +158,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                 });
             }
         } else {
-            Log.w(TAG, "See AuthUI.SignInIntentBuilder#setIsAccountLinkingEnabled(boolean)"
+            Log.w(TAG, "See AuthUI.SignInIntentBuilder#setIsAccountLinkingEnabled(boolean, Class)"
                     + " to support account linking");
             finishWithError();
         }
