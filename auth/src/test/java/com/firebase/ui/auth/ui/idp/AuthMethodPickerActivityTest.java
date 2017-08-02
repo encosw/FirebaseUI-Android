@@ -121,11 +121,11 @@ public class AuthMethodPickerActivityTest {
     @Config(shadows = {AuthHelperShadow.class, AuthHelperShadow.class})
     public void testFacebookLoginFlow() {
         // initialize mocks
-        reset(AuthHelperShadow.sSaveSmartLock);
+        reset(AuthHelperShadow.getSaveSmartLockInstance(null));
 
         when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(FacebookAuthProvider.PROVIDER_ID));
-        when(AuthHelperShadow.sFirebaseAuth.getCurrentUser()
+        when(AuthHelperShadow.getCurrentUser()
                      .linkWithCredential(any(FacebookAuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
 
@@ -144,7 +144,7 @@ public class AuthMethodPickerActivityTest {
     @Config(shadows = {GoogleProviderShadow.class, AuthHelperShadow.class, AuthHelperShadow.class})
     public void testGoogleLoginFlow() {
         // initialize mocks
-        reset(AuthHelperShadow.sSaveSmartLock);
+        reset(AuthHelperShadow.getSaveSmartLockInstance(null));
 
         List<String> providers = Arrays.asList(AuthUI.GOOGLE_PROVIDER);
 
@@ -153,7 +153,7 @@ public class AuthMethodPickerActivityTest {
         when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(GoogleAuthProvider.PROVIDER_ID));
 
-        when(AuthHelperShadow.sFirebaseAuth.getCurrentUser()
+        when(AuthHelperShadow.getCurrentUser()
                      .linkWithCredential(any(GoogleAuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
 
@@ -175,7 +175,7 @@ public class AuthMethodPickerActivityTest {
         when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(TwitterAuthProvider.PROVIDER_ID));
 
-        when(AuthHelperShadow.sFirebaseAuth.signInWithCredential(any(AuthCredential.class)))
+        when(AuthHelperShadow.getFirebaseAuth().signInWithCredential(any(AuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
         Button twitterButton =
                 (Button) authMethodPickerActivity.findViewById(R.id.twitter_button);
