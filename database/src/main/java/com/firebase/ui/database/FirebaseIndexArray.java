@@ -235,7 +235,6 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
                     // We already know about this data, just update it
                     updateData(index, snapshot);
                     notifyChangeEventListeners(EventType.CHANGED, snapshot, index);
-                    notifyListenersOnDataChanged();
                 } else {
                     // We don't already know about this data, add it
                     mDataSnapshots.add(index, snapshot);
@@ -246,13 +245,17 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
                     // This data has disappeared, remove it
                     removeData(index);
                     notifyChangeEventListeners(EventType.REMOVED, snapshot, index);
-                    notifyListenersOnDataChanged();
                 } else {
                     // Data does not exist
                     Log.w(TAG, "Key not found at ref: " + snapshot.getRef());
                 }
             }
 
+            // In theory, we would only want to pop the queue if this listener was just added
+            // i.e. `snapshot.value != null && isKeyAtIndex(...)`. However, if the developer makes a
+            // mistake and `snapshot.value == null`, we will never pop the queue and
+            // `notifyListenersOnDataChanged()` will never be called. Thus, we pop the queue anytime
+            // an update is received.
             mKeysWithPendingUpdate.remove(key);
             if (mKeysWithPendingUpdate.isEmpty()) notifyListenersOnDataChanged();
         }
