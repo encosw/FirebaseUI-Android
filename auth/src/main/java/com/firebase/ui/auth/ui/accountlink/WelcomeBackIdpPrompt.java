@@ -28,7 +28,6 @@ import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.ResultCodes;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
@@ -91,7 +90,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                         break;
                     default:
                         Log.w(TAG, "Unknown provider: " + providerId);
-                        finish(ResultCodes.CANCELED,
+                        finish(RESULT_CANCELED,
                                IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
                         return;
                 }
@@ -102,7 +101,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             Log.w(TAG, "Firebase login unsuccessful."
                     + " Account linking failed due to provider not enabled by application: "
                     + providerId);
-            finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+            finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
             return;
         }
 
@@ -143,6 +142,6 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
 
     @Override
     public void onFailure() {
-        finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+        finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
     }
 }
