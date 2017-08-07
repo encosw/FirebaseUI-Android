@@ -1,5 +1,6 @@
 package com.firebase.ui.auth.util.accountlink;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
@@ -7,7 +8,6 @@ import android.util.Log;
 
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
-import com.firebase.ui.auth.ResultCodes;
 import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -98,7 +98,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
     @Override
     public void onSuccess(AuthResult result) {
         if (mNewCredential == null) {
-            mActivity.finish(ResultCodes.OK, mIdpResponse.toIntent());
+            mActivity.finish(Activity.RESULT_OK, mIdpResponse.toIntent());
         } else {
             // Link the user's existing account (mExistingCredential) with the account they were
             // trying to sign in to (mNewCredential)
@@ -166,7 +166,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
 
     private void finishWithError() {
         mActivity.finish(
-                ResultCodes.CANCELED,
+                Activity.RESULT_CANCELED,
                 IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
     }
 
@@ -182,7 +182,7 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
         }
 
         private void finishOk() {
-            mActivity.finish(ResultCodes.OK, mIdpResponse.toIntent());
+            mActivity.finish(Activity.RESULT_OK, mIdpResponse.toIntent());
         }
     }
 }

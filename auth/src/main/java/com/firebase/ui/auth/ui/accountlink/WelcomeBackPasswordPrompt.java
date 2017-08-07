@@ -34,7 +34,6 @@ import android.widget.TextView;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.ResultCodes;
 import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.ui.AppCompatBase;
@@ -92,8 +91,8 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         mIdpResponse = IdpResponse.fromResultIntent(getIntent());
         mEmail = mIdpResponse.getEmail();
 
-        mPasswordLayout = (TextInputLayout) findViewById(R.id.password_layout);
-        mPasswordField = (EditText) findViewById(R.id.password);
+        mPasswordLayout = findViewById(R.id.password_layout);
+        mPasswordField = findViewById(R.id.password);
 
         ImeHelper.setImeOnDoneListener(mPasswordField, this);
 
@@ -107,7 +106,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
                 emailStart + mEmail.length(),
                 Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
-        TextView bodyTextView = ((TextView) findViewById(R.id.welcome_back_password_body));
+        TextView bodyTextView = findViewById(R.id.welcome_back_password_body);
         bodyTextView.setText(spannableStringBuilder);
 
         // Click listeners
@@ -125,7 +124,7 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
                     this,
                     getFlowParams(),
                     mEmail));
-            finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+            finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
         }
     }
 
