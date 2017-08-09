@@ -126,7 +126,8 @@ public class AccountLinker implements OnSuccessListener<AuthResult>, OnFailureLi
                         @Override
                         public Task<AuthResult> call() throws Exception {
                             return mActivity.getAuthHelper().getFirebaseAuth()
-                                    .signInWithCredential(mExistingCredential);
+                                    .signInWithCredential(mExistingCredential)
+                                    .continueWithTask(new ProfileMerger(mIdpResponse));
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
