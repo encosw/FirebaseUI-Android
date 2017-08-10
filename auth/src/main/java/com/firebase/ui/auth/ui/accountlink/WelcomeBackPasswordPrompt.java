@@ -147,7 +147,6 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         }
         getDialogHolder().showLoadingDialog(R.string.fui_progress_dialog_signing_in);
 
-
         final AuthCredential authCredential = ProviderUtils.getAuthCredential(mIdpResponse);
 
         String prevUid = getAuthHelper().getUidForAccountLinking();
@@ -167,6 +166,8 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         }
 
         // Sign in with known email and the password provided
+        getAuthHelper().getFirebaseAuth()
+                .signInWithEmailAndPassword(email, password)
         ManualMergeUtils.injectSignInTaskBetweenDataTransfer(this,
                 response,
                 new Callable<Task<AuthResult>>() {
