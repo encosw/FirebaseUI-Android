@@ -165,14 +165,12 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
             response.getUser().setPrevUid(prevUid);
         }
 
-        // Sign in with known email and the password provided
-        getAuthHelper().getFirebaseAuth()
-                .signInWithEmailAndPassword(email, password)
         ManualMergeUtils.injectSignInTaskBetweenDataTransfer(this,
                 response,
                 new Callable<Task<AuthResult>>() {
                     @Override
                     public Task<AuthResult> call() throws Exception {
+                        // Sign in with known email and the password provided
                         return getAuthHelper().getFirebaseAuth()
                                 .signInWithEmailAndPassword(email, password);
                     }
