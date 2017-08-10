@@ -245,8 +245,7 @@ public class RegisterEmailFragment extends FragmentBase implements
 
         registerTask
                 .continueWithTask(new ProfileMerger(response))
-                .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
-                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                .addOnSuccessListener(getActivity(), new OnSuccessListener<AuthResult>() {
                     @Override
                     public void onSuccess(AuthResult authResult) {
                         mActivity.saveCredentialsOrFinish(
@@ -256,6 +255,7 @@ public class RegisterEmailFragment extends FragmentBase implements
                                 response);
                     }
                 })
+                .addOnFailureListener(new TaskFailureLogger(TAG, "Error creating user"))
                 .addOnFailureListener(getActivity(), new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {

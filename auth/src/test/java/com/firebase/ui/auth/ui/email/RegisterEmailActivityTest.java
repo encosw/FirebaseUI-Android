@@ -122,18 +122,17 @@ public class RegisterEmailActivityTest {
         password.setText(TestConstants.PASSWORD);
 
         AuthHelperShadow.sCanLinkAccounts = true;
-        when(AuthHelperShadow.getCurrentUser().updateProfile(any(UserProfileChangeRequest.class)))
-                .thenReturn(new AutoCompleteTask<Void>(null, true, null));
-
         when(AuthHelperShadow.getCurrentUser().linkWithCredential(any(EmailAuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
+        when(AuthHelperShadow.getCurrentUser().updateProfile(any(UserProfileChangeRequest.class)))
+                .thenReturn(new AutoCompleteTask<Void>(null, true, null));
 
         Button button = registerEmailActivity.findViewById(R.id.button_create);
         button.performClick();
 
         // Verify create user request
-        verify(AuthHelperShadow.getCurrentUser()).linkWithCredential(
-                any(EmailAuthCredential.class));
+        verify(AuthHelperShadow.getCurrentUser())
+                .linkWithCredential(any(EmailAuthCredential.class));
 
         // Finally, the new credential should be saved to SmartLock
         TestHelper.verifySmartLockSave(

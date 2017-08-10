@@ -156,14 +156,14 @@ public class IdpSignInContainer extends FragmentBase implements IdpCallback {
         }
 
         signInTask
-                .addOnFailureListener(
-                        new TaskFailureLogger(TAG, "Failure authenticating with credential " +
-                                credential.getProvider()))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         mActivity,
                         mSaveSmartLock,
                         RC_WELCOME_BACK_IDP,
-                        response));
+                        response))
+                .addOnFailureListener(
+                        new TaskFailureLogger(TAG, "Failure authenticating with credential " +
+                                credential.getProvider()));
     }
 
     @Override

@@ -289,7 +289,8 @@ public class SignInDelegate extends SmartLockBase<CredentialRequestResult> {
                 new Callable<Task<AuthResult>>() {
                     @Override
                     public Task<AuthResult> call() throws Exception {
-                        return getAuthHelper().getFirebaseAuth().signInWithEmailAndPassword(email, password);
+                        return getAuthHelper().getFirebaseAuth()
+                                .signInWithEmailAndPassword(email, password);
                     }
                 })
                 .addOnSuccessListener(new OnSuccessListener<AuthResult>() {

@@ -71,7 +71,8 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     private SaveSmartLock mSaveSmartLock;
 
     public static Intent createIntent(Context context, FlowParameters flowParams) {
-        return HelperActivityBase.createBaseIntent(context,
+        return HelperActivityBase.createBaseIntent(
+                context,
                 AuthMethodPickerActivity.class,
                 flowParams);
     }
@@ -160,7 +161,7 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
     }
 
     @Override
-    public void onSuccess(final IdpResponse response) {
+    public void onSuccess(IdpResponse response) {
         AuthCredential credential = ProviderUtils.getAuthCredential(response);
 
         Task<AuthResult> signInTask;
@@ -173,15 +174,15 @@ public class AuthMethodPickerActivity extends AppCompatBase implements IdpCallba
         }
 
         signInTask
-                .addOnFailureListener(
-                        new TaskFailureLogger(TAG, "Firebase sign in with credential " +
-                                credential.getProvider() + " unsuccessful. " +
-                                "Visit https://console.firebase.google.com to enable it."))
                 .addOnCompleteListener(new CredentialSignInHandler(
                         this,
                         mSaveSmartLock,
                         RC_ACCOUNT_LINK,
-                        response));
+                        response))
+                .addOnFailureListener(
+                        new TaskFailureLogger(TAG, "Firebase sign in with credential " +
+                                credential.getProvider() + " unsuccessful. " +
+                                "Visit https://console.firebase.google.com to enable it."));
     }
 
     @Override
