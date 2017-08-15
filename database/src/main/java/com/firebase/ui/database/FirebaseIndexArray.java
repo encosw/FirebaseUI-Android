@@ -307,7 +307,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         }
     }
 
-    protected class DefaultJoinResolver implements JoinResolver {
+    public class DefaultJoinResolver implements JoinResolver {
         @NonNull
         @Override
         public DatabaseReference onJoin(DataSnapshot keySnapshot) {
