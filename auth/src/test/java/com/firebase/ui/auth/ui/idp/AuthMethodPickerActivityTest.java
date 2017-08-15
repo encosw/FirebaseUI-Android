@@ -22,10 +22,8 @@ import android.widget.LinearLayout;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.BuildConfig;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.testhelpers.ActivityHelperShadow;
+import com.firebase.ui.auth.testhelpers.AuthHelperShadow;
 import com.firebase.ui.auth.testhelpers.AutoCompleteTask;
-import com.firebase.ui.auth.testhelpers.BaseHelperShadow;
-import com.firebase.ui.auth.testhelpers.CustomRobolectricGradleTestRunner;
 import com.firebase.ui.auth.testhelpers.FacebookProviderShadow;
 import com.firebase.ui.auth.testhelpers.FakeAuthResult;
 import com.firebase.ui.auth.testhelpers.GoogleProviderShadow;
@@ -42,6 +40,7 @@ import com.google.firebase.auth.TwitterAuthProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
@@ -58,7 +57,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-@RunWith(CustomRobolectricGradleTestRunner.class)
+@RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class,
         shadows = {
                 GoogleProviderShadow.class,
@@ -80,7 +79,7 @@ public class AuthMethodPickerActivityTest {
         assertEquals(providers.size(),
                      ((LinearLayout) authMethodPickerActivity.findViewById(R.id.btn_holder))
                              .getChildCount());
-        Button emailButton = (Button) authMethodPickerActivity.findViewById(R.id.email_button);
+        Button emailButton = authMethodPickerActivity.findViewById(R.id.email_button);
         assertEquals(View.VISIBLE, emailButton.getVisibility());
     }
 
@@ -90,7 +89,7 @@ public class AuthMethodPickerActivityTest {
 
         AuthMethodPickerActivity authMethodPickerActivity = createActivity(providers);
 
-        Button emailButton = (Button) authMethodPickerActivity.findViewById(R.id.email_button);
+        Button emailButton = authMethodPickerActivity.findViewById(R.id.email_button);
         emailButton.performClick();
         ShadowActivity.IntentForResult nextIntent =
                 Shadows.shadowOf(authMethodPickerActivity).getNextStartedActivityForResult();
@@ -106,7 +105,7 @@ public class AuthMethodPickerActivityTest {
 
         AuthMethodPickerActivity authMethodPickerActivity = createActivity(providers);
 
-        Button phoneButton = (Button) authMethodPickerActivity.findViewById(R.id.phone_button);
+        Button phoneButton = authMethodPickerActivity.findViewById(R.id.phone_button);
         phoneButton.performClick();
         ShadowActivity.IntentForResult nextIntent =
                 Shadows.shadowOf(authMethodPickerActivity).getNextStartedActivityForResult();
@@ -117,22 +116,21 @@ public class AuthMethodPickerActivityTest {
     }
 
     @Test
-    @Config(shadows = {BaseHelperShadow.class, ActivityHelperShadow.class})
+    @Config(shadows = {AuthHelperShadow.class, AuthHelperShadow.class})
     public void testFacebookLoginFlow() {
         // initialize mocks
-        new ActivityHelperShadow();
-        reset(ActivityHelperShadow.sSaveSmartLock);
+        reset(AuthHelperShadow.getSaveSmartLockInstance(null));
 
-        when(BaseHelperShadow.sFirebaseUser.getProviders())
+        when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(FacebookAuthProvider.PROVIDER_ID));
-        when(ActivityHelperShadow.sFirebaseAuth.signInWithCredential((AuthCredential) any()))
+        when(AuthHelperShadow.getFirebaseAuth().signInWithCredential((AuthCredential) any()))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
 
         List<String> providers = Arrays.asList(AuthUI.FACEBOOK_PROVIDER);
 
         AuthMethodPickerActivity authMethodPickerActivity = createActivity(providers);
 
-        Button facebookButton = (Button) authMethodPickerActivity.findViewById(R.id.facebook_button);
+        Button facebookButton = authMethodPickerActivity.findViewById(R.id.facebook_button);
         assertNotNull(facebookButton);
         facebookButton.performClick();
 
@@ -140,23 +138,22 @@ public class AuthMethodPickerActivityTest {
     }
 
     @Test
-    @Config(shadows = {GoogleProviderShadow.class, BaseHelperShadow.class, ActivityHelperShadow.class})
+    @Config(shadows = {GoogleProviderShadow.class, AuthHelperShadow.class, AuthHelperShadow.class})
     public void testGoogleLoginFlow() {
         // initialize mocks
-        new ActivityHelperShadow();
-        reset(ActivityHelperShadow.sSaveSmartLock);
+        reset(AuthHelperShadow.getSaveSmartLockInstance(null));
 
         List<String> providers = Arrays.asList(AuthUI.GOOGLE_PROVIDER);
 
         AuthMethodPickerActivity authMethodPickerActivity = createActivity(providers);
 
-        when(BaseHelperShadow.sFirebaseUser.getProviders())
+        when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(GoogleAuthProvider.PROVIDER_ID));
 
-        when(ActivityHelperShadow.sFirebaseAuth.signInWithCredential((AuthCredential) any()))
+        when(AuthHelperShadow.getFirebaseAuth().signInWithCredential((AuthCredential) any()))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
 
-        Button googleButton = (Button) authMethodPickerActivity.findViewById(R.id.google_button);
+        Button googleButton = authMethodPickerActivity.findViewById(R.id.google_button);
 
         assertNotNull(googleButton);
         googleButton.performClick();
@@ -165,19 +162,19 @@ public class AuthMethodPickerActivityTest {
     }
 
     @Test
-    @Config(shadows = {ActivityHelperShadow.class})
+    @Config(shadows = {AuthHelperShadow.class})
     public void testTwitterLoginFlowStarts() {
         List<String> providers = Arrays.asList(AuthUI.TWITTER_PROVIDER);
 
         AuthMethodPickerActivity authMethodPickerActivity = createActivity(providers);
 
-        when(BaseHelperShadow.sFirebaseUser.getProviders())
+        when(AuthHelperShadow.getCurrentUser().getProviders())
                 .thenReturn(Arrays.asList(TwitterAuthProvider.PROVIDER_ID));
 
-        when(ActivityHelperShadow.sFirebaseAuth.signInWithCredential(any(AuthCredential.class)))
+        when(AuthHelperShadow.getFirebaseAuth().signInWithCredential(any(AuthCredential.class)))
                 .thenReturn(new AutoCompleteTask<>(FakeAuthResult.INSTANCE, true, null));
         Button twitterButton =
-                (Button) authMethodPickerActivity.findViewById(R.id.twitter_button);
+                authMethodPickerActivity.findViewById(R.id.twitter_button);
 
         assertNotNull(twitterButton);
         twitterButton.performClick();
@@ -193,8 +190,7 @@ public class AuthMethodPickerActivityTest {
                 TestHelper.getFlowParameters(providers));
 
         return Robolectric
-                .buildActivity(AuthMethodPickerActivity.class)
-                .withIntent(startIntent)
+                .buildActivity(AuthMethodPickerActivity.class, startIntent)
                 .create()
                 .visible()
                 .get();

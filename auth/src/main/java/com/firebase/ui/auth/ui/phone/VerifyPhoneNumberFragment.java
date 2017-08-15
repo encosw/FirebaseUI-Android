@@ -15,6 +15,7 @@
 package com.firebase.ui.auth.ui.phone;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.FragmentBase;
+import com.firebase.ui.auth.ui.ImeHelper;
 import com.firebase.ui.auth.util.GoogleApiHelper;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
@@ -51,15 +53,16 @@ import java.util.Locale;
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnClickListener {
     public static final String TAG = "VerifyPhoneFragment";
+    private static final int RC_PHONE_HINT = 22;
 
-    private CountryListSpinner countryListSpinner;
+    private Context mAppContext;
+
+    private CountryListSpinner mCountryListSpinner;
     private EditText mPhoneEditText;
-    private TextView errorEditText;
-    private Button sendCodeButton;
+    private TextView mErrorEditText;
+    private Button mSendCodeButton;
     private PhoneVerificationActivity mVerifier;
     private TextView mSmsTermsText;
-
-    private static final int RC_PHONE_HINT = 22;
 
     public static VerifyPhoneNumberFragment newInstance(FlowParameters flowParameters,
                                                         String phone) {
@@ -73,22 +76,35 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
         return fragment;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mAppContext = context.getApplicationContext();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
             Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.phone_layout, container, false);
+        View v = inflater.inflate(R.layout.fui_phone_layout, container, false);
 
-        countryListSpinner = (CountryListSpinner) v.findViewById(R.id.country_list);
-        mPhoneEditText = (EditText) v.findViewById(R.id.phone_number);
-        errorEditText = (TextView) v.findViewById(R.id.phone_number_error);
-        sendCodeButton = (Button) v.findViewById(R.id.send_code);
-        mSmsTermsText = (TextView) v.findViewById(R.id.send_sms_tos);
+        mCountryListSpinner = v.findViewById(R.id.country_list);
+        mPhoneEditText = v.findViewById(R.id.phone_number);
+        mErrorEditText = v.findViewById(R.id.phone_number_error);
+        mSendCodeButton = v.findViewById(R.id.send_code);
+        mSmsTermsText = v.findViewById(R.id.send_sms_tos);
+
+        ImeHelper.setImeOnDoneListener(mPhoneEditText, new ImeHelper.DonePressedListener() {
+            @Override
+            public void onDonePressed() {
+                onNext();
+            }
+        });
 
         FragmentActivity parentActivity = getActivity();
-        parentActivity.setTitle(getString(R.string.verify_phone_number_title));
-        setUpCountrySpinner();
+        parentActivity.setTitle(getString(R.string.fui_verify_phone_number_title));
+        setupCountrySpinner();
         setupSendCodeButton();
         setupTerms();
 
@@ -96,8 +112,8 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
     }
 
     private void setupTerms() {
-        final String verifyPhoneButtonText = getString(R.string.verify_phone_number);
-        final String terms = getString(R.string.sms_terms_of_service, verifyPhoneButtonText);
+        final String verifyPhoneButtonText = getString(R.string.fui_verify_phone_number);
+        final String terms = getString(R.string.fui_sms_terms_of_service, verifyPhoneButtonText);
         mSmsTermsText.setText(terms);
     }
 
@@ -123,7 +139,7 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
             PhoneNumber phoneNumber = PhoneNumberUtils.getPhoneNumber(phone);
             setPhoneNumber(phoneNumber);
             setCountryCode(phoneNumber);
-        } else if (mHelper.getFlowParams().enableHints) {
+        } else if (getFlowParams().enableHints) {
             // Try SmartLock phone autocomplete hint
             showPhoneAutoCompleteHint();
         }
@@ -140,9 +156,8 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
                     // To accommodate either case, we normalize to e164 with best effort
                     final String unformattedPhone = cred.getId();
                     final String formattedPhone =
-                            PhoneNumberUtils
-                                    .formatPhoneNumberUsingCurrentCountry(unformattedPhone,
-                                                                          getContext());
+                            PhoneNumberUtils.formatPhoneNumberUsingCurrentCountry(unformattedPhone,
+                                    mAppContext);
                     if (formattedPhone == null) {
                         Log.e(TAG, "Unable to normalize phone number from hint selector:"
                                 + unformattedPhone);
@@ -152,6 +167,7 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
                             PhoneNumberUtils.getPhoneNumber(formattedPhone);
                     setPhoneNumber(phoneNumberObj);
                     setCountryCode(phoneNumberObj);
+                    onNext();
                 }
             }
         }
@@ -159,17 +175,21 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
 
     @Override
     public void onClick(View v) {
+        onNext();
+    }
+
+    private void onNext() {
         String phoneNumber = getPseudoValidPhoneNumber();
         if (phoneNumber == null) {
-            errorEditText.setText(R.string.invalid_phone_number);
+            mErrorEditText.setText(R.string.fui_invalid_phone_number);
         } else {
             mVerifier.verifyPhoneNumber(phoneNumber, false);
         }
     }
 
     @Nullable
-    String getPseudoValidPhoneNumber() {
-        final CountryInfo countryInfo = (CountryInfo) countryListSpinner.getTag();
+    private String getPseudoValidPhoneNumber() {
+        final CountryInfo countryInfo = (CountryInfo) mCountryListSpinner.getTag();
         final String everythingElse = mPhoneEditText.getText().toString();
 
         if (TextUtils.isEmpty(everythingElse)) {
@@ -179,44 +199,50 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
         return PhoneNumberUtils.formatPhoneNumber(everythingElse, countryInfo);
     }
 
-    private void setUpCountrySpinner() {
+    private void setupCountrySpinner() {
         //clear error when spinner is clicked on
-        countryListSpinner.setOnClickListener(new View.OnClickListener() {
+        mCountryListSpinner.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                errorEditText.setText("");
+                mErrorEditText.setText("");
             }
         });
     }
 
     private void setupSendCodeButton() {
-        sendCodeButton.setOnClickListener(this);
+        mSendCodeButton.setOnClickListener(this);
     }
 
     private void showPhoneAutoCompleteHint() {
         try {
-            mHelper.startIntentSenderForResult(getPhoneHintIntent().getIntentSender(),
-                                               RC_PHONE_HINT);
+            startIntentSenderForResult(getPhoneHintIntent().getIntentSender(), RC_PHONE_HINT);
         } catch (IntentSender.SendIntentException e) {
             Log.e(TAG, "Unable to start hint intent", e);
         }
     }
 
     private PendingIntent getPhoneHintIntent() {
-        GoogleApiClient client = new GoogleApiClient.Builder(getContext()).addApi(Auth
-                .CREDENTIALS_API).enableAutoManage(getActivity(), GoogleApiHelper
-                .getSafeAutoManageId(), new GoogleApiClient.OnConnectionFailedListener() {
-            @Override
-            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                Log.e(TAG, "Client connection failed: " + connectionResult.getErrorMessage());
-            }
-        }).build();
+        GoogleApiClient client = new GoogleApiClient.Builder(getContext())
+                .addApi(Auth.CREDENTIALS_API)
+                .enableAutoManage(
+                        getActivity(),
+                        GoogleApiHelper.getSafeAutoManageId(),
+                        new GoogleApiClient.OnConnectionFailedListener() {
+                            @Override
+                            public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                                Log.e(TAG,
+                                      "Client connection failed: " + connectionResult.getErrorMessage());
+                            }
+                        })
+                .build();
 
 
-        HintRequest hintRequest = new HintRequest.Builder().setHintPickerConfig(new
-                CredentialPickerConfig.Builder().setShowCancelButton(true).build())
-                .setPhoneNumberIdentifierSupported(true).setEmailAddressIdentifierSupported
-                        (false).build();
+        HintRequest hintRequest = new HintRequest.Builder()
+                .setHintPickerConfig(
+                        new CredentialPickerConfig.Builder().setShowCancelButton(true).build())
+                .setPhoneNumberIdentifierSupported(true)
+                .setEmailAddressIdentifierSupported(false)
+                .build();
 
         return Auth.CredentialsApi.getHintPickerIntent(client, hintRequest);
     }
@@ -230,12 +256,12 @@ public class VerifyPhoneNumberFragment extends FragmentBase implements View.OnCl
 
     private void setCountryCode(PhoneNumber phoneNumber) {
         if (PhoneNumber.isCountryValid(phoneNumber)) {
-            countryListSpinner.setSelectedForCountry(new Locale("", phoneNumber.getCountryIso()),
+            mCountryListSpinner.setSelectedForCountry(new Locale("", phoneNumber.getCountryIso()),
                     phoneNumber.getCountryCode());
         }
     }
 
     void showError(String e) {
-        errorEditText.setText(e);
+        mErrorEditText.setText(e);
     }
 }

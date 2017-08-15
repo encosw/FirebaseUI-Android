@@ -46,15 +46,35 @@ Gradle, add the dependency:
 ```groovy
 dependencies {
     // ...
-    compile 'com.firebaseui:firebase-ui-auth:2.0.0'
-    
+    compile 'com.firebaseui:firebase-ui-auth:2.2.0'
+
     // Required only if Facebook login support is required
     compile('com.facebook.android:facebook-android-sdk:4.22.1')
-    
+
     // Required only if Twitter login support is required
     compile("com.twitter.sdk.android:twitter-core:3.0.0@aar") { transitive = true }
 }
 ```
+
+As of version `2.1.0` FirebaseUI includes translations for all string resources. In order to
+ensure that you only get the translations relevant to your application, we recommend changing the
+`resConfigs` of your application module:
+
+```groovy
+android {
+
+  // ...
+
+  defaultConfig {
+     // ...
+     resConfigs "auto"
+  }
+
+}
+```
+
+See the [Android documentation](https://developer.android.com/studio/build/shrink-code.html#unused-alt-resources)
+for more information.
 
 ### Identity provider configuration
 
@@ -176,7 +196,7 @@ startActivityForResult(
         .createSignInIntentBuilder()
         .setAvailableProviders(
                 Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                              new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVDER).build(),
+                              new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
                               new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
                               new AuthUI.IdpConfig.Builder(AuthUI.FACEBOOK_PROVIDER).build(),
                               new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()))
@@ -242,9 +262,9 @@ startActivityForResult(
 ##### Response codes
 
 The authentication flow provides several response codes of which the most common are as follows:
-`ResultCodes.OK` if a user is signed in, `ResultCodes.CANCELLED` if the user manually canceled the sign in,
-`ResultCodes.NO_NETWORK` if sign in failed due to a lack of network connectivity,
-and `ResultCodes.UNKNOWN_ERROR` for all other errors.
+`Activity.RESULT_OK` if a user is signed in, `Activity.RESULT_CANCELED` if the user manually canceled the sign in,
+`ErrorCodes.NO_NETWORK` if sign in failed due to a lack of network connectivity,
+and `ErrorCodes.UNKNOWN_ERROR` for all other errors.
 Typically, the only recourse for most apps if sign in fails is to ask
 the user to sign in again later, or proceed with anonymous sign-in if supported.
 
@@ -256,7 +276,7 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
         // Successfully signed in
-        if (resultCode == ResultCodes.OK) {
+        if (resultCode == RESULT_OK) {
             startActivity(SignedInActivity.createIntent(this, response));
             finish();
             return;
@@ -296,7 +316,7 @@ Intent.
 ```java
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (resultCode == ResultCodes.OK) {
+    if (resultCode == RESULT_OK) {
         IdpResponse idpResponse = IdpResponse.fromResultIntent(data);
         startActivity(new Intent(this, WelcomeBackActivity.class)
                 .putExtra("my_token", idpResponse.getIdpToken()));

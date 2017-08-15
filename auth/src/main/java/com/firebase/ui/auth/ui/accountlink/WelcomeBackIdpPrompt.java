@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 import android.view.View;
@@ -29,19 +30,18 @@ import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.provider.ProviderUtils;
+import com.firebase.ui.auth.User;
 import com.firebase.ui.auth.provider.FacebookProvider;
 import com.firebase.ui.auth.provider.GoogleProvider;
 import com.firebase.ui.auth.provider.IdpProvider;
 import com.firebase.ui.auth.provider.IdpProvider.IdpCallback;
+import com.firebase.ui.auth.provider.ProviderUtils;
 import com.firebase.ui.auth.provider.TwitterProvider;
 import com.firebase.ui.auth.ui.AppCompatBase;
-import com.firebase.ui.auth.ui.BaseHelper;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
+import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.ui.TaskFailureLogger;
-import com.firebase.ui.auth.ui.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -64,8 +64,8 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             Context context,
             FlowParameters flowParams,
             User existingUser,
-            IdpResponse newUserResponse) {
-        return BaseHelper.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
+            @Nullable IdpResponse newUserResponse) {
+        return HelperActivityBase.createBaseIntent(context, WelcomeBackIdpPrompt.class, flowParams)
                 .putExtra(ExtraConstants.EXTRA_USER, existingUser)
                 .putExtra(ExtraConstants.EXTRA_IDP_RESPONSE, newUserResponse);
     }
@@ -73,15 +73,17 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.welcome_back_idp_prompt_layout);
+        setContentView(R.layout.fui_welcome_back_idp_prompt_layout);
 
-        IdpResponse newUserIdpResponse = IdpResponse.fromResultIntent(getIntent());
-        mPrevCredential = ProviderUtils.getAuthCredential(newUserIdpResponse);
+        IdpResponse newUserResponse = IdpResponse.fromResultIntent(getIntent());
+        if (newUserResponse != null) {
+            mPrevCredential = ProviderUtils.getAuthCredential(newUserResponse);
+        }
 
         User oldUser = User.getUser(getIntent());
 
-        String providerId = oldUser.getProvider();
-        for (IdpConfig idpConfig : mActivityHelper.getFlowParams().providerInfo) {
+        String providerId = oldUser.getProviderId();
+        for (IdpConfig idpConfig : getFlowParams().providerInfo) {
             if (providerId.equals(idpConfig.getProviderId())) {
                 switch (providerId) {
                     case GoogleAuthProvider.PROVIDER_ID:
@@ -89,14 +91,14 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                         break;
                     case FacebookAuthProvider.PROVIDER_ID:
                         mIdpProvider = new FacebookProvider(
-                                idpConfig, mActivityHelper.getFlowParams().themeId);
+                                idpConfig, getFlowParams().themeId);
                         break;
                     case TwitterAuthProvider.PROVIDER_ID:
                         mIdpProvider = new TwitterProvider(this);
                         break;
                     default:
                         Log.w(TAG, "Unknown provider: " + providerId);
-                        finish(ResultCodes.CANCELED,
+                        finish(RESULT_CANCELED,
                                IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
                         return;
                 }
@@ -107,7 +109,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
             Log.w(TAG, "Firebase login unsuccessful."
                     + " Account linking failed due to provider not enabled by application: "
                     + providerId);
-            finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+            finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
             return;
         }
 
@@ -118,14 +120,14 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
         findViewById(R.id.welcome_back_idp_button).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                mActivityHelper.showLoadingDialog(R.string.progress_dialog_signing_in);
+                getDialogHolder().showLoadingDialog(R.string.fui_progress_dialog_signing_in);
                 mIdpProvider.startLogin(WelcomeBackIdpPrompt.this);
             }
         });
     }
 
     private String getIdpPromptString(String email) {
-        return getString(R.string.welcome_back_idp_prompt, email, mIdpProvider.getName(this));
+        return getString(R.string.fui_welcome_back_idp_prompt, email, mIdpProvider.getName(this));
     }
 
     @Override
@@ -136,20 +138,16 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
 
     @Override
     public void onSuccess(final IdpResponse idpResponse) {
-        if (idpResponse == null) {
-            return; // do nothing
-        }
-
         AuthCredential newCredential = ProviderUtils.getAuthCredential(idpResponse);
         if (newCredential == null) {
             Log.e(TAG, "No credential returned");
-            finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+            finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
             return;
         }
 
-        FirebaseUser currentUser = mActivityHelper.getCurrentUser();
+        FirebaseUser currentUser = getAuthHelper().getCurrentUser();
         if (currentUser == null) {
-            mActivityHelper.getFirebaseAuth()
+            getAuthHelper().getFirebaseAuth()
                     .signInWithCredential(newCredential)
                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
@@ -162,7 +160,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
                                                 idpResponse.getProviderType()))
                                         .addOnCompleteListener(new FinishListener(idpResponse));
                             } else {
-                                finish(ResultCodes.OK, idpResponse.toIntent());
+                                finish(RESULT_OK, idpResponse.toIntent());
                             }
                         }
                     })
@@ -186,13 +184,13 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
     }
 
     @Override
-    public void onFailure(Bundle extra) {
+    public void onFailure() {
         finishWithError();
     }
 
     private void finishWithError() {
-        Toast.makeText(this, R.string.general_error, Toast.LENGTH_LONG).show();
-        finish(ResultCodes.CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
+        Toast.makeText(this, R.string.fui_general_error, Toast.LENGTH_LONG).show();
+        finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
     }
 
     private class FinishListener implements OnCompleteListener<AuthResult> {
@@ -203,7 +201,7 @@ public class WelcomeBackIdpPrompt extends AppCompatBase implements IdpCallback {
         }
 
         public void onComplete(@NonNull Task task) {
-            finish(ResultCodes.OK, mIdpResponse.toIntent());
+            finish(RESULT_OK, mIdpResponse.toIntent());
         }
     }
 }

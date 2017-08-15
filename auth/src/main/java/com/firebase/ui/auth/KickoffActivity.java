@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.RestrictTo;
 import android.util.Log;
 
-import com.firebase.ui.auth.ui.ActivityHelper;
 import com.firebase.ui.auth.ui.ExtraConstants;
 import com.firebase.ui.auth.ui.FlowParameters;
 import com.firebase.ui.auth.ui.HelperActivityBase;
@@ -24,7 +23,7 @@ public class KickoffActivity extends HelperActivityBase {
     private boolean mIsWaitingForPlayServices = false;
 
     public static Intent createIntent(Context context, FlowParameters flowParams) {
-        return ActivityHelper.createBaseIntent(context, KickoffActivity.class, flowParams);
+        return HelperActivityBase.createBaseIntent(context, KickoffActivity.class, flowParams);
     }
 
     @Override
@@ -34,7 +33,7 @@ public class KickoffActivity extends HelperActivityBase {
         if (savedInstance == null || savedInstance.getBoolean(IS_WAITING_FOR_PLAY_SERVICES)) {
             if (isOffline()) {
                 Log.d(TAG, "No network connection");
-                finish(ResultCodes.CANCELED,
+                finish(RESULT_CANCELED,
                        IdpResponse.getErrorCodeIntent(ErrorCodes.NO_NETWORK));
                 return;
             }
@@ -45,7 +44,7 @@ public class KickoffActivity extends HelperActivityBase {
                     new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
-                            finish(ResultCodes.CANCELED,
+                            finish(RESULT_CANCELED,
                                    IdpResponse.getErrorCodeIntent(
                                            ErrorCodes.UNKNOWN_ERROR));
                         }
@@ -71,10 +70,10 @@ public class KickoffActivity extends HelperActivityBase {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_PLAY_SERVICES) {
-            if (resultCode == ResultCodes.OK) {
+            if (resultCode == RESULT_OK) {
                 start();
             } else {
-                finish(ResultCodes.CANCELED,
+                finish(RESULT_CANCELED,
                        IdpResponse.getErrorCodeIntent(ErrorCodes.UNKNOWN_ERROR));
             }
         } else {
@@ -84,7 +83,7 @@ public class KickoffActivity extends HelperActivityBase {
     }
 
     private void start() {
-        FlowParameters flowParams = mActivityHelper.getFlowParams();
+        FlowParameters flowParams = getFlowParams();
         SignInDelegate.delegate(this, flowParams);
     }
 

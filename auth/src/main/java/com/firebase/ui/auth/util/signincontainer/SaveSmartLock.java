@@ -14,6 +14,7 @@
 
 package com.firebase.ui.auth.util.signincontainer;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +25,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -32,9 +32,7 @@ import android.widget.Toast;
 
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
-import com.firebase.ui.auth.ResultCodes;
-import com.firebase.ui.auth.ui.FlowParameters;
-import com.firebase.ui.auth.ui.FragmentHelper;
+import com.firebase.ui.auth.ui.HelperActivityBase;
 import com.firebase.ui.auth.util.GoogleApiHelper;
 import com.firebase.ui.auth.util.PlayServicesHelper;
 import com.google.android.gms.auth.api.Auth;
@@ -59,14 +57,14 @@ public class SaveSmartLock extends SmartLockBase<Status> {
     private IdpResponse mResponse;
 
     @Nullable
-    public static SaveSmartLock getInstance(FragmentActivity activity, FlowParameters parameters) {
+    public static SaveSmartLock getInstance(HelperActivityBase activity) {
         SaveSmartLock result;
 
         FragmentManager fm = activity.getSupportFragmentManager();
         Fragment fragment = fm.findFragmentByTag(TAG);
         if (!(fragment instanceof SaveSmartLock)) {
             result = new SaveSmartLock();
-            result.setArguments(FragmentHelper.getFlowParamsBundle(parameters));
+            result.setArguments(activity.getFlowParams().toBundle());
             try {
                 fm.beginTransaction().add(result, TAG).disallowAddToBackStack().commit();
             } catch (IllegalStateException e) {
@@ -115,22 +113,22 @@ public class SaveSmartLock extends SmartLockBase<Status> {
             builder.setProfilePictureUri(Uri.parse(mProfilePictureUri));
         }
 
-        mHelper.getCredentialsApi()
+        getAuthHelper().getCredentialsApi()
                 .save(mGoogleApiClient, builder.build())
                 .setResultCallback(this);
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(getContext(), R.string.general_error, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), R.string.fui_general_error, Toast.LENGTH_SHORT).show();
 
         PendingIntent resolution =
                 PlayServicesHelper.getGoogleApiAvailability()
                         .getErrorResolutionPendingIntent(getContext(),
-                                                         connectionResult.getErrorCode(),
-                                                         RC_UPDATE_SERVICE);
+                                connectionResult.getErrorCode(),
+                                RC_UPDATE_SERVICE);
         try {
-            mHelper.startIntentSenderForResult(resolution.getIntentSender(), RC_UPDATE_SERVICE);
+            startIntentSenderForResult(resolution.getIntentSender(), RC_UPDATE_SERVICE);
         } catch (IntentSender.SendIntentException e) {
             Log.e(TAG, "STATUS: Failed to send resolution.", e);
             finish();
@@ -146,8 +144,7 @@ public class SaveSmartLock extends SmartLockBase<Status> {
                 // Try to resolve the save request. This will prompt the user if
                 // the credential is new.
                 try {
-                    mHelper.startIntentSenderForResult(status.getResolution().getIntentSender(),
-                                                       RC_SAVE);
+                    startIntentSenderForResult(status.getResolution().getIntentSender(), RC_SAVE);
                 } catch (IntentSender.SendIntentException e) {
                     // Could not resolve the request
                     Log.e(TAG, "STATUS: Failed to send resolution.", e);
@@ -165,15 +162,16 @@ public class SaveSmartLock extends SmartLockBase<Status> {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SAVE) {
-            if (resultCode != ResultCodes.OK) {
+            if (resultCode != Activity.RESULT_OK) {
                 Log.e(TAG, "SAVE: Canceled by user");
             }
             finish();
         } else if (requestCode == RC_UPDATE_SERVICE) {
-            if (resultCode == ResultCodes.OK) {
+            if (resultCode == Activity.RESULT_OK) {
                 Credential credential = new Credential.Builder(mEmail).setPassword(mPassword)
                         .build();
-                mHelper.getCredentialsApi()
+
+                getAuthHelper().getCredentialsApi()
                         .save(mGoogleApiClient, credential)
                         .setResultCallback(this);
             } else {
@@ -184,15 +182,15 @@ public class SaveSmartLock extends SmartLockBase<Status> {
     }
 
     private void finish() {
-        finish(ResultCodes.OK, mResponse.toIntent());
+        finish(Activity.RESULT_OK, mResponse.toIntent());
     }
 
     /**
      * If SmartLock is enabled and Google Play Services is available, save the credentials.
-     * Otherwise, finish the calling Activity with {@link ResultCodes#OK RESULT_OK}.
+     * Otherwise, finish the calling Activity with {@link Activity#RESULT_OK}.
      * <p>
-     * Note: saveCredentialsOrFinish cannot be called immediately after getInstance because
-     * onCreate has not yet been called.
+     * Note: saveCredentialsOrFinish cannot be called immediately after getInstance because onCreate
+     * has not yet been called.
      *
      * @param firebaseUser Firebase user to save in Credential.
      * @param password     (optional) password for email credential.
@@ -203,7 +201,7 @@ public class SaveSmartLock extends SmartLockBase<Status> {
                                         @Nullable IdpResponse response) {
         mResponse = response;
 
-        if (!mHelper.getFlowParams().enableCredentials) {
+        if (!getFlowParams().enableCredentials) {
             finish();
             return;
         }
