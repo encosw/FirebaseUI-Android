@@ -20,17 +20,7 @@ public interface JoinResolver {
      * found in {@code keySnapshot} will be returned.
      */
     @NonNull
-    DatabaseReference onJoin(DataSnapshot keySnapshot);
-
-    /**
-     * Called after an {@link ChildEventListener#onChildRemoved(DataSnapshot)} event from {@code
-     * keyRef}.
-     *
-     * @param keySnapshot the snapshot supplied in {@code onChildRemoved}
-     * @return The same query supplied in {@code onJoin} for the given {@code keySnapshot}.
-     */
-    @NonNull
-    DatabaseReference onDisjoin(DataSnapshot keySnapshot);
+    DatabaseReference onJoin(DatabaseReference dataRef, DataSnapshot keySnapshot);
 
     /**
      * Called when a key in {@code keyRef} could not be found in {@code dataRef}.

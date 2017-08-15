@@ -204,7 +204,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     }
 
     protected void onKeyAdded(DataSnapshot data) {
-        DatabaseReference ref = mJoinResolver.onJoin(data);
+        DatabaseReference ref = mJoinResolver.onJoin(mDataRef, data);
 
         mKeysWithPendingUpdate.add(data.getKey());
         // Start listening
@@ -223,7 +223,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     }
 
     protected void onKeyRemoved(DataSnapshot data, int index) {
-        DatabaseReference removeRef = mJoinResolver.onDisjoin(data);
+        DatabaseReference removeRef = mJoinResolver.onJoin(mDataRef, data);
         ValueEventListener listener = mRefs.remove(removeRef);
         if (listener != null) removeRef.removeEventListener(listener);
 
@@ -307,17 +307,11 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         }
     }
 
-    public class DefaultJoinResolver implements JoinResolver {
+    public static class DefaultJoinResolver implements JoinResolver {
         @NonNull
         @Override
-        public DatabaseReference onJoin(DataSnapshot keySnapshot) {
-            return mDataRef.child(keySnapshot.getKey());
-        }
-
-        @NonNull
-        @Override
-        public DatabaseReference onDisjoin(DataSnapshot keySnapshot) {
-            return onJoin(keySnapshot); // Match the join/disjoin pair
+        public DatabaseReference onJoin(DatabaseReference dataRef, DataSnapshot keySnapshot) {
+            return dataRef.child(keySnapshot.getKey());
         }
 
         @Override
