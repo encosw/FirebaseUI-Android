@@ -49,6 +49,15 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
      * FirebaseArray} is in the middle of an update, false otherwise.
      */
     private boolean mHasPendingMoveOrDelete;
+    /**
+     * Sigh, more null value bugs. We need to get {@code onChildMoved}'s {@code oldIndex} from our
+     * list of indices instead of the key snapshots or we might get tripped up by null values.
+     * <p>
+     * This field stores our version of {@code oldIndex} and the expected contract is for its value
+     * to be used immediately after the key snapshots update themselves and send the {@code
+     * onChildMoved} event.
+     */
+    private int mPendingMoveIndex;
 
     /**
      * Create a new FirebaseIndexArray that parses snapshots as members of a given class.
@@ -84,6 +93,13 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
                 return snapshot.getKey();
             }
         });
+
+        mKeySnapshots.setPreChangeEventListener(new FirebaseArray.PreChangeEventListener() {
+            @Override
+            public void onPreMove(DataSnapshot data, int oldIndex) {
+                mPendingMoveIndex = returnOrFindIndexForKey(oldIndex, data.getKey());
+            }
+        });
     }
 
     @Override
@@ -107,7 +123,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     public void onChildChanged(EventType type, DataSnapshot snapshot, int index, int oldIndex) {
         switch (type) {
             case ADDED:
-                onKeyAdded(snapshot);
+                onKeyAdded(snapshot, index);
                 break;
             case MOVED:
                 onKeyMoved(snapshot, index, oldIndex);
@@ -140,18 +156,26 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         return mDataSnapshots;
     }
 
-    private int getIndexForKey(String key) {
-        int dataCount = size();
-        int index = 0;
-        for (int keyIndex = 0; index < dataCount; keyIndex++) {
-            String superKey = mKeySnapshots.getObject(keyIndex);
-            if (key.equals(superKey)) {
-                break;
-            } else if (mDataSnapshots.get(index).getKey().equals(superKey)) {
-                index++;
+    private int returnOrFindIndexForKey(int index, String key) {
+        int realIndex;
+        if (isKeyAtIndex(key, index)) {
+            realIndex = index;
+        } else {
+            int dataCount = size();
+            int dataIndex = 0;
+            for (int keyIndex = 0; dataIndex < dataCount; keyIndex++) {
+                if (keyIndex == mKeySnapshots.size()) { break; }
+
+                String superKey = mKeySnapshots.getObject(keyIndex);
+                if (key.equals(superKey)) {
+                    break;
+                } else if (mDataSnapshots.get(dataIndex).getKey().equals(superKey)) {
+                    dataIndex++;
+                }
             }
+            realIndex = dataIndex;
         }
-        return index;
+        return realIndex;
     }
 
     /**
@@ -161,23 +185,33 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         return index >= 0 && index < size() && mDataSnapshots.get(index).getKey().equals(key);
     }
 
-    protected void onKeyAdded(DataSnapshot data) {
+    /**
+     * @deprecated
+     */
+    @Deprecated
+    protected void onKeyAdded(DataSnapshot data) {}
+
+    protected void onKeyAdded(DataSnapshot data, int index) {
+        onKeyAdded(data);
+
         String key = data.getKey();
         DatabaseReference ref = mDataRef.child(key);
 
         mKeysWithPendingUpdate.add(key);
         // Start listening
-        mRefs.put(ref, ref.addValueEventListener(new DataRefListener()));
+        mRefs.put(ref, ref.addValueEventListener(new DataRefListener(index)));
     }
 
     protected void onKeyMoved(DataSnapshot data, int index, int oldIndex) {
         String key = data.getKey();
 
-        if (isKeyAtIndex(key, oldIndex)) {
-            DataSnapshot snapshot = removeData(oldIndex);
+        int realOldIndex = mPendingMoveIndex;
+        if (isKeyAtIndex(key, realOldIndex)) {
+            DataSnapshot snapshot = removeData(realOldIndex);
+            int realIndex = returnOrFindIndexForKey(index, key);
             mHasPendingMoveOrDelete = true;
-            mDataSnapshots.add(index, snapshot);
-            notifyChangeEventListeners(EventType.MOVED, snapshot, index, oldIndex);
+            mDataSnapshots.add(realIndex, snapshot);
+            notifyChangeEventListeners(EventType.MOVED, snapshot, realIndex, realOldIndex);
         }
     }
 
@@ -186,10 +220,11 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         ValueEventListener listener = mRefs.remove(mDataRef.getRef().child(key));
         if (listener != null) mDataRef.child(key).removeEventListener(listener);
 
-        if (isKeyAtIndex(key, index)) {
-            DataSnapshot snapshot = removeData(index);
+        int realIndex = returnOrFindIndexForKey(index, key);
+        if (isKeyAtIndex(key, realIndex)) {
+            DataSnapshot snapshot = removeData(realIndex);
             mHasPendingMoveOrDelete = true;
-            notifyChangeEventListeners(EventType.REMOVED, snapshot, index);
+            notifyChangeEventListeners(EventType.REMOVED, snapshot, realIndex);
         }
     }
 
@@ -225,10 +260,22 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
      * A ValueEventListener attached to the joined child data.
      */
     protected class DataRefListener implements ValueEventListener {
+        private int currentIndex;
+
+        /**
+         * Use {@link #DataRefListener(int)} instead and provide the starting index.
+         */
+        @Deprecated
+        public DataRefListener() {}
+
+        public DataRefListener(int index) {
+            currentIndex = index;
+        }
+
         @Override
         public void onDataChange(DataSnapshot snapshot) {
             String key = snapshot.getKey();
-            int index = getIndexForKey(key);
+            int index = currentIndex = returnOrFindIndexForKey(currentIndex, key);
 
             if (snapshot.getValue() != null) {
                 if (isKeyAtIndex(key, index)) {
