@@ -28,7 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> implements ChangeEventListener {
+public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T>
+        implements ChangeEventListener {
     private static final String TAG = "FirebaseIndexArray";
 
     private DatabaseReference mDataRef;
@@ -159,20 +160,26 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     private int returnOrFindIndexForKey(int index, String key) {
         int realIndex;
         if (isKeyAtIndex(key, index)) {
+            // To optimize this query, if the expected item position is accurate, we simply return
+            // it instead of searching for it in our keys all over again. This ensures developers
+            // correctly indexing their data (i.e. no null values) don't take a performance hit.
             realIndex = index;
         } else {
             int dataCount = size();
             int dataIndex = 0;
-            for (int keyIndex = 0; dataIndex < dataCount; keyIndex++) {
-                if (keyIndex == mKeySnapshots.size()) { break; }
+            int keyIndex = 0;
 
+            while (dataIndex < dataCount && keyIndex < mKeySnapshots.size()) {
                 String superKey = mKeySnapshots.getObject(keyIndex);
                 if (key.equals(superKey)) {
                     break;
                 } else if (mDataSnapshots.get(dataIndex).getKey().equals(superKey)) {
+                    // Only increment the data index if we aren't passing over a null value snapshot.
                     dataIndex++;
                 }
+                keyIndex++;
             }
+
             realIndex = dataIndex;
         }
         return realIndex;
@@ -185,26 +192,21 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         return index >= 0 && index < size() && mDataSnapshots.get(index).getKey().equals(key);
     }
 
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    protected void onKeyAdded(DataSnapshot data) {}
-
-    protected void onKeyAdded(DataSnapshot data, int index) {
-        onKeyAdded(data);
-
+    private void onKeyAdded(DataSnapshot data, int newIndex) {
         String key = data.getKey();
         DatabaseReference ref = mDataRef.child(key);
 
         mKeysWithPendingUpdate.add(key);
         // Start listening
-        mRefs.put(ref, ref.addValueEventListener(new DataRefListener(index)));
+        mRefs.put(ref, ref.addValueEventListener(new DataRefListener(newIndex)));
     }
 
-    protected void onKeyMoved(DataSnapshot data, int index, int oldIndex) {
+    private void onKeyMoved(DataSnapshot data, int index, int oldIndex) {
         String key = data.getKey();
 
+        // We can't use `returnOrFindIndexForKey(...)` for `oldIndex` or it might find the updated
+        // index instead of the old one. Unfortunately, this does mean move events will be
+        // incorrectly ignored if our list is a subset of the key list e.g. a key has null data.
         int realOldIndex = mPendingMoveIndex;
         if (isKeyAtIndex(key, realOldIndex)) {
             DataSnapshot snapshot = removeData(realOldIndex);
@@ -215,7 +217,7 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
         }
     }
 
-    protected void onKeyRemoved(DataSnapshot data, int index) {
+    private void onKeyRemoved(DataSnapshot data, int index) {
         String key = data.getKey();
         ValueEventListener listener = mRefs.remove(mDataRef.getRef().child(key));
         if (listener != null) mDataRef.child(key).removeEventListener(listener);
@@ -259,14 +261,9 @@ public class FirebaseIndexArray<T> extends CachingObservableSnapshotArray<T> imp
     /**
      * A ValueEventListener attached to the joined child data.
      */
-    protected class DataRefListener implements ValueEventListener {
+    private final class DataRefListener implements ValueEventListener {
+        /** Cached index to skip searching for the current index on each update */
         private int currentIndex;
-
-        /**
-         * Use {@link #DataRefListener(int)} instead and provide the starting index.
-         */
-        @Deprecated
-        public DataRefListener() {}
 
         public DataRefListener(int index) {
             currentIndex = index;
