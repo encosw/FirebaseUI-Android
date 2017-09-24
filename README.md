@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.org/firebase/FirebaseUI-Android.svg?branch=master)](https://travis-ci.org/firebase/FirebaseUI-Android)
 
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/Z46b8v6bmM1Upeh32oNdLuRB/SUPERCILEX/FirebaseUI-Android'>
+  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/Z46b8v6bmM1Upeh32oNdLuRB/SUPERCILEX/FirebaseUI-Android.svg' />
+</a>
+
 FirebaseUI is an open-source library for Android that allows you to
 quickly connect common UI elements to [Firebase](https://firebase.google.com)
 APIs like the Realtime Database or Firebase Authentication.
