@@ -23,6 +23,4 @@ interface FirebaseAdapter<T> extends ChangeEventListener, LifecycleObserver {
     T getItem(int position);
 
     DatabaseReference getRef(int position);
-
-    ObservableSnapshotArray<T> getSnapshots();
 }
