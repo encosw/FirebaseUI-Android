@@ -14,8 +14,9 @@
 
 package com.firebase.ui.database;
 
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 
+import com.firebase.ui.common.ChangeEventType;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,39 +29,18 @@ import java.util.List;
 /**
  * This class implements a collection on top of a Firebase location.
  */
-public class FirebaseArray<T> extends CachingObservableSnapshotArray<T>
+public class FirebaseArray<T> extends ObservableSnapshotArray<T>
         implements ChildEventListener, ValueEventListener {
-    /**
-     * Hack for {@link FirebaseIndexArray}
-     *
-     * @see FirebaseIndexArray#mPendingMoveIndex
-     */
-    interface PreChangeEventListener {
-        void onPreMove(DataSnapshot data, int oldIndex);
-    }
     private Query mQuery;
     private List<DataSnapshot> mSnapshots = new ArrayList<>();
-
-    @Nullable private PreChangeEventListener mPreChangeEventListener;
-
-    /**
-     * Create a new FirebaseArray that parses snapshots as members of a given class.
-     *
-     * @param query The Firebase location to watch for data changes. Can also be a slice of a
-     *              location, using some combination of {@code limit()}, {@code startAt()}, and
-     *              {@code endAt()}.
-     * @see ObservableSnapshotArray#ObservableSnapshotArray(Class)
-     */
-    public FirebaseArray(Query query, Class<T> tClass) {
-        super(tClass);
-        init(query);
-    }
 
     /**
      * Create a new FirebaseArray with a custom {@link SnapshotParser}.
      *
+     * @param query The Firebase location to watch for data changes. Can also be a slice of a
+     *              location, using some combination of {@code limit()}, {@code startAt()}, and
+     *              {@code endAt()}.
      * @see ObservableSnapshotArray#ObservableSnapshotArray(SnapshotParser)
-     * @see FirebaseArray#FirebaseArray(Query, Class)
      */
     public FirebaseArray(Query query, SnapshotParser<T> parser) {
         super(parser);
@@ -69,15 +49,6 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T>
 
     private void init(Query query) {
         mQuery = query;
-    }
-
-    void setPreChangeEventListener(PreChangeEventListener listener) {
-        mPreChangeEventListener = listener;
-    }
-
-    @Override
-    protected List<DataSnapshot> getSnapshots() {
-        return mSnapshots;
     }
 
     @Override
@@ -96,63 +67,50 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T>
 
     @Override
     public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-        if (!isListening()) return;
-
         int index = 0;
         if (previousChildKey != null) {
             index = getIndexForKey(previousChildKey) + 1;
         }
 
         mSnapshots.add(index, snapshot);
-
-        notifyChangeEventListeners(ChangeEventListener.EventType.ADDED, snapshot, index);
+        notifyOnChildChanged(ChangeEventType.ADDED, snapshot, index, -1);
     }
 
     @Override
     public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
-        if (!isListening()) return;
-
         int index = getIndexForKey(snapshot.getKey());
 
-        updateData(index, snapshot);
-        notifyChangeEventListeners(ChangeEventListener.EventType.CHANGED, snapshot, index);
+        mSnapshots.set(index, snapshot);
+        notifyOnChildChanged(ChangeEventType.CHANGED, snapshot, index, -1);
     }
 
     @Override
     public void onChildRemoved(DataSnapshot snapshot) {
-        if (!isListening()) return;
-
         int index = getIndexForKey(snapshot.getKey());
 
-        removeData(index);
-        notifyChangeEventListeners(ChangeEventListener.EventType.REMOVED, snapshot, index);
+        mSnapshots.remove(index);
+        notifyOnChildChanged(ChangeEventType.REMOVED, snapshot, index, -1);
     }
 
     @Override
     public void onChildMoved(DataSnapshot snapshot, String previousChildKey) {
-        if (!isListening()) return;
-
         int oldIndex = getIndexForKey(snapshot.getKey());
-        if (mPreChangeEventListener != null) {
-            mPreChangeEventListener.onPreMove(snapshot, oldIndex);
-        }
         mSnapshots.remove(oldIndex);
 
         int newIndex = previousChildKey == null ? 0 : getIndexForKey(previousChildKey) + 1;
         mSnapshots.add(newIndex, snapshot);
 
-        notifyChangeEventListeners(
-                ChangeEventListener.EventType.MOVED, snapshot, newIndex, oldIndex);
+        notifyOnChildChanged(ChangeEventType.MOVED, snapshot, newIndex, oldIndex);
     }
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
-        notifyListenersOnDataChanged();
+        notifyOnDataChanged();
     }
 
     @Override
     public void onCancelled(DatabaseError error) {
-        notifyListenersOnCancelled(error);
+        notifyOnError(error);
     }
 
     private int getIndexForKey(String key) {
@@ -167,29 +125,9 @@ public class FirebaseArray<T> extends CachingObservableSnapshotArray<T>
         throw new IllegalArgumentException("Key not found");
     }
 
+    @NonNull
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        FirebaseArray snapshots = (FirebaseArray) obj;
-
-        return mQuery.equals(snapshots.mQuery) && mSnapshots.equals(snapshots.mSnapshots);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = mQuery.hashCode();
-        result = 31 * result + mSnapshots.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        if (isListening()) {
-            return "FirebaseArray is listening at " + mQuery + ":\n" + mSnapshots;
-        } else {
-            return "FirebaseArray is inactive";
-        }
+    protected List<DataSnapshot> getSnapshots() {
+        return mSnapshots;
     }
 }
