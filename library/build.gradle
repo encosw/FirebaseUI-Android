@@ -29,7 +29,6 @@ android {
 
 dependencies {
     compile project(':auth')
-    compile project(':common')
     compile project(':database')
     compile project(':firestore')
     compile project(':storage')
