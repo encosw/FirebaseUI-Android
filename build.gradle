@@ -82,8 +82,7 @@ allprojects { project ->
         }
 
         // So that we can define publication
-        project.apply plugin: 'maven-publish'
-        publishToMavenLocal.dependsOn 'assemble'
+        project.apply plugin: 'maven'
 
         publishing {
             // By passing -Pcustom_local=/some/path and running the
