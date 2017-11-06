@@ -41,10 +41,10 @@ allprojects { project ->
     // like the list of submodules or the version
     project.apply from: "$rootDir/constants.gradle"
 
-    def isLibrary = 'library'.equals(project.name)
+    def isLibrary = 'library'.equals(project.name) || 'build'.equals(project.name)
     def isSubmodule = submodules.contains(project.name)
 
-    if (isLibrary || isSubmodule || true) {
+    if (isLibrary || isSubmodule) {
 
         // So that we can resolve 'android' variable
         project.apply plugin: 'com.android.library'
