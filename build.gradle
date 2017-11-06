@@ -45,7 +45,7 @@ allprojects { project ->
     def isLibrary = 'library'.equals(project.name)
     def isSubmodule = submodules.contains(project.name)
 
-    if (isLibrary || isSubmodule) {
+    if (isLibrary || isSubmodule || true) {
 
         // So that we can resolve 'android' variable
         project.apply plugin: 'com.android.library'
