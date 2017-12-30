@@ -1,5 +1,6 @@
 package com.firebase.uidemo.database.firestore;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -78,12 +79,12 @@ public class FirestoreChatActivity extends AppCompatActivity
                 onSendClick();
             }
         });
+        if (isSignedIn()) { attachRecyclerViewAdapter(); }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (isSignedIn()) { attachRecyclerViewAdapter(); }
         FirebaseAuth.getInstance().addAuthStateListener(this);
     }
 
@@ -117,7 +118,7 @@ public class FirestoreChatActivity extends AppCompatActivity
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
-                mRecyclerView.smoothScrollToPosition(adapter.getItemCount());
+//                mRecyclerView.smoothScrollToPosition(adapter.getItemCount());
             }
         });
 
@@ -135,9 +136,11 @@ public class FirestoreChatActivity extends AppCompatActivity
     }
 
     protected RecyclerView.Adapter newAdapter() {
+        ChatSnapshots holder = ViewModelProviders.of(this).get(ChatSnapshots.class);
+        holder.init(sChatQuery);
         FirestoreRecyclerOptions<Chat> options =
                 new FirestoreRecyclerOptions.Builder<Chat>()
-                        .setQuery(sChatQuery, Chat.class)
+                        .setSnapshotArray(holder.getSnapshots())
                         .setLifecycleOwner(this)
                         .build();
 
