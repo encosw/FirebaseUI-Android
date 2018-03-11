@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RestrictTo;
+import android.support.annotation.StringRes;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
@@ -28,7 +29,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.data.model.FlowParameters;
@@ -236,18 +236,18 @@ public class PhoneActivity extends AppCompatBase {
                     }
                     break;
                 case ERROR_TOO_MANY_REQUESTS:
-                    showAlertDialog(getString(R.string.fui_error_too_many_attempts), null);
+                    showAlertDialog(R.string.fui_error_too_many_attempts, null);
                     break;
                 case ERROR_QUOTA_EXCEEDED:
-                    showAlertDialog(getString(R.string.fui_error_quota_exceeded), null);
+                    showAlertDialog(R.string.fui_error_quota_exceeded, null);
                     break;
                 default:
                     Log.w(PHONE_VERIFICATION_LOG_TAG, error.getDescription(), ex);
-                    showAlertDialog(error.getDescription(), null);
+                    showAlertDialog(R.string.fui_error_unknown, null);
             }
         } else {
-            Log.w(PHONE_VERIFICATION_LOG_TAG, ex.getLocalizedMessage());
-            showAlertDialog(ex.getLocalizedMessage(), null);
+            Log.w(PHONE_VERIFICATION_LOG_TAG, "Unknown error", ex);
+            showAlertDialog(R.string.fui_error_unknown, null);
         }
     }
 
@@ -312,8 +312,9 @@ public class PhoneActivity extends AppCompatBase {
         }
     }
 
-    private void showAlertDialog(@NonNull String s, DialogInterface.OnClickListener
-            onClickListener) {
+    private void showAlertDialog(@StringRes int messageId,
+                                 DialogInterface.OnClickListener onClickListener) {
+        String s = getString(messageId);
         mAlertDialog = new AlertDialog.Builder(this)
                 .setMessage(s)
                 .setPositiveButton(R.string.fui_incorrect_code_dialog_positive_button_text, onClickListener)
@@ -348,8 +349,7 @@ public class PhoneActivity extends AppCompatBase {
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            finish(RESULT_CANCELED, IdpResponse.getErrorCodeIntent(
-                                                    ErrorCodes.UNKNOWN_ERROR));
+                                            finish(RESULT_CANCELED, IdpResponse.getErrorIntent(e));
                                         }
                                     });
                         }
@@ -405,7 +405,7 @@ public class PhoneActivity extends AppCompatBase {
                     switch (error) {
                         case ERROR_INVALID_VERIFICATION_CODE:
                             showAlertDialog(
-                                    getString(R.string.fui_incorrect_code_dialog_body),
+                                    R.string.fui_incorrect_code_dialog_body,
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -416,7 +416,7 @@ public class PhoneActivity extends AppCompatBase {
                             break;
                         case ERROR_SESSION_EXPIRED:
                             showAlertDialog(
-                                    getString(R.string.fui_error_session_expired),
+                                    R.string.fui_error_session_expired,
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
@@ -427,10 +427,10 @@ public class PhoneActivity extends AppCompatBase {
                             break;
                         default:
                             Log.w(PHONE_VERIFICATION_LOG_TAG, error.getDescription(), e);
-                            showAlertDialog(error.getDescription(), null);
+                            showAlertDialog(R.string.fui_error_unknown, null);
                     }
                 } else {
-                    showAlertDialog(e.getLocalizedMessage(), null);
+                    showAlertDialog(R.string.fui_error_unknown, null);
                 }
             }
         });
