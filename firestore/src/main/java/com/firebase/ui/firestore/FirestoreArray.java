@@ -91,7 +91,7 @@ public class FirestoreArray<T> extends ObservableSnapshotArray<T>
             }
         }
 
-        if (!changes.isEmpty()) { notifyOnDataChanged(); }
+        notifyOnDataChanged();
     }
 
     private void onDocumentAdded(DocumentChange change) {
