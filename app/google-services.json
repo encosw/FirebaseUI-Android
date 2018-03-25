@@ -134,6 +134,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "529266483286-58ron2v0v2bsi2b92147ukh4mitvdlge.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.supercilex.test",
+            "certificate_hash": "2cdf9fd1a30d1e0148345d91520bd88a5a0745c3"
+          }
+        },
+        {
           "client_id": "529266483286-tmk00dnjnsbqo0j6ha30rmul2u3aqppf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
