@@ -29,7 +29,7 @@
     Your GitHub Client ID. To use GitHub accounts with the demo application, register an
     application with GitHub and provide the following two values.
     -->
-    <string name="github_client_id" translatable="false">a10c87f4aacc7e5ab05a</string>
+    <!--<string name="github_client_id" translatable="false">a10c87f4aacc7e5ab05a</string>-->
 
     <!--
     Your GitHub Client Secret.
@@ -38,5 +38,5 @@
     operations as your app. Embedding the Client ID and Client Secret in your app, no matter
     how obfuscated, makes it vulnerable to being stolen.
     -->
-    <string name="github_client_secret" translatable="false">583b444835198b8e025062eda2031f89ed62ed07</string>
+    <!--<string name="github_client_secret" translatable="false">583b444835198b8e025062eda2031f89ed62ed07</string>-->
 </resources>
