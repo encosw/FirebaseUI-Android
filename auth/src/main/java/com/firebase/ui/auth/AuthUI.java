@@ -283,9 +283,6 @@ public class AuthUI {
         if (mAuth.getCurrentUser() != null) {
             throw new IllegalArgumentException("User already signed in!");
         }
-        if (desiredConfigs.isEmpty()) {
-            throw new IllegalArgumentException("At least one provider must be specified.");
-        }
 
         List<IdpConfig> configs = new ArrayList<>();
         for (IdpConfig config : desiredConfigs) {
@@ -294,6 +291,11 @@ public class AuthUI {
                     || provider.equals(GoogleAuthProvider.PROVIDER_ID)) {
                 configs.add(config);
             }
+        }
+
+        if (configs.isEmpty()) {
+            throw new IllegalArgumentException("No supported providers were supplied. " +
+                    "Add either Google or email support.");
         }
 
         final Context appContext = context.getApplicationContext();
@@ -317,6 +319,10 @@ public class AuthUI {
         final GoogleSignInOptions finalGoogleOptions = googleOptions;
         return GoogleApiUtils.getCredentialsClient(context)
                 .request(new CredentialRequest.Builder()
+                        // We can support both email and Google at the same time here because they
+                        // are mutually exclusive. If a user signs in with Google, their email
+                        // account will automatically be upgraded (a.k.a. replaced) with the Google
+                        // one, meaning Smart Lock won't have to show the picker UI.
                         .setPasswordLoginSupported(email != null)
                         .setAccountTypes(google == null ? null :
                                 ProviderUtils.providerIdToAccountType(GoogleAuthProvider.PROVIDER_ID))

@@ -42,9 +42,7 @@ import com.google.android.gms.common.Scopes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,17 +173,8 @@ public class AuthUiActivity extends AppCompatActivity {
 
     @OnClick(R.id.sign_in_silent)
     public void silentSignIn(View view) {
-        List<IdpConfig> providers = new ArrayList<>();
-        for (IdpConfig config : getSelectedProviders()) {
-            String provider = config.getProviderId();
-            if (provider.equals(EmailAuthProvider.PROVIDER_ID)
-                    || provider.equals(GoogleAuthProvider.PROVIDER_ID)) {
-                providers.add(config);
-            }
-        }
-
-        AuthUI.getInstance().silentSignIn(this, providers)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+        AuthUI.getInstance().silentSignIn(this, getSelectedProviders())
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
