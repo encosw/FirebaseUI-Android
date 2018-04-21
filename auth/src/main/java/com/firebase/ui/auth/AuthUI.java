@@ -284,23 +284,9 @@ public class AuthUI {
      */
     @NonNull
     public Task<AuthResult> silentSignIn(@NonNull Context context,
-                                         @NonNull List<IdpConfig> desiredConfigs) {
+                                         @NonNull List<IdpConfig> configs) {
         if (mAuth.getCurrentUser() != null) {
             throw new IllegalArgumentException("User already signed in!");
-        }
-
-        List<IdpConfig> configs = new ArrayList<>();
-        for (IdpConfig config : desiredConfigs) {
-            String provider = config.getProviderId();
-            if (provider.equals(EmailAuthProvider.PROVIDER_ID)
-                    || provider.equals(GoogleAuthProvider.PROVIDER_ID)) {
-                configs.add(config);
-            }
-        }
-
-        if (configs.isEmpty()) {
-            throw new IllegalArgumentException("No supported providers were supplied. " +
-                    "Add either Google or email support.");
         }
 
         final Context appContext = context.getApplicationContext();
@@ -309,8 +295,15 @@ public class AuthUI {
         final IdpConfig email =
                 ProviderUtils.getConfigFromIdps(configs, EmailAuthProvider.PROVIDER_ID);
 
-        GoogleSignInOptions googleOptions = null;
-        if (google != null) {
+        if (google == null && email == null) {
+            throw new IllegalArgumentException("No supported providers were supplied. " +
+                    "Add either Google or email support.");
+        }
+
+        final GoogleSignInOptions googleOptions;
+        if (google == null) {
+            googleOptions = null;
+        } else {
             GoogleSignInAccount last = GoogleSignIn.getLastSignedInAccount(appContext);
             if (last != null && last.getIdToken() != null) {
                 return mAuth.signInWithCredential(GoogleAuthProvider.getCredential(
@@ -321,7 +314,6 @@ public class AuthUI {
                     .getParcelable(ExtraConstants.GOOGLE_SIGN_IN_OPTIONS);
         }
 
-        final GoogleSignInOptions finalGoogleOptions = googleOptions;
         return GoogleApiUtils.getCredentialsClient(context)
                 .request(new CredentialRequest.Builder()
                         // We can support both email and Google at the same time here because they
@@ -341,7 +333,7 @@ public class AuthUI {
 
                         if (TextUtils.isEmpty(password)) {
                             return GoogleSignIn.getClient(appContext,
-                                    new GoogleSignInOptions.Builder(finalGoogleOptions)
+                                    new GoogleSignInOptions.Builder(googleOptions)
                                             .setAccountName(email)
                                             .build())
                                     .silentSignIn()
