@@ -25,6 +25,7 @@ import android.support.annotation.StyleRes;
 import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.util.ExtraConstants;
 import com.firebase.ui.auth.util.Preconditions;
+import com.firebase.ui.auth.util.accountlink.ManualMergeService;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +54,10 @@ public class FlowParameters implements Parcelable {
     @Nullable
     public final String privacyPolicyUrl;
 
+    public final boolean accountLinkingEnabled;
+    @Nullable
+    public final Class<? extends ManualMergeService> accountLinkingListener;
+
     public final boolean enableCredentials;
     public final boolean enableHints;
 
@@ -64,7 +69,9 @@ public class FlowParameters implements Parcelable {
             @Nullable String termsOfServiceUrl,
             @Nullable String privacyPolicyUrl,
             boolean enableCredentials,
-            boolean enableHints) {
+            boolean enableHints,
+            boolean accountLinkingEnabled,
+            @Nullable Class<? extends ManualMergeService> accountLinkingListener) {
         this.appName = Preconditions.checkNotNull(appName, "appName cannot be null");
         this.providerInfo = Collections.unmodifiableList(
                 Preconditions.checkNotNull(providerInfo, "providerInfo cannot be null"));
@@ -74,6 +81,8 @@ public class FlowParameters implements Parcelable {
         this.privacyPolicyUrl = privacyPolicyUrl;
         this.enableCredentials = enableCredentials;
         this.enableHints = enableHints;
+        this.accountLinkingEnabled = accountLinkingEnabled;
+        this.accountLinkingListener = accountLinkingListener;
     }
 
     /**
@@ -93,6 +102,8 @@ public class FlowParameters implements Parcelable {
         dest.writeString(privacyPolicyUrl);
         dest.writeInt(enableCredentials ? 1 : 0);
         dest.writeInt(enableHints ? 1 : 0);
+        dest.writeInt(accountLinkingEnabled ? 1 : 0);
+        dest.writeSerializable(accountLinkingListener);
     }
 
     @Override
@@ -111,6 +122,10 @@ public class FlowParameters implements Parcelable {
             String privacyPolicyUrl = in.readString();
             boolean enableCredentials = in.readInt() != 0;
             boolean enableHints = in.readInt() != 0;
+            boolean accountLinkingEnabled = in.readInt() != 0;
+            Class<? extends ManualMergeService> accountLinkingListener =
+                    (Class<? extends ManualMergeService>) in.readSerializable();
+
 
             return new FlowParameters(
                     appName,
@@ -120,7 +135,9 @@ public class FlowParameters implements Parcelable {
                     termsOfServiceUrl,
                     privacyPolicyUrl,
                     enableCredentials,
-                    enableHints);
+                    enableHints,
+                    accountLinkingEnabled,
+                    accountLinkingListener);
         }
 
         @Override

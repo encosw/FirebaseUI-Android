@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 @Implements(AuthHelper.class)
 public class AuthHelperShadow {
 
+    public static Boolean sCanLinkAccounts = true;
+
     private static FirebaseAuth sFirebaseAuth;
     private static FirebaseUser sFirebaseUser;
     private static PhoneAuthProvider sPhoneAuthProvider;
@@ -37,6 +39,16 @@ public class AuthHelperShadow {
         }
 
         return sFirebaseUser;
+    }
+
+    @Implementation
+    public static boolean canLinkAccounts() {
+        return sCanLinkAccounts;
+    }
+
+    @Implementation
+    public static String getUidForAccountLinking() {
+        return TestConstants.UID;
     }
 
     @Implementation

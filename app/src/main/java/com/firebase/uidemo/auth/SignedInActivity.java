@@ -57,6 +57,8 @@ import butterknife.OnClick;
 public class SignedInActivity extends AppCompatActivity {
     private static final String TAG = "SignedInActivity";
 
+    private static final int RC_LINK_ACCOUNT = 4433;
+
     @BindView(android.R.id.content) View mRootView;
 
     @BindView(R.id.user_profile_picture) ImageView mUserProfilePicture;
@@ -76,7 +78,7 @@ public class SignedInActivity extends AppCompatActivity {
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
-            startActivity(AuthUiActivity.createIntent(this));
+            startActivity(AuthUiActivity.createIntent(this, false));
             finish();
             return;
         }
@@ -87,6 +89,15 @@ public class SignedInActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         populateProfile();
         populateIdpToken(response);
+        populatePrevUid(response);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_LINK_ACCOUNT && resultCode == RESULT_OK) {
+            finish();
+        }
     }
 
     @OnClick(R.id.sign_out)
@@ -97,7 +108,7 @@ public class SignedInActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this));
+                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this, false));
                             finish();
                         } else {
                             Log.w(TAG, "signOut:failure", task.getException());
@@ -105,6 +116,11 @@ public class SignedInActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    @OnClick(R.id.link_account)
+    public void linkAccount() {
+        startActivityForResult(AuthUiActivity.createIntent(this, true), RC_LINK_ACCOUNT);
     }
 
     @OnClick(R.id.delete_account)
@@ -117,7 +133,7 @@ public class SignedInActivity extends AppCompatActivity {
                         deleteAccount();
                     }
                 })
-                .setNegativeButton("No", null)
+                .setNegativeButton(android.R.string.no, null)
                 .show();
     }
 
@@ -128,7 +144,7 @@ public class SignedInActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this));
+                            startActivity(AuthUiActivity.createIntent(SignedInActivity.this, false));
                             finish();
                         } else {
                             showSnackbar(R.string.delete_account_failed);
@@ -209,6 +225,16 @@ public class SignedInActivity extends AppCompatActivity {
         } else {
             idpSecretLayout.setVisibility(View.VISIBLE);
             ((TextView) findViewById(R.id.idp_secret)).setText(secret);
+        }
+    }
+
+    private void populatePrevUid(IdpResponse response) {
+        String prevUid = response == null ? null : response.getPrevUid();
+
+        if (prevUid == null) {
+            findViewById(R.id.prev_uid_layout).setVisibility(View.GONE);
+        } else {
+            ((TextView) findViewById(R.id.prev_uid)).setText(prevUid);
         }
     }
 

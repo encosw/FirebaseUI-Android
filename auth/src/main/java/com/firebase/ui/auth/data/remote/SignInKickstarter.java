@@ -19,6 +19,7 @@ import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.ui.idp.SingleSignInActivity;
 import com.firebase.ui.auth.ui.phone.PhoneActivity;
 import com.firebase.ui.auth.util.GoogleApiUtils;
+import com.firebase.ui.auth.util.accountlink.ManualMergeUtils;
 import com.firebase.ui.auth.util.data.ProviderUtils;
 import com.firebase.ui.auth.viewmodel.AuthViewModelBase;
 import com.firebase.ui.auth.viewmodel.RequestCodes;
@@ -43,6 +44,7 @@ import com.google.firebase.auth.TwitterAuthProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public class SignInKickstarter extends AuthViewModelBase<IdpResponse> {
     public SignInKickstarter(Application application) {
@@ -178,8 +180,8 @@ public class SignInKickstarter extends AuthViewModelBase<IdpResponse> {
     }
 
     private void handleCredential(final Credential credential) {
-        String id = credential.getId();
-        String password = credential.getPassword();
+        final String id = credential.getId();
+        final String password = credential.getPassword();
         if (TextUtils.isEmpty(password)) {
             String identity = credential.getAccountType();
             if (identity == null) {
@@ -189,11 +191,24 @@ public class SignInKickstarter extends AuthViewModelBase<IdpResponse> {
                         ProviderUtils.accountTypeToProviderId(credential.getAccountType()), id);
             }
         } else {
-            final IdpResponse response = new IdpResponse.Builder(
-                    new User.Builder(EmailAuthProvider.PROVIDER_ID, id).build()).build();
+            // Because we are being called from Smart Lock,
+            // we can assume that the account already exists and a user collision exception will be
+            // thrown so we don't bother with linking credentials
+            final IdpResponse response =
+                    new IdpResponse.Builder(new User.Builder(EmailAuthProvider.PROVIDER_ID, id)
+                            .setPrevUid(getUidForAccountLinking())
+                            .build()).build();
 
             setResult(Resource.<IdpResponse>forLoading());
-            getAuth().signInWithEmailAndPassword(id, password)
+            ManualMergeUtils.injectSignInTaskBetweenDataTransfer(getApplication(),
+                    response,
+                    getArguments(),
+                    new Callable<Task<AuthResult>>() {
+                        @Override
+                        public Task<AuthResult> call() {
+                            return getAuth().signInWithEmailAndPassword(id, password);
+                        }
+                    })
                     .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
                         @Override
                         public void onSuccess(AuthResult result) {

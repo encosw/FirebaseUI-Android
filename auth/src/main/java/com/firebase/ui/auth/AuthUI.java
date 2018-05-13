@@ -37,6 +37,7 @@ import com.firebase.ui.auth.util.CredentialUtils;
 import com.firebase.ui.auth.util.ExtraConstants;
 import com.firebase.ui.auth.util.GoogleApiUtils;
 import com.firebase.ui.auth.util.Preconditions;
+import com.firebase.ui.auth.util.accountlink.ManualMergeService;
 import com.firebase.ui.auth.util.data.PhoneNumberUtils;
 import com.firebase.ui.auth.util.data.ProviderAvailability;
 import com.firebase.ui.auth.util.data.ProviderUtils;
@@ -889,8 +890,23 @@ public final class AuthUI {
      * Builder for the intent to start the user authentication flow.
      */
     public final class SignInIntentBuilder extends AuthIntentBuilder<SignInIntentBuilder> {
+        private boolean mIsAccountLinkingEnabled = false;
+        private Class<? extends ManualMergeService> mAccountLinkingListener;
+
         private SignInIntentBuilder() {
             super();
+        }
+
+        /**
+         * Links the current user to an account created in the sign-in flow.
+         * <p>
+         * Linking is disabled by default because of a <a href="https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#handling-account-link-failures">caveat</a>.
+         */
+        public SignInIntentBuilder setIsAccountLinkingEnabled(boolean enabled,
+                                                              @Nullable Class<? extends ManualMergeService> listener) {
+            mIsAccountLinkingEnabled = enabled;
+            mAccountLinkingListener = listener;
+            return this;
         }
 
         @Override
@@ -903,7 +919,9 @@ public final class AuthUI {
                     mTosUrl,
                     mPrivacyPolicyUrl,
                     mEnableCredentials,
-                    mEnableHints);
+                    mEnableHints,
+                    mIsAccountLinkingEnabled,
+                    mAccountLinkingListener);
         }
     }
 }

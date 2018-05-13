@@ -153,7 +153,8 @@ public class WelcomeBackPasswordPrompt extends AppCompatBase
         }
 
         AuthCredential authCredential = ProviderUtils.getAuthCredential(mIdpResponse);
-        mHandler.startSignIn(mIdpResponse.getEmail(), password, mIdpResponse, authCredential);
+        mHandler.startSignIn(mIdpResponse.getEmail(), password, mIdpResponse, authCredential,
+                getAuthHelper().getUidForAccountLinking());
     }
 
     @Override
