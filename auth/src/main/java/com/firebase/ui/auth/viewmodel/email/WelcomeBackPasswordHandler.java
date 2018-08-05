@@ -11,7 +11,7 @@ import com.firebase.ui.auth.data.model.User;
 import com.firebase.ui.auth.data.remote.ProfileMerger;
 import com.firebase.ui.auth.util.accountlink.ManualMergeUtils;
 import com.firebase.ui.auth.util.data.TaskFailureLogger;
-import com.firebase.ui.auth.viewmodel.AuthViewModelBase;
+import com.firebase.ui.auth.viewmodel.SignInViewModelBase;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
  * SmartLock.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class WelcomeBackPasswordHandler extends AuthViewModelBase<IdpResponse> {
+public class WelcomeBackPasswordHandler extends SignInViewModelBase {
     private static final String TAG = "WBPasswordHandler";
 
     private String mPendingPassword;
@@ -43,8 +43,7 @@ public class WelcomeBackPasswordHandler extends AuthViewModelBase<IdpResponse> {
     public void startSignIn(@NonNull final String email,
                             @NonNull final String password,
                             @NonNull final IdpResponse inputResponse,
-                            @Nullable final AuthCredential credential,
-                            @Nullable final String prevUid) {
+                            @Nullable final AuthCredential credential) {
         setResult(Resource.<IdpResponse>forLoading());
 
         // Store the password before signing in so it can be used for later credential building
@@ -56,7 +55,7 @@ public class WelcomeBackPasswordHandler extends AuthViewModelBase<IdpResponse> {
             // New credential for the email provider
             outputResponse = new IdpResponse.Builder(
                     new User.Builder(EmailAuthProvider.PROVIDER_ID, email)
-                            .setPrevUid(prevUid).build())
+                            .setPrevUid(getUidForAccountLinking()).build())
                     .build();
         } else {
             // New credential for an IDP (Phone or Social)
@@ -64,7 +63,7 @@ public class WelcomeBackPasswordHandler extends AuthViewModelBase<IdpResponse> {
                     .setToken(inputResponse.getIdpToken())
                     .setSecret(inputResponse.getIdpSecret())
                     .build();
-            outputResponse.getUser().setPrevUid(prevUid);
+            outputResponse.getUser().setPrevUid(getUidForAccountLinking());
         }
 
         // Kick off the flow including signing in, linking accounts, and saving with SmartLock
@@ -105,7 +104,7 @@ public class WelcomeBackPasswordHandler extends AuthViewModelBase<IdpResponse> {
                             return;
                         }
 
-                        setResult(Resource.forSuccess(outputResponse));
+                        handleSuccess(outputResponse, task.getResult());
                     }
                 })
                 .addOnFailureListener(
