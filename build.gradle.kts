@@ -42,7 +42,7 @@ allprojects {
         }
     }
 
-    if ((group as String).isNotEmpty() && name != "lint" && name != "internal") {
+    if (this != rootProject && name != "lint" && name != "internal") {
         configureAndroid()
         configureQuality()
 

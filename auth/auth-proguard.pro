@@ -21,4 +21,5 @@
 -dontwarn retrofit2.** # Also keeps Twitter at bay as long as they keep using Retrofit
 -dontwarn okhttp3.**
 -dontwarn okio.**
+-dontwarn com.google.gson.Gson$6
 -keepattributes Exceptions
