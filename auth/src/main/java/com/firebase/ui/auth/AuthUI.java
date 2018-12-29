@@ -661,7 +661,7 @@ public final class AuthUI {
              * Sets the country codes available in the country code selector for phone
              * authentication. Takes as input a List of both country isos and codes.
              * This is not to be called with
-             * {@link #setBlacklistedCountries(List<String>)}.
+             * {@link #setBlacklistedCountries(List)}.
              * If both are called, an exception will be thrown.
              * <p>
              * Inputting an e-164 country code (e.g. '+1') will include all countries with
@@ -697,7 +697,7 @@ public final class AuthUI {
              * Sets the countries to be removed from the country code selector for phone
              * authentication. Takes as input a List of both country isos and codes.
              * This is not to be called with
-             * {@link #setWhitelistedCountries(List<String>)}.
+             * {@link #setWhitelistedCountries(List)}.
              * If both are called, an exception will be thrown.
              * <p>
              * Inputting an e-164 country code (e.g. '+1') will include all countries with
@@ -979,6 +979,12 @@ public final class AuthUI {
             public GitHubBuilder() {
                 //noinspection deprecation taking a hit for the backcompat team
                 super(GithubAuthProvider.PROVIDER_ID);
+                if (!ProviderAvailability.IS_GITHUB_AVAILABLE) {
+                    throw new RuntimeException(
+                            "GitHub provider cannot be configured " +
+                                    "without dependency. Did you forget to add " +
+                                    "'com.firebaseui:firebase-ui-auth-github:VERSION' dependency?");
+                }
                 Preconditions.checkConfigured(getApplicationContext(),
                         "GitHub provider unconfigured. Make sure to add your client id and secret." +
                                 " See the docs for more info:" +

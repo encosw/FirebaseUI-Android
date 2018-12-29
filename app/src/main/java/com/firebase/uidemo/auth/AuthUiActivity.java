@@ -38,6 +38,7 @@ import com.firebase.ui.auth.AuthUI.IdpConfig;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.uidemo.R;
+import com.firebase.uidemo.util.ConfigurationUtils;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -105,7 +106,8 @@ public class AuthUiActivity extends AppCompatActivity {
     @BindView(R.id.allow_new_email_accounts) CheckBox mAllowNewEmailAccounts;
     @BindView(R.id.require_name) CheckBox mRequireName;
 
-    public static Intent createIntent(Context context, boolean overrideLoginChecks) {
+    @NonNull
+    public static Intent createIntent(@NonNull Context context, boolean overrideLoginChecks) {
         return new Intent(context, AuthUiActivity.class)
                 .putExtra(OVERRIDE_LOGIN_CHECKS_EXTRA, overrideLoginChecks);
     }
@@ -116,7 +118,7 @@ public class AuthUiActivity extends AppCompatActivity {
         setContentView(R.layout.auth_ui_layout);
         ButterKnife.bind(this);
 
-        if (isGoogleMisconfigured()) {
+        if (ConfigurationUtils.isGoogleMisconfigured(this)) {
             mUseGoogleProvider.setChecked(false);
             mUseGoogleProvider.setEnabled(false);
             mUseGoogleProvider.setText(R.string.google_label_missing_config);
@@ -131,7 +133,7 @@ public class AuthUiActivity extends AppCompatActivity {
             });
         }
 
-        if (isFacebookMisconfigured()) {
+        if (ConfigurationUtils.isFacebookMisconfigured(this)) {
             mUseFacebookProvider.setChecked(false);
             mUseFacebookProvider.setEnabled(false);
             mUseFacebookProvider.setText(R.string.facebook_label_missing_config);
@@ -146,13 +148,13 @@ public class AuthUiActivity extends AppCompatActivity {
             });
         }
 
-        if (isTwitterMisconfigured()) {
+        if (ConfigurationUtils.isTwitterMisconfigured(this)) {
             mUseTwitterProvider.setChecked(false);
             mUseTwitterProvider.setEnabled(false);
             mUseTwitterProvider.setText(R.string.twitter_label_missing_config);
         }
 
-        if (isGitHubMisconfigured()) {
+        if (ConfigurationUtils.isGitHubMisconfigured(this)) {
             mUseGitHubProvider.setChecked(false);
             mUseGitHubProvider.setEnabled(false);
             mUseGitHubProvider.setText(R.string.github_label_missing_config);
@@ -167,8 +169,10 @@ public class AuthUiActivity extends AppCompatActivity {
             });
         }
 
-        if (isGoogleMisconfigured() || isFacebookMisconfigured()
-                || isTwitterMisconfigured() || isGitHubMisconfigured()) {
+        if (ConfigurationUtils.isGoogleMisconfigured(this)
+                || ConfigurationUtils.isFacebookMisconfigured(this)
+                || ConfigurationUtils.isTwitterMisconfigured(this)
+                || ConfigurationUtils.isGitHubMisconfigured(this)) {
             showSnackbar(R.string.configuration_required);
         }
 
@@ -178,7 +182,7 @@ public class AuthUiActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.sign_in)
-    public void signIn(View view) {
+    public void signIn() {
         startActivityForResult(
                 AuthUI.getInstance().createSignInIntentBuilder()
                         .setTheme(getSelectedTheme())
@@ -194,7 +198,7 @@ public class AuthUiActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.sign_in_silent)
-    public void silentSignIn(View view) {
+    public void silentSignIn() {
         AuthUI.getInstance().silentSignIn(this, getSelectedProviders())
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -209,7 +213,7 @@ public class AuthUiActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
             handleSignInResponse(resultCode, data);
@@ -226,7 +230,7 @@ public class AuthUiActivity extends AppCompatActivity {
         }
     }
 
-    private void handleSignInResponse(int resultCode, Intent data) {
+    private void handleSignInResponse(int resultCode, @Nullable Intent data) {
         IdpResponse response = IdpResponse.fromResultIntent(data);
 
         // Successfully signed in
@@ -252,7 +256,7 @@ public class AuthUiActivity extends AppCompatActivity {
         }
     }
 
-    private void startSignedInActivity(IdpResponse response) {
+    private void startSignedInActivity(@Nullable IdpResponse response) {
         startActivity(SignedInActivity.createIntent(this, response));
     }
 
@@ -343,33 +347,6 @@ public class AuthUiActivity extends AppCompatActivity {
         }
 
         return FIREBASE_PRIVACY_POLICY_URL;
-    }
-
-    private boolean isGoogleMisconfigured() {
-        return AuthUI.UNCONFIGURED_CONFIG_VALUE.equals(getString(R.string.default_web_client_id));
-    }
-
-    private boolean isFacebookMisconfigured() {
-        return AuthUI.UNCONFIGURED_CONFIG_VALUE.equals(getString(R.string.facebook_application_id));
-    }
-
-    private boolean isTwitterMisconfigured() {
-        List<String> twitterConfigs = Arrays.asList(
-                getString(R.string.twitter_consumer_key),
-                getString(R.string.twitter_consumer_secret)
-        );
-
-        return twitterConfigs.contains(AuthUI.UNCONFIGURED_CONFIG_VALUE);
-    }
-
-    private boolean isGitHubMisconfigured() {
-        List<String> gitHubConfigs = Arrays.asList(
-                getString(R.string.firebase_web_host),
-                getString(R.string.github_client_id),
-                getString(R.string.github_client_secret)
-        );
-
-        return gitHubConfigs.contains(AuthUI.UNCONFIGURED_CONFIG_VALUE);
     }
 
     private void setGoogleScopesEnabled(boolean enabled) {

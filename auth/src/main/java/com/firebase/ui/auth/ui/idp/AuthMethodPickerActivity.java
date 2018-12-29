@@ -41,7 +41,7 @@ import com.firebase.ui.auth.data.model.UserCancellationException;
 import com.firebase.ui.auth.data.remote.AnonymousSignInHandler;
 import com.firebase.ui.auth.data.remote.EmailSignInHandler;
 import com.firebase.ui.auth.data.remote.FacebookSignInHandler;
-import com.firebase.ui.auth.data.remote.GitHubSignInHandler;
+import com.firebase.ui.auth.data.remote.GitHubSignInHandlerBridge;
 import com.firebase.ui.auth.data.remote.GoogleSignInHandler;
 import com.firebase.ui.auth.data.remote.PhoneSignInHandler;
 import com.firebase.ui.auth.data.remote.TwitterSignInHandler;
@@ -86,7 +86,7 @@ public class AuthMethodPickerActivity extends AppCompatBase {
         mHandler = ViewModelProviders.of(this).get(SocialProviderResponseHandler.class);
         mHandler.init(params);
 
-        populateIdpList(params.providerInfo, mHandler);
+        populateIdpList(params.providers, mHandler);
 
         int logoId = params.logoId;
         if (logoId == AuthUI.NO_LOGO) {
@@ -159,7 +159,8 @@ public class AuthMethodPickerActivity extends AppCompatBase {
                     buttonLayout = R.layout.fui_idp_button_twitter;
                     break;
                 case GithubAuthProvider.PROVIDER_ID:
-                    GitHubSignInHandler github = supplier.get(GitHubSignInHandler.class);
+                    ProviderSignInBase<IdpConfig> github =
+                            supplier.get(GitHubSignInHandlerBridge.HANDLER_CLASS);
                     github.init(idpConfig);
                     provider = github;
 
