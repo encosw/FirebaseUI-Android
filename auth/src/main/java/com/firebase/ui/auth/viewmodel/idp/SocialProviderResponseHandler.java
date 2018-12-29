@@ -52,9 +52,7 @@ public class SocialProviderResponseHandler extends SignInViewModelBase {
         AuthCredential credential = ProviderUtils.getAuthCredential(response);
         Task<AuthResult> signInTask;
         if (canLinkAccounts()) {
-            signInTask = getCurrentUser()
-                    .linkWithCredential(credential)
-                    .continueWithTask(new ProfileMerger(response));
+            signInTask = getCurrentUser().linkWithCredential(credential);
         } else {
             signInTask = getAuth().signInWithCredential(credential);
         }
@@ -139,11 +137,14 @@ public class SocialProviderResponseHandler extends SignInViewModelBase {
                 return;
             }
 
-            @AuthUI.SupportedProvider String provider = ProviderUtils.getLastUsedProvider(result);
-            if (provider == null) {
+            List<String> providers = ProviderUtils.getProvidersFromMethods(result, getArguments());
+            if (providers.isEmpty()) {
                 throw new IllegalStateException(
                         "No provider even though we received a FirebaseAuthUserCollisionException");
-            } else if (provider.equals(EmailAuthProvider.PROVIDER_ID)) {
+            }
+
+            @AuthUI.SupportedProvider String provider = providers.get(0);
+            if (provider.equals(EmailAuthProvider.PROVIDER_ID)) {
                 // Start email welcome back flow
                 setResult(Resource.<IdpResponse>forFailure(new IntentRequiredException(
                         WelcomeBackPasswordPrompt.createIntent(

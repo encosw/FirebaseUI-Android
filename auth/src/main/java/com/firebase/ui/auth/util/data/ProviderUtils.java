@@ -14,6 +14,7 @@
 
 package com.firebase.ui.auth.util.data;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
@@ -166,31 +167,7 @@ public final class ProviderUtils {
                 .continueWith(new Continuation<SignInMethodQueryResult, List<String>>() {
                     @Override
                     public List<String> then(@NonNull Task<SignInMethodQueryResult> task) {
-                        List<String> methods = task.getResult().getSignInMethods();
-                        if (methods == null) { methods = new ArrayList<>(); }
-
-                        List<String> allowedProviders = new ArrayList<>(params.providers.size());
-                        for (AuthUI.IdpConfig provider : params.providers) {
-                            allowedProviders.add(provider.getProviderId());
-                        }
-
-                        List<String> lastSignedInProviders = new ArrayList<>(methods.size());
-                        for (String method : methods) {
-                            String id = signInMethodToProviderId(method);
-                            if (allowedProviders.contains(id)) {
-                                lastSignedInProviders.add(0, id);
-                            }
-                        }
-
-                        // Reorder providers from most to least usable. Usability is determined by
-                        // how many steps a user needs to perform to log in.
-                        maximizePriority(lastSignedInProviders, GoogleAuthProvider.PROVIDER_ID);
-
-                        return lastSignedInProviders;
-                    }
-
-                    private void maximizePriority(List<String> providers, String id) {
-                        if (providers.remove(id)) { providers.add(0, id); }
+                        return getProvidersFromMethods(task.getResult(), params);
                     }
                 });
     }
@@ -213,5 +190,36 @@ public final class ProviderUtils {
                         }
                     }
                 });
+    }
+
+    @SuppressLint("LambdaLast")
+    public static List<String> getProvidersFromMethods(
+            @NonNull SignInMethodQueryResult query,
+            @NonNull FlowParameters params) {
+        List<String> methods = query.getSignInMethods();
+        if (methods == null) { methods = new ArrayList<>(); }
+
+        List<String> allowedProviders = new ArrayList<>(params.providers.size());
+        for (AuthUI.IdpConfig provider : params.providers) {
+            allowedProviders.add(provider.getProviderId());
+        }
+
+        List<String> lastSignedInProviders = new ArrayList<>(methods.size());
+        for (String method : methods) {
+            String id = signInMethodToProviderId(method);
+            if (allowedProviders.contains(id)) {
+                lastSignedInProviders.add(0, id);
+            }
+        }
+
+        // Reorder providers from most to least usable. Usability is determined by
+        // how many steps a user needs to perform to log in.
+        maximizePriority(lastSignedInProviders, GoogleAuthProvider.PROVIDER_ID);
+
+        return lastSignedInProviders;
+    }
+
+    private static void maximizePriority(List<String> providers, String id) {
+        if (providers.remove(id)) { providers.add(0, id); }
     }
 }
