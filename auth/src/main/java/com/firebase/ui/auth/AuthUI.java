@@ -31,6 +31,7 @@ import android.util.Log;
 
 import com.facebook.login.LoginManager;
 import com.firebase.ui.auth.data.model.FlowParameters;
+import com.firebase.ui.auth.data.remote.FacebookSignInHandler;
 import com.firebase.ui.auth.data.remote.TwitterSignInHandler;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
 import com.firebase.ui.auth.util.CredentialUtils;
@@ -395,6 +396,7 @@ public final class AuthUI {
 
     private Task<Void> signOutIdps(@NonNull Context context) {
         if (ProviderAvailability.IS_FACEBOOK_AVAILABLE) {
+            FacebookSignInHandler.initialize();
             LoginManager.getInstance().logOut();
         }
         if (ProviderAvailability.IS_TWITTER_AVAILABLE) {

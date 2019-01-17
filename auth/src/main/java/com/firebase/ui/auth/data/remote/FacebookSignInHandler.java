@@ -12,6 +12,7 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookRequestError;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.WebDialog;
@@ -45,9 +46,18 @@ public class FacebookSignInHandler extends ProviderSignInBase<AuthUI.IdpConfig> 
     private final FacebookCallback<LoginResult> mCallback = new Callback();
     private final CallbackManager mCallbackManager = CallbackManager.Factory.create();
 
+    static {
+        if (!FacebookSdk.isInitialized()) {
+            //noinspection deprecation
+            FacebookSdk.sdkInitialize(AuthUI.getApplicationContext());
+        }
+    }
+
     public FacebookSignInHandler(Application application) {
         super(application);
     }
+
+    public static void initialize() {}
 
     private static IdpResponse createIdpResponse(
             LoginResult result, @Nullable String email, String name, Uri photoUri) {
