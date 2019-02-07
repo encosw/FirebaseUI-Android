@@ -61,6 +61,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
     private PhoneNumberVerificationHandler mHandler;
     private String mPhoneNumber;
 
+    private View mExitButton;
     private ProgressBar mProgressBar;
     private TextView mPhoneTextView;
     private TextView mResendCodeTextView;
@@ -98,12 +99,20 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mExitButton = view.findViewById(R.id.exit_button);
         mProgressBar = view.findViewById(R.id.top_progress_bar);
         mPhoneTextView = view.findViewById(R.id.edit_phone_number);
         mCountDownTextView = view.findViewById(R.id.ticker);
         mResendCodeTextView = view.findViewById(R.id.resend_code);
         mConfirmationCodeEditText = view.findViewById(R.id.confirmation_code);
         mSubmitConfirmationButton = view.findViewById(R.id.submit_confirmation_code);
+
+        mExitButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                requireActivity().onBackPressed();
+            }
+        });
 
         requireActivity().setTitle(getString(R.string.fui_verify_your_phone_title));
         processCountdownTick();

@@ -40,6 +40,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
     private CheckPhoneHandler mCheckPhoneHandler;
     private boolean mCalled;
 
+    private View mExitButton;
     private ProgressBar mProgressBar;
     private Button mSubmitButton;
     private CountryListSpinner mCountryListSpinner;
@@ -75,12 +76,20 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mExitButton = view.findViewById(R.id.exit_button);
         mProgressBar = view.findViewById(R.id.top_progress_bar);
         mSubmitButton = view.findViewById(R.id.send_code);
         mCountryListSpinner = view.findViewById(R.id.country_list);
         mPhoneInputLayout = view.findViewById(R.id.phone_layout);
         mPhoneEditText = view.findViewById(R.id.phone_number);
         mSmsTermsText = view.findViewById(R.id.send_sms_tos);
+
+        mExitButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                requireActivity().onBackPressed();
+            }
+        });
 
         mSmsTermsText.setText(getString(R.string.fui_sms_terms_of_service,
                 getString(R.string.fui_verify_phone_number)));
