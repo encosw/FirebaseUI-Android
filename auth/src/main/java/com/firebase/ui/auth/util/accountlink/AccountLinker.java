@@ -164,9 +164,8 @@ public final class AccountLinker {
                         });
                     }
                 }
-            } else {
-                return task;
             }
+            return task;
         }
 
         private final class ExceptionWrapper implements Continuation<AuthResult, Task<AuthResult>> {
