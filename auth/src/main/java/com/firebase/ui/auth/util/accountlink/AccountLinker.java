@@ -108,53 +108,61 @@ public final class AccountLinker {
         @Override
         public Task<AuthResult> then(@NonNull final Task<AuthResult> task) {
             final Exception e = task.getException();
-            if (e instanceof FirebaseAuthUserCollisionException && mHandler.canLinkAccounts()) {
-                mIdpResponse.getUser()
-                        .setPrevUid(mHandler.getUidForAccountLinking());
+            if (e instanceof FirebaseAuthUserCollisionException) {
+                if (mHandler.shouldFailInsteadOfLoggingOver()) {
+                    return Tasks.forException(e);
+                }
 
-                // Since we still want the user to be able to sign in even though
-                // they have an existing account, we are going to save the uid of the
-                // current user, log them out, and then sign in with the new credential.
-                Task<AuthResult> signInTask = ManualMergeUtils.injectSignInTaskBetweenDataTransfer(
-                        mHandler.getApplication(),
-                        mIdpResponse,
-                        mHandler.getArguments(),
-                        new Callable<Task<AuthResult>>() {
+                if (mHandler.canLinkAccounts()) {
+                    mIdpResponse.getUser()
+                            .setPrevUid(mHandler.getUidForAccountLinking());
+
+                    // Since we still want the user to be able to sign in even though
+                    // they have an existing account, we are going to save the uid of the
+                    // current user, log them out, and then sign in with the new credential.
+                    Task<AuthResult> signInTask = ManualMergeUtils.injectSignInTaskBetweenDataTransfer(
+                            mHandler.getApplication(),
+                            mIdpResponse,
+                            mHandler.getArguments(),
+                            new Callable<Task<AuthResult>>() {
+                                @Override
+                                public Task<AuthResult> call() {
+                                    AuthCredential existingCred =
+                                            ((FirebaseAuthUserCollisionException) e)
+                                                    .getUpdatedCredential();
+                                    if (existingCred == null) {
+                                        existingCred = mExistingCredential;
+                                    }
+
+                                    return mHandler.getAuth()
+                                            .signInWithCredential(existingCred)
+                                            .continueWithTask(new ProfileMerger(mIdpResponse))
+                                            .continueWithTask(new ExceptionWrapper(task));
+                                }
+                            })
+                            .addOnFailureListener(
+                                    new TaskFailureLogger(TAG, "Error signing in with credential"));
+
+                    // Occurs when the user is logged and they are trying to sign in with an existing account.
+                    if (mNewCredential == null) {
+                        return signInTask;
+                    } else {
+                        // 3 way account linking!!!
+                        // Occurs if the user is logged, trying to sign in with a new provider,
+                        // and already has existing providers.
+                        return signInTask.continueWithTask(new Continuation<AuthResult, Task<AuthResult>>() {
                             @Override
-                            public Task<AuthResult> call() {
-                                AuthCredential existingCred =
-                                        ((FirebaseAuthUserCollisionException) e)
-                                                .getUpdatedCredential();
-                                if (existingCred == null) { existingCred = mExistingCredential; }
-
-                                return mHandler.getAuth()
-                                        .signInWithCredential(existingCred)
+                            public Task<AuthResult> then(@NonNull Task<AuthResult> task) {
+                                return mHandler.getCurrentUser()
+                                        .linkWithCredential(mNewCredential)
                                         .continueWithTask(new ProfileMerger(mIdpResponse))
-                                        .continueWithTask(new ExceptionWrapper(task));
+                                        .continueWithTask(new ExceptionWrapper(task))
+                                        .addOnFailureListener(
+                                                new TaskFailureLogger(TAG,
+                                                        "Error linking with credential"));
                             }
-                        })
-                        .addOnFailureListener(
-                                new TaskFailureLogger(TAG, "Error signing in with credential"));
-
-                // Occurs when the user is logged and they are trying to sign in with an existing account.
-                if (mNewCredential == null) {
-                    return signInTask;
-                } else {
-                    // 3 way account linking!!!
-                    // Occurs if the user is logged, trying to sign in with a new provider,
-                    // and already has existing providers.
-                    return signInTask.continueWithTask(new Continuation<AuthResult, Task<AuthResult>>() {
-                        @Override
-                        public Task<AuthResult> then(@NonNull Task<AuthResult> task) {
-                            return mHandler.getCurrentUser()
-                                    .linkWithCredential(mNewCredential)
-                                    .continueWithTask(new ProfileMerger(mIdpResponse))
-                                    .continueWithTask(new ExceptionWrapper(task))
-                                    .addOnFailureListener(
-                                            new TaskFailureLogger(TAG,
-                                                    "Error linking with credential"));
-                        }
-                    });
+                        });
+                    }
                 }
             } else {
                 return task;

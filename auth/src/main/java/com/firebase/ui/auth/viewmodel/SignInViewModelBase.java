@@ -24,6 +24,10 @@ public abstract class SignInViewModelBase extends AuthViewModelBase<IdpResponse>
         return getArguments().accountLinkingEnabled && getCurrentUser() != null;
     }
 
+    public boolean shouldFailInsteadOfLoggingOver() {
+        return getArguments().failInsteadOfLoggingOver && getCurrentUser() != null;
+    }
+
     @Nullable
     public String getUidForAccountLinking() {
         return canLinkAccounts() ? getCurrentUser().getUid() : null;

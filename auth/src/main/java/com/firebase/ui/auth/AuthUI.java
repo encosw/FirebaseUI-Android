@@ -1173,6 +1173,8 @@ public final class AuthUI {
         private boolean mIsAccountLinkingEnabled = false;
         private Class<? extends ManualMergeService> mAccountLinkingListener;
 
+        private boolean mFailInsteadOfLoggingOver = false;
+
         private SignInIntentBuilder() {
             super();
         }
@@ -1189,6 +1191,15 @@ public final class AuthUI {
             return this;
         }
 
+        /**
+         * Configures whether the sign-in fails if the user is already logged in to another account
+         * and linking is not enabled or not possible
+         */
+        public SignInIntentBuilder setFailInsteadOfLoggingOver(boolean failInsteadOfLoggingOver) {
+            mFailInsteadOfLoggingOver = failInsteadOfLoggingOver;
+            return this;
+        }
+
         @Override
         protected FlowParameters getFlowParams() {
             return new FlowParameters(
@@ -1201,6 +1212,7 @@ public final class AuthUI {
                     mEnableCredentials,
                     mEnableHints,
                     mIsAccountLinkingEnabled,
+                    mFailInsteadOfLoggingOver,
                     mAccountLinkingListener);
         }
     }
