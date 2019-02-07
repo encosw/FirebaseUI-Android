@@ -84,7 +84,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
         mPhoneEditText = view.findViewById(R.id.phone_number);
         mSmsTermsText = view.findViewById(R.id.send_sms_tos);
 
-        mExitButton.setOnClickListener(new OnClickListener() {
+        mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
                 requireActivity().onBackPressed();

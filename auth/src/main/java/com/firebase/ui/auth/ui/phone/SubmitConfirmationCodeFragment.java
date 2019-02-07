@@ -107,7 +107,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
         mConfirmationCodeEditText = view.findViewById(R.id.confirmation_code);
         mSubmitConfirmationButton = view.findViewById(R.id.submit_confirmation_code);
 
-        mExitButton.setOnClickListener(new OnClickListener() {
+        mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
                 requireActivity().onBackPressed();
