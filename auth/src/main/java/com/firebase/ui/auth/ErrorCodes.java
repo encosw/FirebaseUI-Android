@@ -15,20 +15,15 @@ public final class ErrorCodes {
      * Valid codes that can be returned from {@link FirebaseUiException#getErrorCode()}.
      */
     @IntDef({
-                    ACCOUNT_ALREADY_USED_ERROR,
                     UNKNOWN_ERROR,
                     NO_NETWORK,
                     PLAY_SERVICES_UPDATE_CANCELLED,
                     DEVELOPER_ERROR,
-                    PROVIDER_ERROR
+                    PROVIDER_ERROR,
+                    ACCOUNT_ALREADY_USED_ERROR
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Code {}
-
-    /**
-     * Account linking could not be completed. Only used when failInsteadOfLoggingOver is set.
-     */
-    public static final int ACCOUNT_ALREADY_USED_ERROR = 999;
 
     /**
      * An unknown error has occurred.
@@ -55,6 +50,11 @@ public final class ErrorCodes {
      */
     public static final int PROVIDER_ERROR = 4;
 
+    /**
+     * Account linking could not be completed. Only used when failInsteadOfLoggingOver is set.
+     */
+    public static final int ACCOUNT_ALREADY_USED_ERROR = 5;
+
     private ErrorCodes() {
         throw new AssertionError("No instance for you!");
     }
@@ -63,8 +63,6 @@ public final class ErrorCodes {
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static String toFriendlyMessage(@Code int code) {
         switch (code) {
-            case ACCOUNT_ALREADY_USED_ERROR:
-                return "Account is already in use";
             case UNKNOWN_ERROR:
                 return "Unknown error";
             case NO_NETWORK:
@@ -75,6 +73,8 @@ public final class ErrorCodes {
                 return "Developer error";
             case PROVIDER_ERROR:
                 return "Provider error";
+            case ACCOUNT_ALREADY_USED_ERROR:
+                return "Account is already in use";
             default:
                 throw new IllegalArgumentException("Unknown code: " + code);
         }
