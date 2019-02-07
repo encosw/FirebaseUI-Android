@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -40,7 +41,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
     private CheckPhoneHandler mCheckPhoneHandler;
     private boolean mCalled;
 
-    private View mExitButton;
+    private ImageButton mExitButton;
     private ProgressBar mProgressBar;
     private Button mSubmitButton;
     private CountryListSpinner mCountryListSpinner;

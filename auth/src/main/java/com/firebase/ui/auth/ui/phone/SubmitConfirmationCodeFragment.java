@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -61,7 +62,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
     private PhoneNumberVerificationHandler mHandler;
     private String mPhoneNumber;
 
-    private View mExitButton;
+    private ImageButton mExitButton;
     private ProgressBar mProgressBar;
     private TextView mPhoneTextView;
     private TextView mResendCodeTextView;
