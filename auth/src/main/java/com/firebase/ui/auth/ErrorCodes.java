@@ -15,6 +15,7 @@ public final class ErrorCodes {
      * Valid codes that can be returned from {@link FirebaseUiException#getErrorCode()}.
      */
     @IntDef({
+                    ACCOUNT_ALREADY_USED_ERROR,
                     UNKNOWN_ERROR,
                     NO_NETWORK,
                     PLAY_SERVICES_UPDATE_CANCELLED,
@@ -23,6 +24,11 @@ public final class ErrorCodes {
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Code {}
+
+    /**
+     * Account linking could not be completed. Only used when failInsteadOfLoggingOver is set.
+     */
+    public static final int ACCOUNT_ALREADY_USED_ERROR = 999;
 
     /**
      * An unknown error has occurred.
@@ -57,6 +63,8 @@ public final class ErrorCodes {
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     public static String toFriendlyMessage(@Code int code) {
         switch (code) {
+            case ACCOUNT_ALREADY_USED_ERROR:
+                return "Account is already in use";
             case UNKNOWN_ERROR:
                 return "Unknown error";
             case NO_NETWORK:

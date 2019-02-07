@@ -14,6 +14,7 @@
 
 package com.firebase.ui.auth.ui.phone;
 
+import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import android.support.annotation.RestrictTo;
 import android.support.design.widget.TextInputLayout;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.data.model.FlowParameters;
@@ -36,6 +38,7 @@ import com.firebase.ui.auth.util.FirebaseAuthError;
 import com.firebase.ui.auth.viewmodel.ResourceObserver;
 import com.firebase.ui.auth.viewmodel.phone.PhoneProviderResponseHandler;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.PhoneAuthProvider;
 
 /**
@@ -137,6 +140,12 @@ public class PhoneActivity extends AppCompatBase {
     }
 
     private void handleError(@Nullable Exception e) {
+        if (e instanceof FirebaseAuthUserCollisionException &&
+                ViewModelProviders.of(this).get(PhoneProviderResponseHandler.class).shouldFailInsteadOfLoggingOver()) {
+            finish(RESULT_CANCELED, IdpResponse.getErrorIntent(new FirebaseUiException(
+                    ErrorCodes.ACCOUNT_ALREADY_USED_ERROR, e)));
+        }
+
         TextInputLayout errorView = getErrorView();
         if (errorView == null) { return; }
 
