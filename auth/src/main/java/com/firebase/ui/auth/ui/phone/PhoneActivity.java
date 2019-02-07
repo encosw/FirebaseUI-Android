@@ -26,6 +26,7 @@ import android.support.design.widget.TextInputLayout;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.ErrorCodes;
+import com.firebase.ui.auth.FirebaseUiException;
 import com.firebase.ui.auth.IdpResponse;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.data.model.FlowParameters;
