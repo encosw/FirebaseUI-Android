@@ -144,7 +144,7 @@ public class PhoneActivity extends AppCompatBase {
         if (e instanceof FirebaseAuthUserCollisionException &&
                 ViewModelProviders.of(this).get(PhoneProviderResponseHandler.class).shouldFailInsteadOfLoggingOver()) {
             finish(RESULT_CANCELED, IdpResponse.getErrorIntent(new FirebaseUiException(
-                    ErrorCodes.ACCOUNT_ALREADY_USED_ERROR, e)));
+                    ErrorCodes.ACCOUNT_ALREADY_USED_ERROR, e.getMessage())));
         }
 
         TextInputLayout errorView = getErrorView();
