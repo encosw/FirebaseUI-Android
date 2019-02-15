@@ -115,7 +115,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
             public void onClick(final View v) {
                 final Action action = AuthUI.getInstance().getPhoneConfirmationExitAction();
                 if (action != null) {
-                    action.doAction(getContext());
+                    action.doAction(getActivity());
                 }
             }
         });
@@ -137,7 +137,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
         super.onResume();
         final Action action = AuthUI.getInstance().getPhoneConfirmationResumeAction();
         if (action != null) {
-            action.doAction(getContext());
+            action.doAction(getActivity());
         }
     }
 

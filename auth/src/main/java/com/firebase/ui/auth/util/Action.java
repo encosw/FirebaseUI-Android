@@ -1,7 +1,7 @@
 package com.firebase.ui.auth.util;
 
-import android.content.Context;
+import android.app.Activity;
 
 public interface Action {
-    void doAction(Context context);
+    void doAction(Activity activity);
 }

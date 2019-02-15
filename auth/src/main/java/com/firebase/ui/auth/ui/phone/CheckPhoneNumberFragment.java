@@ -92,7 +92,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
             public void onClick(final View v) {
                 final Action action = AuthUI.getInstance().getPhoneNumberExitAction();
                 if (action != null) {
-                    action.doAction(getContext());
+                    action.doAction(getActivity());
                 }
             }
         });
@@ -120,7 +120,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
         super.onResume();
         final Action action = AuthUI.getInstance().getPhoneNumberResumeAction();
         if (action != null) {
-            action.doAction(getContext());
+            action.doAction(getActivity());
         }
     }
 
