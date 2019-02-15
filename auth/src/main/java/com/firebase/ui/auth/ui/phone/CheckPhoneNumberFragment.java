@@ -90,7 +90,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
         mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                final Action action = AuthUI.getPhoneNumberExitAction();
+                final Action action = AuthUI.getInstance().getPhoneNumberExitAction();
                 if (action != null) {
                     action.doAction(getContext());
                 }
@@ -118,7 +118,7 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
     @Override
     public void onResume() {
         super.onResume();
-        final Action action = AuthUI.getPhoneNumberResumeAction();
+        final Action action = AuthUI.getInstance().getPhoneNumberResumeAction();
         if (action != null) {
             action.doAction(getContext());
         }

@@ -212,30 +212,6 @@ public final class AuthUI {
         return authUi;
     }
 
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    @Nullable
-    public static Action getPhoneNumberResumeAction() {
-        return mPhoneNumberResumeAction;
-    }
-
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    @Nullable
-    public static Action getPhoneConfirmationResumeAction() {
-        return mPhoneConfirmationResumeAction;
-    }
-
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    @Nullable
-    public static Action getPhoneNumberExitAction() {
-        return mPhoneNumberExitAction;
-    }
-
-    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    @Nullable
-    public static Action getPhoneConfirmationExitAction() {
-        return mPhoneConfirmationExitAction;
-    }
-
     /**
      * Default theme used by {@link SignInIntentBuilder#setTheme(int)} if no theme customization is
      * required.
@@ -243,6 +219,30 @@ public final class AuthUI {
     @StyleRes
     public static int getDefaultTheme() {
         return R.style.FirebaseUI;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public Action getPhoneNumberResumeAction() {
+        return mPhoneNumberResumeAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public Action getPhoneConfirmationResumeAction() {
+        return mPhoneConfirmationResumeAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public Action getPhoneNumberExitAction() {
+        return mPhoneNumberExitAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public Action getPhoneConfirmationExitAction() {
+        return mPhoneConfirmationExitAction;
     }
 
     /**

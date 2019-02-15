@@ -113,7 +113,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
         mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                final Action action = AuthUI.getPhoneConfirmationExitAction();
+                final Action action = AuthUI.getInstance().getPhoneConfirmationExitAction();
                 if (action != null) {
                     action.doAction(getContext());
                 }
@@ -135,7 +135,7 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
     @Override
     public void onResume() {
         super.onResume();
-        final Action action = AuthUI.getPhoneConfirmationResumeAction();
+        final Action action = AuthUI.getInstance().getPhoneConfirmationResumeAction();
         if (action != null) {
             action.doAction(getContext());
         }
