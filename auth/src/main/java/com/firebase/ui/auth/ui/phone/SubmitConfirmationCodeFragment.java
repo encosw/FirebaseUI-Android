@@ -30,8 +30,10 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.ui.FragmentBase;
+import com.firebase.ui.auth.util.Action;
 import com.firebase.ui.auth.util.ExtraConstants;
 import com.firebase.ui.auth.util.data.PrivacyDisclosureUtils;
 import com.firebase.ui.auth.util.ui.BucketedTextChangeListener;
@@ -111,7 +113,10 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
         mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                requireActivity().onBackPressed();
+                final Action action = AuthUI.getPhoneConfirmationExitAction();
+                if (action != null) {
+                    action.doAction(getContext());
+                }
             }
         });
 
@@ -125,6 +130,15 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
                 requireContext(),
                 getFlowParams(),
                 view.<TextView>findViewById(R.id.email_footer_tos_and_pp_text));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        final Action action = AuthUI.getPhoneConfirmationResumeAction();
+        if (action != null) {
+            action.doAction(getContext());
+        }
     }
 
     @Override

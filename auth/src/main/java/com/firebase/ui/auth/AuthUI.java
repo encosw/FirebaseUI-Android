@@ -34,6 +34,7 @@ import com.firebase.ui.auth.data.model.FlowParameters;
 import com.firebase.ui.auth.data.remote.FacebookSignInHandler;
 import com.firebase.ui.auth.data.remote.TwitterSignInHandler;
 import com.firebase.ui.auth.ui.idp.AuthMethodPickerActivity;
+import com.firebase.ui.auth.util.Action;
 import com.firebase.ui.auth.util.CredentialUtils;
 import com.firebase.ui.auth.util.ExtraConstants;
 import com.firebase.ui.auth.util.GoogleApiUtils;
@@ -155,6 +156,11 @@ public final class AuthUI {
     private final FirebaseApp mApp;
     private final FirebaseAuth mAuth;
 
+    private Action mPhoneNumberResumeAction = null;
+    private Action mPhoneConfirmationResumeAction = null;
+    private Action mPhoneNumberExitAction = null;
+    private Action mPhoneConfirmationExitAction = null;
+
     private AuthUI(FirebaseApp app) {
         mApp = app;
         mAuth = FirebaseAuth.getInstance(mApp);
@@ -204,6 +210,30 @@ public final class AuthUI {
             }
         }
         return authUi;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public static Action getPhoneNumberResumeAction() {
+        return mPhoneNumberResumeAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public static Action getPhoneConfirmationResumeAction() {
+        return mPhoneConfirmationResumeAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public static Action getPhoneNumberExitAction() {
+        return mPhoneNumberExitAction;
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @Nullable
+    public static Action getPhoneConfirmationExitAction() {
+        return mPhoneConfirmationExitAction;
     }
 
     /**
@@ -1197,6 +1227,38 @@ public final class AuthUI {
          */
         public SignInIntentBuilder setFailInsteadOfLoggingOver(boolean failInsteadOfLoggingOver) {
             mFailInsteadOfLoggingOver = failInsteadOfLoggingOver;
+            return this;
+        }
+
+        /**
+         * Sets an action to be performed when the phone number view is resumed
+         */
+        public SignInIntentBuilder setPhoneNumberResumeAction(Action phoneNumberResumeAction) {
+            mPhoneNumberResumeAction = phoneNumberResumeAction;
+            return this;
+        }
+
+        /**
+         * Sets an action to be performed when the phone confirmation view is resumed
+         */
+        public SignInIntentBuilder setPhoneConfirmationResumeAction(Action phoneConfirmationResumeAction) {
+            mPhoneConfirmationResumeAction = phoneConfirmationResumeAction;
+            return this;
+        }
+
+        /**
+         * Sets an action to be performed when the exit action is chosen on the phone number view
+         */
+        public SignInIntentBuilder setPhoneNumberExitAction(Action phoneNumberExitAction) {
+            mPhoneNumberExitAction = phoneNumberExitAction;
+            return this;
+        }
+
+        /**
+         * Sets an action to be performed when the exit action is chosen on the phone confirmation view
+         */
+        public SignInIntentBuilder setPhoneConfirmationExitAction(Action phoneConfirmationExitAction) {
+            mPhoneConfirmationExitAction = phoneConfirmationExitAction;
             return this;
         }
 

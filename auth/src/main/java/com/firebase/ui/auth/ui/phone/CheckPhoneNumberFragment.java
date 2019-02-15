@@ -18,10 +18,12 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.R;
 import com.firebase.ui.auth.data.model.FlowParameters;
 import com.firebase.ui.auth.data.model.PhoneNumber;
 import com.firebase.ui.auth.ui.FragmentBase;
+import com.firebase.ui.auth.util.Action;
 import com.firebase.ui.auth.util.ExtraConstants;
 import com.firebase.ui.auth.util.data.PhoneNumberUtils;
 import com.firebase.ui.auth.util.data.PrivacyDisclosureUtils;
@@ -88,7 +90,10 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
         mExitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                requireActivity().onBackPressed();
+                final Action action = AuthUI.getPhoneNumberExitAction();
+                if (action != null) {
+                    action.doAction(getContext());
+                }
             }
         });
 
@@ -108,6 +113,15 @@ public class CheckPhoneNumberFragment extends FragmentBase implements View.OnCli
         mSubmitButton.setOnClickListener(this);
 
         setupPrivacyDisclosures(view.<TextView>findViewById(R.id.email_footer_tos_and_pp_text));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        final Action action = AuthUI.getPhoneNumberResumeAction();
+        if (action != null) {
+            action.doAction(getContext());
+        }
     }
 
     @Override
