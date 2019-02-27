@@ -181,6 +181,9 @@ public class SubmitConfirmationCodeFragment extends FragmentBase {
                     @Override
                     public void whileComplete() {
                         mSubmitConfirmationButton.setEnabled(true);
+
+                        // Pre-submit automatically
+                        submitCode();
                     }
 
                     @Override
